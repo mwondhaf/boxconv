@@ -24,8 +24,22 @@ import type { ConvexReactClient } from 'convex/react'
 import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 
+// const fetchUserOrg = createServerFn({ method: 'GET' }).handler(async () => {
+//   const { getToken, userId, orgId } = await auth()
+
+//   const token = await getToken({ template: 'convex' })
+
+//   return {
+//     userId,
+//     token,
+//     orgId,
+//   }
+// })
+
 const fetchClerkAuth = createServerFn({ method: 'GET' }).handler(async () => {
   const { getToken, userId } = await auth()
+
+
   const token = await getToken({ template: 'convex' })
 
   return {
