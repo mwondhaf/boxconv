@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.output
+dist
+.nitro
+.vinxi
+
+# Git
+.git
+.gitignore
+
+# Editor/IDE
+.cursor
+.zed
+.vscode
+.idea
+
+# Husky
+.husky
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.ts
+*.spec.ts
+
+# Documentation
+README.md
+*.md
+!convex/README.md
+
+# Config files not needed in container
+.prettierrc
+.prettierignore
+biome.jsonc
+eslint.config.mjs
+
+# Tanstack generated
+.tanstack
+
+# Convex generated - keep these for build
+# convex/_generated
