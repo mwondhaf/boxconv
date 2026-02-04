@@ -1,13 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/')({
-  component: Home,
-})
+export const Route = createFileRoute("/")({ component: App });
 
-function Home() {
-  return (
-    <div className="p-2">
-      <h1>Tanstack Start Convex with Clerk</h1>
-    </div>
-  )
+function App() {
+return (
+  <div>Main Home</div>
+);
 }

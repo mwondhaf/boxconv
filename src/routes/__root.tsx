@@ -17,11 +17,14 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { createServerFn } from '@tanstack/react-start'
 import * as React from 'react'
-import { auth } from '@clerk/tanstack-react-start/server'
+import { auth, clerkClient } from '@clerk/tanstack-react-start/server'
 import { ConvexProviderWithClerk } from 'convex/react-clerk'
+
 import type { ConvexQueryClient } from '@convex-dev/react-query'
 import type { ConvexReactClient } from 'convex/react'
 import type { QueryClient } from '@tanstack/react-query'
+
+import { Toaster } from '~/components/ui/sonner'
 import appCss from '~/styles/app.css?url'
 
 // const fetchUserOrg = createServerFn({ method: 'GET' }).handler(async () => {
@@ -37,14 +40,38 @@ import appCss from '~/styles/app.css?url'
 // })
 
 const fetchClerkAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const { getToken, userId } = await auth()
-
+  const { getToken, userId, orgId, orgRole } = await auth()
 
   const token = await getToken({ template: 'convex' })
+
+  // Get user's publicMetadata and org memberships using clerkClient
+  let publicMetadata: { [x: string]: {} } = {}
+  let orgMemberships: Array<string> = []
+
+  if (userId) {
+    try {
+      const client = await clerkClient()
+      const user = await client.users.getUser(userId)
+      publicMetadata = user.publicMetadata as { [x: string]: {} }
+
+      // Get all organization memberships for this user
+      const memberships = await client.users.getOrganizationMembershipList({
+        userId,
+      })
+      orgMemberships = memberships.data.map((m) => m.organization.id)
+    } catch (error) {
+      console.error('Failed to fetch user metadata:', error)
+    }
+  }
 
   return {
     userId,
     token,
+    publicMetadata,
+    orgId,
+    orgRole,
+    orgMemberships,
+    hasOrgMembership: orgMemberships.length > 0,
   }
 })
 
@@ -91,7 +118,7 @@ export const Route = createRootRouteWithContext<{
   }),
   beforeLoad: async (ctx) => {
     const clerkAuth = await fetchClerkAuth()
-    const { userId, token } = clerkAuth
+    const { userId, token, publicMetadata, orgId, orgRole, orgMemberships, hasOrgMembership } = clerkAuth
     // During SSR only (the only time serverHttpClient exists),
     // set the Clerk auth token to make HTTP queries with.
     if (token) {
@@ -101,6 +128,11 @@ export const Route = createRootRouteWithContext<{
     return {
       userId,
       token,
+      publicMetadata,
+      orgId,
+      orgRole,
+      orgMemberships,
+      hasOrgMembership,
     }
   },
   component: RootComponent,
@@ -137,14 +169,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           >
             Home
           </Link>
-          <Link
-            to="/posts"
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Posts
-          </Link>
+
           <Link
             to="/user"
             activeProps={{
@@ -164,6 +189,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </div>
         <hr />
         {children}
+        <Toaster position="top-right" richColors closeButton />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

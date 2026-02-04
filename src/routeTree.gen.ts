@@ -9,16 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PostsRouteImport } from './routes/posts'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedUserRouteImport } from './routes/_authed/user'
+import { Route as AuthedVendorRouteImport } from './routes/_authed/_vendor'
+import { Route as AuthedRiderRouteImport } from './routes/_authed/_rider'
+import { Route as AuthedAdminRouteImport } from './routes/_authed/_admin'
+import { Route as AuthedVendorVIndexRouteImport } from './routes/_authed/_vendor/v/index'
+import { Route as AuthedRiderRIndexRouteImport } from './routes/_authed/_rider/r/index'
+import { Route as AuthedAdminAIndexRouteImport } from './routes/_authed/_admin/a/index'
+import { Route as AuthedVendorVVariantsRouteImport } from './routes/_authed/_vendor/v/variants'
+import { Route as AuthedVendorVTeamRouteImport } from './routes/_authed/_vendor/v/team'
+import { Route as AuthedVendorVSettingsRouteImport } from './routes/_authed/_vendor/v/settings'
+import { Route as AuthedVendorVProductsRouteImport } from './routes/_authed/_vendor/v/products'
+import { Route as AuthedVendorVOrdersRouteImport } from './routes/_authed/_vendor/v/orders'
+import { Route as AuthedVendorVCustomersRouteImport } from './routes/_authed/_vendor/v/customers'
+import { Route as AuthedRiderRHistoryRouteImport } from './routes/_authed/_rider/r/history'
+import { Route as AuthedRiderREarningsRouteImport } from './routes/_authed/_rider/r/earnings'
+import { Route as AuthedRiderRAssignmentsRouteImport } from './routes/_authed/_rider/r/assignments'
+import { Route as AuthedAdminAVendorsRouteImport } from './routes/_authed/_admin/a/vendors'
+import { Route as AuthedAdminAVariantsRouteImport } from './routes/_authed/_admin/a/variants'
+import { Route as AuthedAdminASettingsRouteImport } from './routes/_authed/_admin/a/settings'
+import { Route as AuthedAdminARidersRouteImport } from './routes/_authed/_admin/a/riders'
+import { Route as AuthedAdminAProductsRouteImport } from './routes/_authed/_admin/a/products'
+import { Route as AuthedAdminAOrganizationsRouteImport } from './routes/_authed/_admin/a/organizations'
+import { Route as AuthedAdminAOrdersRouteImport } from './routes/_authed/_admin/a/orders'
+import { Route as AuthedAdminACategoriesRouteImport } from './routes/_authed/_admin/a/categories'
+import { Route as AuthedAdminABrandsRouteImport } from './routes/_authed/_admin/a/brands'
 
-const PostsRoute = PostsRouteImport.update({
-  id: '/posts',
-  path: '/posts',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
@@ -33,47 +51,294 @@ const AuthedUserRoute = AuthedUserRouteImport.update({
   path: '/user',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedVendorRoute = AuthedVendorRouteImport.update({
+  id: '/_vendor',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedRiderRoute = AuthedRiderRouteImport.update({
+  id: '/_rider',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAdminRoute = AuthedAdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedVendorVIndexRoute = AuthedVendorVIndexRouteImport.update({
+  id: '/v/',
+  path: '/v/',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
+const AuthedRiderRIndexRoute = AuthedRiderRIndexRouteImport.update({
+  id: '/r/',
+  path: '/r/',
+  getParentRoute: () => AuthedRiderRoute,
+} as any)
+const AuthedAdminAIndexRoute = AuthedAdminAIndexRouteImport.update({
+  id: '/a/',
+  path: '/a/',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedVendorVVariantsRoute = AuthedVendorVVariantsRouteImport.update({
+  id: '/v/variants',
+  path: '/v/variants',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
+const AuthedVendorVTeamRoute = AuthedVendorVTeamRouteImport.update({
+  id: '/v/team',
+  path: '/v/team',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
+const AuthedVendorVSettingsRoute = AuthedVendorVSettingsRouteImport.update({
+  id: '/v/settings',
+  path: '/v/settings',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
+const AuthedVendorVProductsRoute = AuthedVendorVProductsRouteImport.update({
+  id: '/v/products',
+  path: '/v/products',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
+const AuthedVendorVOrdersRoute = AuthedVendorVOrdersRouteImport.update({
+  id: '/v/orders',
+  path: '/v/orders',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
+const AuthedVendorVCustomersRoute = AuthedVendorVCustomersRouteImport.update({
+  id: '/v/customers',
+  path: '/v/customers',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
+const AuthedRiderRHistoryRoute = AuthedRiderRHistoryRouteImport.update({
+  id: '/r/history',
+  path: '/r/history',
+  getParentRoute: () => AuthedRiderRoute,
+} as any)
+const AuthedRiderREarningsRoute = AuthedRiderREarningsRouteImport.update({
+  id: '/r/earnings',
+  path: '/r/earnings',
+  getParentRoute: () => AuthedRiderRoute,
+} as any)
+const AuthedRiderRAssignmentsRoute = AuthedRiderRAssignmentsRouteImport.update({
+  id: '/r/assignments',
+  path: '/r/assignments',
+  getParentRoute: () => AuthedRiderRoute,
+} as any)
+const AuthedAdminAVendorsRoute = AuthedAdminAVendorsRouteImport.update({
+  id: '/a/vendors',
+  path: '/a/vendors',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminAVariantsRoute = AuthedAdminAVariantsRouteImport.update({
+  id: '/a/variants',
+  path: '/a/variants',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminASettingsRoute = AuthedAdminASettingsRouteImport.update({
+  id: '/a/settings',
+  path: '/a/settings',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminARidersRoute = AuthedAdminARidersRouteImport.update({
+  id: '/a/riders',
+  path: '/a/riders',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminAProductsRoute = AuthedAdminAProductsRouteImport.update({
+  id: '/a/products',
+  path: '/a/products',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminAOrganizationsRoute =
+  AuthedAdminAOrganizationsRouteImport.update({
+    id: '/a/organizations',
+    path: '/a/organizations',
+    getParentRoute: () => AuthedAdminRoute,
+  } as any)
+const AuthedAdminAOrdersRoute = AuthedAdminAOrdersRouteImport.update({
+  id: '/a/orders',
+  path: '/a/orders',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminACategoriesRoute = AuthedAdminACategoriesRouteImport.update({
+  id: '/a/categories',
+  path: '/a/categories',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminABrandsRoute = AuthedAdminABrandsRouteImport.update({
+  id: '/a/brands',
+  path: '/a/brands',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/posts': typeof PostsRoute
   '/user': typeof AuthedUserRoute
+  '/a/brands': typeof AuthedAdminABrandsRoute
+  '/a/categories': typeof AuthedAdminACategoriesRoute
+  '/a/orders': typeof AuthedAdminAOrdersRoute
+  '/a/organizations': typeof AuthedAdminAOrganizationsRoute
+  '/a/products': typeof AuthedAdminAProductsRoute
+  '/a/riders': typeof AuthedAdminARidersRoute
+  '/a/settings': typeof AuthedAdminASettingsRoute
+  '/a/variants': typeof AuthedAdminAVariantsRoute
+  '/a/vendors': typeof AuthedAdminAVendorsRoute
+  '/r/assignments': typeof AuthedRiderRAssignmentsRoute
+  '/r/earnings': typeof AuthedRiderREarningsRoute
+  '/r/history': typeof AuthedRiderRHistoryRoute
+  '/v/customers': typeof AuthedVendorVCustomersRoute
+  '/v/orders': typeof AuthedVendorVOrdersRoute
+  '/v/products': typeof AuthedVendorVProductsRoute
+  '/v/settings': typeof AuthedVendorVSettingsRoute
+  '/v/team': typeof AuthedVendorVTeamRoute
+  '/v/variants': typeof AuthedVendorVVariantsRoute
+  '/a/': typeof AuthedAdminAIndexRoute
+  '/r/': typeof AuthedRiderRIndexRoute
+  '/v/': typeof AuthedVendorVIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/posts': typeof PostsRoute
   '/user': typeof AuthedUserRoute
+  '/a/brands': typeof AuthedAdminABrandsRoute
+  '/a/categories': typeof AuthedAdminACategoriesRoute
+  '/a/orders': typeof AuthedAdminAOrdersRoute
+  '/a/organizations': typeof AuthedAdminAOrganizationsRoute
+  '/a/products': typeof AuthedAdminAProductsRoute
+  '/a/riders': typeof AuthedAdminARidersRoute
+  '/a/settings': typeof AuthedAdminASettingsRoute
+  '/a/variants': typeof AuthedAdminAVariantsRoute
+  '/a/vendors': typeof AuthedAdminAVendorsRoute
+  '/r/assignments': typeof AuthedRiderRAssignmentsRoute
+  '/r/earnings': typeof AuthedRiderREarningsRoute
+  '/r/history': typeof AuthedRiderRHistoryRoute
+  '/v/customers': typeof AuthedVendorVCustomersRoute
+  '/v/orders': typeof AuthedVendorVOrdersRoute
+  '/v/products': typeof AuthedVendorVProductsRoute
+  '/v/settings': typeof AuthedVendorVSettingsRoute
+  '/v/team': typeof AuthedVendorVTeamRoute
+  '/v/variants': typeof AuthedVendorVVariantsRoute
+  '/a': typeof AuthedAdminAIndexRoute
+  '/r': typeof AuthedRiderRIndexRoute
+  '/v': typeof AuthedVendorVIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
-  '/posts': typeof PostsRoute
+  '/_authed/_admin': typeof AuthedAdminRouteWithChildren
+  '/_authed/_rider': typeof AuthedRiderRouteWithChildren
+  '/_authed/_vendor': typeof AuthedVendorRouteWithChildren
   '/_authed/user': typeof AuthedUserRoute
+  '/_authed/_admin/a/brands': typeof AuthedAdminABrandsRoute
+  '/_authed/_admin/a/categories': typeof AuthedAdminACategoriesRoute
+  '/_authed/_admin/a/orders': typeof AuthedAdminAOrdersRoute
+  '/_authed/_admin/a/organizations': typeof AuthedAdminAOrganizationsRoute
+  '/_authed/_admin/a/products': typeof AuthedAdminAProductsRoute
+  '/_authed/_admin/a/riders': typeof AuthedAdminARidersRoute
+  '/_authed/_admin/a/settings': typeof AuthedAdminASettingsRoute
+  '/_authed/_admin/a/variants': typeof AuthedAdminAVariantsRoute
+  '/_authed/_admin/a/vendors': typeof AuthedAdminAVendorsRoute
+  '/_authed/_rider/r/assignments': typeof AuthedRiderRAssignmentsRoute
+  '/_authed/_rider/r/earnings': typeof AuthedRiderREarningsRoute
+  '/_authed/_rider/r/history': typeof AuthedRiderRHistoryRoute
+  '/_authed/_vendor/v/customers': typeof AuthedVendorVCustomersRoute
+  '/_authed/_vendor/v/orders': typeof AuthedVendorVOrdersRoute
+  '/_authed/_vendor/v/products': typeof AuthedVendorVProductsRoute
+  '/_authed/_vendor/v/settings': typeof AuthedVendorVSettingsRoute
+  '/_authed/_vendor/v/team': typeof AuthedVendorVTeamRoute
+  '/_authed/_vendor/v/variants': typeof AuthedVendorVVariantsRoute
+  '/_authed/_admin/a/': typeof AuthedAdminAIndexRoute
+  '/_authed/_rider/r/': typeof AuthedRiderRIndexRoute
+  '/_authed/_vendor/v/': typeof AuthedVendorVIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/posts' | '/user'
+  fullPaths:
+    | '/'
+    | '/user'
+    | '/a/brands'
+    | '/a/categories'
+    | '/a/orders'
+    | '/a/organizations'
+    | '/a/products'
+    | '/a/riders'
+    | '/a/settings'
+    | '/a/variants'
+    | '/a/vendors'
+    | '/r/assignments'
+    | '/r/earnings'
+    | '/r/history'
+    | '/v/customers'
+    | '/v/orders'
+    | '/v/products'
+    | '/v/settings'
+    | '/v/team'
+    | '/v/variants'
+    | '/a/'
+    | '/r/'
+    | '/v/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/posts' | '/user'
-  id: '__root__' | '/' | '/_authed' | '/posts' | '/_authed/user'
+  to:
+    | '/'
+    | '/user'
+    | '/a/brands'
+    | '/a/categories'
+    | '/a/orders'
+    | '/a/organizations'
+    | '/a/products'
+    | '/a/riders'
+    | '/a/settings'
+    | '/a/variants'
+    | '/a/vendors'
+    | '/r/assignments'
+    | '/r/earnings'
+    | '/r/history'
+    | '/v/customers'
+    | '/v/orders'
+    | '/v/products'
+    | '/v/settings'
+    | '/v/team'
+    | '/v/variants'
+    | '/a'
+    | '/r'
+    | '/v'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authed'
+    | '/_authed/_admin'
+    | '/_authed/_rider'
+    | '/_authed/_vendor'
+    | '/_authed/user'
+    | '/_authed/_admin/a/brands'
+    | '/_authed/_admin/a/categories'
+    | '/_authed/_admin/a/orders'
+    | '/_authed/_admin/a/organizations'
+    | '/_authed/_admin/a/products'
+    | '/_authed/_admin/a/riders'
+    | '/_authed/_admin/a/settings'
+    | '/_authed/_admin/a/variants'
+    | '/_authed/_admin/a/vendors'
+    | '/_authed/_rider/r/assignments'
+    | '/_authed/_rider/r/earnings'
+    | '/_authed/_rider/r/history'
+    | '/_authed/_vendor/v/customers'
+    | '/_authed/_vendor/v/orders'
+    | '/_authed/_vendor/v/products'
+    | '/_authed/_vendor/v/settings'
+    | '/_authed/_vendor/v/team'
+    | '/_authed/_vendor/v/variants'
+    | '/_authed/_admin/a/'
+    | '/_authed/_rider/r/'
+    | '/_authed/_vendor/v/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
-  PostsRoute: typeof PostsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/posts': {
-      id: '/posts'
-      path: '/posts'
-      fullPath: '/posts'
-      preLoaderRoute: typeof PostsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authed': {
       id: '/_authed'
       path: ''
@@ -95,14 +360,260 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedUserRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/_vendor': {
+      id: '/_authed/_vendor'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedVendorRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/_rider': {
+      id: '/_authed/_rider'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedRiderRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/_admin': {
+      id: '/_authed/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedAdminRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/_vendor/v/': {
+      id: '/_authed/_vendor/v/'
+      path: '/v'
+      fullPath: '/v/'
+      preLoaderRoute: typeof AuthedVendorVIndexRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
+    '/_authed/_rider/r/': {
+      id: '/_authed/_rider/r/'
+      path: '/r'
+      fullPath: '/r/'
+      preLoaderRoute: typeof AuthedRiderRIndexRouteImport
+      parentRoute: typeof AuthedRiderRoute
+    }
+    '/_authed/_admin/a/': {
+      id: '/_authed/_admin/a/'
+      path: '/a'
+      fullPath: '/a/'
+      preLoaderRoute: typeof AuthedAdminAIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_vendor/v/variants': {
+      id: '/_authed/_vendor/v/variants'
+      path: '/v/variants'
+      fullPath: '/v/variants'
+      preLoaderRoute: typeof AuthedVendorVVariantsRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
+    '/_authed/_vendor/v/team': {
+      id: '/_authed/_vendor/v/team'
+      path: '/v/team'
+      fullPath: '/v/team'
+      preLoaderRoute: typeof AuthedVendorVTeamRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
+    '/_authed/_vendor/v/settings': {
+      id: '/_authed/_vendor/v/settings'
+      path: '/v/settings'
+      fullPath: '/v/settings'
+      preLoaderRoute: typeof AuthedVendorVSettingsRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
+    '/_authed/_vendor/v/products': {
+      id: '/_authed/_vendor/v/products'
+      path: '/v/products'
+      fullPath: '/v/products'
+      preLoaderRoute: typeof AuthedVendorVProductsRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
+    '/_authed/_vendor/v/orders': {
+      id: '/_authed/_vendor/v/orders'
+      path: '/v/orders'
+      fullPath: '/v/orders'
+      preLoaderRoute: typeof AuthedVendorVOrdersRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
+    '/_authed/_vendor/v/customers': {
+      id: '/_authed/_vendor/v/customers'
+      path: '/v/customers'
+      fullPath: '/v/customers'
+      preLoaderRoute: typeof AuthedVendorVCustomersRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
+    '/_authed/_rider/r/history': {
+      id: '/_authed/_rider/r/history'
+      path: '/r/history'
+      fullPath: '/r/history'
+      preLoaderRoute: typeof AuthedRiderRHistoryRouteImport
+      parentRoute: typeof AuthedRiderRoute
+    }
+    '/_authed/_rider/r/earnings': {
+      id: '/_authed/_rider/r/earnings'
+      path: '/r/earnings'
+      fullPath: '/r/earnings'
+      preLoaderRoute: typeof AuthedRiderREarningsRouteImport
+      parentRoute: typeof AuthedRiderRoute
+    }
+    '/_authed/_rider/r/assignments': {
+      id: '/_authed/_rider/r/assignments'
+      path: '/r/assignments'
+      fullPath: '/r/assignments'
+      preLoaderRoute: typeof AuthedRiderRAssignmentsRouteImport
+      parentRoute: typeof AuthedRiderRoute
+    }
+    '/_authed/_admin/a/vendors': {
+      id: '/_authed/_admin/a/vendors'
+      path: '/a/vendors'
+      fullPath: '/a/vendors'
+      preLoaderRoute: typeof AuthedAdminAVendorsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/variants': {
+      id: '/_authed/_admin/a/variants'
+      path: '/a/variants'
+      fullPath: '/a/variants'
+      preLoaderRoute: typeof AuthedAdminAVariantsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/settings': {
+      id: '/_authed/_admin/a/settings'
+      path: '/a/settings'
+      fullPath: '/a/settings'
+      preLoaderRoute: typeof AuthedAdminASettingsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/riders': {
+      id: '/_authed/_admin/a/riders'
+      path: '/a/riders'
+      fullPath: '/a/riders'
+      preLoaderRoute: typeof AuthedAdminARidersRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/products': {
+      id: '/_authed/_admin/a/products'
+      path: '/a/products'
+      fullPath: '/a/products'
+      preLoaderRoute: typeof AuthedAdminAProductsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/organizations': {
+      id: '/_authed/_admin/a/organizations'
+      path: '/a/organizations'
+      fullPath: '/a/organizations'
+      preLoaderRoute: typeof AuthedAdminAOrganizationsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/orders': {
+      id: '/_authed/_admin/a/orders'
+      path: '/a/orders'
+      fullPath: '/a/orders'
+      preLoaderRoute: typeof AuthedAdminAOrdersRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/categories': {
+      id: '/_authed/_admin/a/categories'
+      path: '/a/categories'
+      fullPath: '/a/categories'
+      preLoaderRoute: typeof AuthedAdminACategoriesRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/brands': {
+      id: '/_authed/_admin/a/brands'
+      path: '/a/brands'
+      fullPath: '/a/brands'
+      preLoaderRoute: typeof AuthedAdminABrandsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
   }
 }
 
+interface AuthedAdminRouteChildren {
+  AuthedAdminABrandsRoute: typeof AuthedAdminABrandsRoute
+  AuthedAdminACategoriesRoute: typeof AuthedAdminACategoriesRoute
+  AuthedAdminAOrdersRoute: typeof AuthedAdminAOrdersRoute
+  AuthedAdminAOrganizationsRoute: typeof AuthedAdminAOrganizationsRoute
+  AuthedAdminAProductsRoute: typeof AuthedAdminAProductsRoute
+  AuthedAdminARidersRoute: typeof AuthedAdminARidersRoute
+  AuthedAdminASettingsRoute: typeof AuthedAdminASettingsRoute
+  AuthedAdminAVariantsRoute: typeof AuthedAdminAVariantsRoute
+  AuthedAdminAVendorsRoute: typeof AuthedAdminAVendorsRoute
+  AuthedAdminAIndexRoute: typeof AuthedAdminAIndexRoute
+}
+
+const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
+  AuthedAdminABrandsRoute: AuthedAdminABrandsRoute,
+  AuthedAdminACategoriesRoute: AuthedAdminACategoriesRoute,
+  AuthedAdminAOrdersRoute: AuthedAdminAOrdersRoute,
+  AuthedAdminAOrganizationsRoute: AuthedAdminAOrganizationsRoute,
+  AuthedAdminAProductsRoute: AuthedAdminAProductsRoute,
+  AuthedAdminARidersRoute: AuthedAdminARidersRoute,
+  AuthedAdminASettingsRoute: AuthedAdminASettingsRoute,
+  AuthedAdminAVariantsRoute: AuthedAdminAVariantsRoute,
+  AuthedAdminAVendorsRoute: AuthedAdminAVendorsRoute,
+  AuthedAdminAIndexRoute: AuthedAdminAIndexRoute,
+}
+
+const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(
+  AuthedAdminRouteChildren,
+)
+
+interface AuthedRiderRouteChildren {
+  AuthedRiderRAssignmentsRoute: typeof AuthedRiderRAssignmentsRoute
+  AuthedRiderREarningsRoute: typeof AuthedRiderREarningsRoute
+  AuthedRiderRHistoryRoute: typeof AuthedRiderRHistoryRoute
+  AuthedRiderRIndexRoute: typeof AuthedRiderRIndexRoute
+}
+
+const AuthedRiderRouteChildren: AuthedRiderRouteChildren = {
+  AuthedRiderRAssignmentsRoute: AuthedRiderRAssignmentsRoute,
+  AuthedRiderREarningsRoute: AuthedRiderREarningsRoute,
+  AuthedRiderRHistoryRoute: AuthedRiderRHistoryRoute,
+  AuthedRiderRIndexRoute: AuthedRiderRIndexRoute,
+}
+
+const AuthedRiderRouteWithChildren = AuthedRiderRoute._addFileChildren(
+  AuthedRiderRouteChildren,
+)
+
+interface AuthedVendorRouteChildren {
+  AuthedVendorVCustomersRoute: typeof AuthedVendorVCustomersRoute
+  AuthedVendorVOrdersRoute: typeof AuthedVendorVOrdersRoute
+  AuthedVendorVProductsRoute: typeof AuthedVendorVProductsRoute
+  AuthedVendorVSettingsRoute: typeof AuthedVendorVSettingsRoute
+  AuthedVendorVTeamRoute: typeof AuthedVendorVTeamRoute
+  AuthedVendorVVariantsRoute: typeof AuthedVendorVVariantsRoute
+  AuthedVendorVIndexRoute: typeof AuthedVendorVIndexRoute
+}
+
+const AuthedVendorRouteChildren: AuthedVendorRouteChildren = {
+  AuthedVendorVCustomersRoute: AuthedVendorVCustomersRoute,
+  AuthedVendorVOrdersRoute: AuthedVendorVOrdersRoute,
+  AuthedVendorVProductsRoute: AuthedVendorVProductsRoute,
+  AuthedVendorVSettingsRoute: AuthedVendorVSettingsRoute,
+  AuthedVendorVTeamRoute: AuthedVendorVTeamRoute,
+  AuthedVendorVVariantsRoute: AuthedVendorVVariantsRoute,
+  AuthedVendorVIndexRoute: AuthedVendorVIndexRoute,
+}
+
+const AuthedVendorRouteWithChildren = AuthedVendorRoute._addFileChildren(
+  AuthedVendorRouteChildren,
+)
+
 interface AuthedRouteChildren {
+  AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
+  AuthedRiderRoute: typeof AuthedRiderRouteWithChildren
+  AuthedVendorRoute: typeof AuthedVendorRouteWithChildren
   AuthedUserRoute: typeof AuthedUserRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAdminRoute: AuthedAdminRouteWithChildren,
+  AuthedRiderRoute: AuthedRiderRouteWithChildren,
+  AuthedVendorRoute: AuthedVendorRouteWithChildren,
   AuthedUserRoute: AuthedUserRoute,
 }
 
@@ -112,7 +623,6 @@ const AuthedRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
-  PostsRoute: PostsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

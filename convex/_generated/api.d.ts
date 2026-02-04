@@ -8,7 +8,18 @@
  * @module
  */
 
-import type * as posts from "../posts.js";
+import type * as brands from "../brands.js";
+import type * as categories from "../categories.js";
+import type * as categoryImages from "../categoryImages.js";
+import type * as http from "../http.js";
+import type * as lib_ability from "../lib/ability.js";
+import type * as migrations_migrateImages from "../migrations/migrateImages.js";
+import type * as organizationCategories from "../organizationCategories.js";
+import type * as organizations from "../organizations.js";
+import type * as productImages from "../productImages.js";
+import type * as productVariants from "../productVariants.js";
+import type * as products from "../products.js";
+import type * as r2 from "../r2.js";
 import type * as user from "../user.js";
 
 import type {
@@ -18,7 +29,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  posts: typeof posts;
+  brands: typeof brands;
+  categories: typeof categories;
+  categoryImages: typeof categoryImages;
+  http: typeof http;
+  "lib/ability": typeof lib_ability;
+  "migrations/migrateImages": typeof migrations_migrateImages;
+  organizationCategories: typeof organizationCategories;
+  organizations: typeof organizations;
+  productImages: typeof productImages;
+  productVariants: typeof productVariants;
+  products: typeof products;
+  r2: typeof r2;
   user: typeof user;
 }>;
 
@@ -48,4 +70,129 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  r2: {
+    lib: {
+      deleteMetadata: FunctionReference<
+        "mutation",
+        "internal",
+        { bucket: string; key: string },
+        null
+      >;
+      deleteObject: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          secretAccessKey: string;
+        },
+        null
+      >;
+      deleteR2Object: FunctionReference<
+        "action",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          secretAccessKey: string;
+        },
+        null
+      >;
+      getMetadata: FunctionReference<
+        "query",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          secretAccessKey: string;
+        },
+        {
+          bucket: string;
+          bucketLink: string;
+          contentType?: string;
+          key: string;
+          lastModified: string;
+          link: string;
+          sha256?: string;
+          size?: number;
+          url: string;
+        } | null
+      >;
+      listMetadata: FunctionReference<
+        "query",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          cursor?: string;
+          endpoint: string;
+          limit?: number;
+          secretAccessKey: string;
+        },
+        {
+          continueCursor: string;
+          isDone: boolean;
+          page: Array<{
+            bucket: string;
+            bucketLink: string;
+            contentType?: string;
+            key: string;
+            lastModified: string;
+            link: string;
+            sha256?: string;
+            size?: number;
+            url: string;
+          }>;
+          pageStatus?: null | "SplitRecommended" | "SplitRequired";
+          splitCursor?: null | string;
+        }
+      >;
+      store: FunctionReference<
+        "action",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          secretAccessKey: string;
+          url: string;
+        },
+        any
+      >;
+      syncMetadata: FunctionReference<
+        "action",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          onComplete?: string;
+          secretAccessKey: string;
+        },
+        null
+      >;
+      upsertMetadata: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          bucket: string;
+          contentType?: string;
+          key: string;
+          lastModified: string;
+          link: string;
+          sha256?: string;
+          size?: number;
+        },
+        { isNew: boolean }
+      >;
+    };
+  };
+};
