@@ -163,34 +163,34 @@ description: 'Task list for Grocery & Logistics Platform (BoxKuBox)'
 
 ### Customer Addresses
 
-- [ ] T050 [PH5] Implement `convex/customerAddresses.ts` - CRUD, set default
-- [ ] T051 [PH5] [P] Create customer addresses page `src/app/routes/_authed/_customer/addresses/index.tsx`
-- [ ] T052 [PH5] [P] Create address form sheet `src/components/customer/address-form-sheet.tsx`
+- [x] T050 [PH5] Implement `convex/customerAddresses.ts` - CRUD, set default
+- [ ] T051 [PH5] [P] Create customer addresses page `src/app/routes/_authed/_customer/addresses/index.tsx` (SKIPPED - mobile app only)
+- [ ] T052 [PH5] [P] Create address form sheet `src/components/customer/address-form-sheet.tsx` (SKIPPED - mobile app only)
 
 ### Store Browsing/
 
-- [ ] T053 [PH5] Implement store queries in `convex/organizations.ts` - listActive with open/closed status
-- [ ] T054 [PH5] Implement `convex/productVariants.ts` - listByOrgWithPrices (join variant + priceSet + moneyAmount)
-- [ ] T055 [PH5] [P] Create store list page `src/app/routes/_authed/_customer/store/index.tsx`
-- [ ] T056 [PH5] [P] Create store products page `src/app/routes/_authed/_customer/store/$orgId.tsx`
-- [ ] T057 [PH5] [P] Create product card component `src/components/customer/product-card.tsx`
+- [x] T053 [PH5] Implement store queries in `convex/organizations.ts` - listActive with open/closed status
+- [x] T054 [PH5] Implement `convex/productVariants.ts` - listByOrgWithPrices (join variant + priceSet + moneyAmount)
+- [ ] T055 [PH5] [P] Create store list page `src/app/routes/_authed/_customer/store/index.tsx` (SKIPPED - mobile app only)
+- [ ] T056 [PH5] [P] Create store products page `src/app/routes/_authed/_customer/store/$orgId.tsx` (SKIPPED - mobile app only)
+- [ ] T057 [PH5] [P] Create product card component `src/components/customer/product-card.tsx` (SKIPPED - mobile app only)
 
 ### Shopping Cart
 
-- [ ] T058 [PH5] Implement `convex/carts.ts` - create, get, addItem, updateQuantity, removeItem, clear
-- [ ] T059 [PH5] Implement `convex/cartItems.ts` - CRUD for cart items
-- [ ] T060 [PH5] Create cart expiration scheduled function in `convex/carts.ts`
-- [ ] T061 [PH5] [P] Create cart page `src/app/routes/_authed/_customer/cart/index.tsx`
-- [ ] T062 [PH5] [P] Create cart item component `src/components/customer/cart-item.tsx`
+- [x] T058 [PH5] Implement `convex/carts.ts` - create, get, addItem, updateQuantity, removeItem, clear
+- [x] T059 [PH5] Implement `convex/cartItems.ts` - CRUD for cart items (merged into carts.ts)
+- [x] T060 [PH5] Create cart expiration scheduled function in `convex/carts.ts`
+- [ ] T061 [PH5] [P] Create cart page `src/app/routes/_authed/_customer/cart/index.tsx` (SKIPPED - mobile app only)
+- [ ] T062 [PH5] [P] Create cart item component `src/components/customer/cart-item.tsx` (SKIPPED - mobile app only)
 
 ### Checkout
 
-- [ ] T063 [PH5] Implement delivery quote action in `convex/carts.ts` - uses external distance API
-- [ ] T064 [PH5] Create `convex/lib/geohash.ts` for geohash encoding
-- [ ] T065 [PH5] Create `convex/lib/fare.ts` for delivery fare calculation
-- [ ] T066 [PH5] [P] Create checkout page `src/app/routes/_authed/_customer/checkout/index.tsx`
-- [ ] T067 [PH5] [P] Create address selector component `src/components/customer/address-selector.tsx`
-- [ ] T068 [PH5] Implement price validation at checkout - compare cart prices to current prices
+- [ ] T063 [PH5] Implement delivery quote action in `convex/carts.ts` - uses external distance API (TODO: integrate external API)
+- [x] T064 [PH5] Create `convex/lib/geohash.ts` for geohash encoding
+- [x] T065 [PH5] Create `convex/lib/fare.ts` for delivery fare calculation
+- [ ] T066 [PH5] [P] Create checkout page `src/app/routes/_authed/_customer/checkout/index.tsx` (SKIPPED - mobile app only)
+- [ ] T067 [PH5] [P] Create address selector component `src/components/customer/address-selector.tsx` (SKIPPED - mobile app only)
+- [x] T068 [PH5] Implement price validation at checkout - compare cart prices to current prices
 
 **Checkpoint**: Customers can browse, add to cart, and proceed to checkout.
 
