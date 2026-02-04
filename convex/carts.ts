@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 // =============================================================================
 // CONSTANTS
@@ -57,7 +57,8 @@ export const get = query({
           }
         }
 
-        const effectivePrice = salePrice && salePrice < price ? salePrice : price;
+        const effectivePrice =
+          salePrice && salePrice < price ? salePrice : price;
 
         return {
           ...item,
@@ -108,14 +109,14 @@ export const getByClerkId = query({
     organizationId: v.optional(v.id("organizations")),
   },
   handler: async (ctx, args) => {
-    let cartQuery = ctx.db
+    const cartQuery = ctx.db
       .query("carts")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId));
 
     const carts = await cartQuery.collect();
 
     // Filter by organization if provided
-    let cart = args.organizationId
+    const cart = args.organizationId
       ? carts.find((c) => c.organizationId === args.organizationId)
       : carts[0];
 
@@ -148,14 +149,14 @@ export const getBySession = query({
     organizationId: v.optional(v.id("organizations")),
   },
   handler: async (ctx, args) => {
-    let cartQuery = ctx.db
+    const cartQuery = ctx.db
       .query("carts")
       .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId));
 
     const carts = await cartQuery.collect();
 
     // Filter by organization if provided
-    let cart = args.organizationId
+    const cart = args.organizationId
       ? carts.find((c) => c.organizationId === args.organizationId)
       : carts[0];
 
@@ -194,7 +195,7 @@ export const create = mutation({
     currencyCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (!args.clerkId && !args.sessionId) {
+    if (!(args.clerkId || args.sessionId)) {
       throw new Error("Either clerkId or sessionId is required");
     }
 
@@ -242,7 +243,9 @@ export const addItem = mutation({
 
     // Verify variant belongs to the same organization as the cart
     if (variant.organizationId !== cart.organizationId) {
-      throw new Error("Cannot add items from different vendors to the same cart");
+      throw new Error(
+        "Cannot add items from different vendors to the same cart"
+      );
     }
 
     // Check if item already exists in cart
@@ -260,15 +263,13 @@ export const addItem = mutation({
       } else {
         await ctx.db.patch(existingItem._id, { quantity: newQuantity });
       }
-    } else {
-      if (args.quantity > 0) {
-        // Add new item
-        await ctx.db.insert("cartItems", {
-          cartId: args.cartId,
-          variantId: args.variantId,
-          quantity: args.quantity,
-        });
-      }
+    } else if (args.quantity > 0) {
+      // Add new item
+      await ctx.db.insert("cartItems", {
+        cartId: args.cartId,
+        variantId: args.variantId,
+        quantity: args.quantity,
+      });
     }
 
     // Update cart expiry
@@ -435,7 +436,7 @@ export const mergeGuestCart = mutation({
       .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
       .collect();
 
-    let userCart = userCarts.find(
+    const userCart = userCarts.find(
       (c) => c.organizationId === args.organizationId
     );
 
@@ -589,7 +590,8 @@ export const validatePrices = query({
 
         if (moneyAmount) {
           currentPrice =
-            moneyAmount.saleAmount && moneyAmount.saleAmount < moneyAmount.amount
+            moneyAmount.saleAmount &&
+            moneyAmount.saleAmount < moneyAmount.amount
               ? moneyAmount.saleAmount
               : moneyAmount.amount;
         }

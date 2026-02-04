@@ -1,19 +1,18 @@
-import { Link } from '@tanstack/react-router'
-import { IconPlus, IconArrowRight } from '@tabler/icons-react'
-
-import { Button } from '~/components/ui/button'
+import { IconArrowRight, IconPlus } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import { ChartAreaInteractive } from "~/components/chart-area-interactive";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card'
-import { ChartAreaInteractive } from '~/components/chart-area-interactive'
-import { VendorSectionCards } from '~/components/vendor/vendor-section-cards'
-import { VendorOrdersTable } from '~/components/vendor/vendor-orders-table'
-import { VendorOrderStatusChart } from '~/components/vendor/vendor-order-status-chart'
-import { Can } from '~/shared/components/can'
+} from "~/components/ui/card";
+import { VendorOrderStatusChart } from "~/components/vendor/vendor-order-status-chart";
+import { VendorOrdersTable } from "~/components/vendor/vendor-orders-table";
+import { VendorSectionCards } from "~/components/vendor/vendor-section-cards";
+import { Can } from "~/shared/components/can";
 
 export function VendorDashboardPage() {
   return (
@@ -22,13 +21,13 @@ export function VendorDashboardPage() {
         {/* Page Header */}
         <div className="flex flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="font-bold text-2xl tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground">
               Welcome back! Here's an overview of your store.
             </p>
           </div>
           <div className="flex gap-2">
-            <Can I="create" a="Product">
+            <Can a="Product" I="create">
               <Button asChild>
                 <Link to="/v/products">
                   <IconPlus className="me-2 size-4" />
@@ -62,8 +61,8 @@ export function VendorDashboardPage() {
               <CardDescription>Common tasks and shortcuts</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
-              <Can I="create" a="Product">
-                <Button variant="outline" className="justify-start" asChild>
+              <Can a="Product" I="create">
+                <Button asChild className="justify-start" variant="outline">
                   <Link to="/v/products">
                     <IconPlus className="me-2 size-4" />
                     Add New Product
@@ -71,20 +70,20 @@ export function VendorDashboardPage() {
                   </Link>
                 </Button>
               </Can>
-              <Button variant="outline" className="justify-start" asChild>
+              <Button asChild className="justify-start" variant="outline">
                 <Link to="/v/orders">
                   View All Orders
                   <IconArrowRight className="ms-auto size-4" />
                 </Link>
               </Button>
-              <Button variant="outline" className="justify-start" asChild>
+              <Button asChild className="justify-start" variant="outline">
                 <Link to="/v/customers">
                   View Customers
                   <IconArrowRight className="ms-auto size-4" />
                 </Link>
               </Button>
-              <Can I="manage" a="Settings">
-                <Button variant="outline" className="justify-start" asChild>
+              <Can a="Settings" I="manage">
+                <Button asChild className="justify-start" variant="outline">
                   <Link to="/v/settings">
                     Store Settings
                     <IconArrowRight className="ms-auto size-4" />
@@ -105,19 +104,29 @@ export function VendorDashboardPage() {
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-1 rounded-lg border p-4">
-                  <p className="text-sm text-muted-foreground">New Orders</p>
-                  <p className="text-2xl font-bold">12</p>
-                  <p className="text-xs text-green-600 dark:text-green-400">+4 from yesterday</p>
+                  <p className="text-muted-foreground text-sm">New Orders</p>
+                  <p className="font-bold text-2xl">12</p>
+                  <p className="text-green-600 text-xs dark:text-green-400">
+                    +4 from yesterday
+                  </p>
                 </div>
                 <div className="space-y-1 rounded-lg border p-4">
-                  <p className="text-sm text-muted-foreground">Pending Delivery</p>
-                  <p className="text-2xl font-bold">8</p>
-                  <p className="text-xs text-muted-foreground">Awaiting dispatch</p>
+                  <p className="text-muted-foreground text-sm">
+                    Pending Delivery
+                  </p>
+                  <p className="font-bold text-2xl">8</p>
+                  <p className="text-muted-foreground text-xs">
+                    Awaiting dispatch
+                  </p>
                 </div>
                 <div className="space-y-1 rounded-lg border p-4">
-                  <p className="text-sm text-muted-foreground">Completed Today</p>
-                  <p className="text-2xl font-bold">15</p>
-                  <p className="text-xs text-green-600 dark:text-green-400">100% success rate</p>
+                  <p className="text-muted-foreground text-sm">
+                    Completed Today
+                  </p>
+                  <p className="font-bold text-2xl">15</p>
+                  <p className="text-green-600 text-xs dark:text-green-400">
+                    100% success rate
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -127,8 +136,8 @@ export function VendorDashboardPage() {
         {/* Recent Orders Table */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-4 lg:px-6">
-            <h2 className="text-lg font-semibold">Recent Orders</h2>
-            <Button variant="outline" size="sm" asChild>
+            <h2 className="font-semibold text-lg">Recent Orders</h2>
+            <Button asChild size="sm" variant="outline">
               <Link to="/v/orders">View All Orders</Link>
             </Button>
           </div>
@@ -136,5 +145,5 @@ export function VendorDashboardPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

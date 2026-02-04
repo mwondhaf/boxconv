@@ -1,31 +1,28 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useOrganization } from '@clerk/tanstack-react-start'
-import { useQuery } from 'convex/react'
-import { Package, Search } from 'lucide-react'
-
-import { api } from 'convex/_generated/api'
-import { ProductCard } from './product-card'
-
-import type { Id } from 'convex/_generated/dataModel'
-import type { ProductCardProduct } from './product-card'
-
-import { Input } from '~/components/ui/input'
+import { useOrganization } from "@clerk/tanstack-react-start";
+import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { Package, Search } from "lucide-react";
+import * as React from "react";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '~/components/ui/select'
-import { Skeleton } from '~/components/ui/skeleton'
+} from "~/components/ui/select";
+import { Skeleton } from "~/components/ui/skeleton";
+import type { ProductCardProduct } from "./product-card";
+import { ProductCard } from "./product-card";
 
 // =============================================================================
 // Constants
 // =============================================================================
 
-const SKELETON_COUNT = 8
+const SKELETON_COUNT = 8;
 
 // =============================================================================
 // Component
@@ -33,51 +30,54 @@ const SKELETON_COUNT = 8
 
 export interface ProductsBrowserProps {
   /** Called when user wants to add a variant for a product */
-  onAddVariant?: (productId: Id<'products'>, productName: string) => void
+  onAddVariant?: (productId: Id<"products">, productName: string) => void;
 }
 
 export function ProductsBrowser({ onAddVariant }: ProductsBrowserProps) {
   // Get current organization from Clerk
-  const { organization: clerkOrg, isLoaded: clerkLoaded } = useOrganization()
+  const { organization: clerkOrg, isLoaded: clerkLoaded } = useOrganization();
 
   // State
-  const [search, setSearch] = React.useState('')
-  const [categoryFilter, setCategoryFilter] = React.useState<string>('all')
+  const [search, setSearch] = React.useState("");
+  const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
 
   // Queries - only show active products for vendors
-  const categories = useQuery(api.categories.list, { isActive: true })
-  const brands = useQuery(api.brands.list, {})
+  const categories = useQuery(api.categories.list, { isActive: true });
+  const brands = useQuery(api.brands.list, {});
 
   const productsResult = useQuery(api.products.list, {
     search: search.trim() || undefined,
-    categoryId: categoryFilter !== 'all' ? (categoryFilter as Id<'categories'>) : undefined,
+    categoryId:
+      categoryFilter !== "all"
+        ? (categoryFilter as Id<"categories">)
+        : undefined,
     isActive: true, // Vendors only see active products
     limit: 50,
-  })
+  });
 
-  const products = productsResult?.products ?? []
-  const isLoading = !clerkLoaded || productsResult === undefined
+  const products = productsResult?.products ?? [];
+  const isLoading = !clerkLoaded || productsResult === undefined;
 
   // Build category and brand maps for display
   const categoryMap = React.useMemo(() => {
-    const map = new Map<string, string>()
+    const map = new Map<string, string>();
     if (categories) {
       for (const cat of categories) {
-        map.set(cat._id, cat.name)
+        map.set(cat._id, cat.name);
       }
     }
-    return map
-  }, [categories])
+    return map;
+  }, [categories]);
 
   const brandMap = React.useMemo(() => {
-    const map = new Map<string, string>()
+    const map = new Map<string, string>();
     if (brands) {
       for (const brand of brands) {
-        map.set(brand._id, brand.name)
+        map.set(brand._id, brand.name);
       }
     }
-    return map
-  }, [brands])
+    return map;
+  }, [brands]);
 
   // Transform products to ProductCardProduct format
   const productCards: Array<ProductCardProduct> = React.useMemo(() => {
@@ -88,57 +88,63 @@ export function ProductsBrowser({ onAddVariant }: ProductsBrowserProps) {
       description: p.description,
       isActive: p.isActive,
       images: p.imageUrl
-        ? [{ _id: p._id as unknown as Id<'productImages'>, url: p.imageUrl, isPrimary: true }]
+        ? [
+            {
+              _id: p._id as unknown as Id<"productImages">,
+              url: p.imageUrl,
+              isPrimary: true,
+            },
+          ]
         : undefined,
       categoryName: categoryMap.get(p.categoryId),
       brandName: p.brandId ? brandMap.get(p.brandId) : undefined,
-    }))
-  }, [products, categoryMap, brandMap])
+    }));
+  }, [products, categoryMap, brandMap]);
 
   // Handlers
   const handleAddVariant = (product: ProductCardProduct) => {
-    onAddVariant?.(product._id, product.name)
-  }
+    onAddVariant?.(product._id, product.name);
+  };
 
   // Render loading skeletons
   const renderSkeletons = () => (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card">
+        <div className="rounded-lg border bg-card" key={i}>
           <Skeleton className="aspect-4/3 w-full rounded-t-lg" />
-          <div className="p-3 space-y-2">
+          <div className="space-y-2 p-3">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3 w-1/2" />
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 
   // Render empty state
   const renderEmpty = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Package className="size-12 text-muted-foreground mb-4" />
-      <h3 className="text-lg font-medium">No products found</h3>
-      <p className="text-muted-foreground text-sm mt-1">
-        {search || categoryFilter !== 'all'
-          ? 'Try adjusting your filters'
-          : 'Products will appear here once added by administrators'}
+      <Package className="mb-4 size-12 text-muted-foreground" />
+      <h3 className="font-medium text-lg">No products found</h3>
+      <p className="mt-1 text-muted-foreground text-sm">
+        {search || categoryFilter !== "all"
+          ? "Try adjusting your filters"
+          : "Products will appear here once added by administrators"}
       </p>
     </div>
-  )
+  );
 
   // Show message if no organization
   if (clerkLoaded && !clerkOrg) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Package className="size-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">No organization selected</h3>
-        <p className="text-muted-foreground text-sm mt-1">
+        <Package className="mb-4 size-12 text-muted-foreground" />
+        <h3 className="font-medium text-lg">No organization selected</h3>
+        <p className="mt-1 text-muted-foreground text-sm">
           Please select or create an organization to browse products.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -146,7 +152,7 @@ export function ProductsBrowser({ onAddVariant }: ProductsBrowserProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Product Catalog</h1>
+          <h1 className="font-bold text-2xl">Product Catalog</h1>
           <p className="text-muted-foreground text-sm">
             Browse products and add them to your store as variants
           </p>
@@ -156,17 +162,17 @@ export function ProductsBrowser({ onAddVariant }: ProductsBrowserProps) {
       {/* Filters */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            type="search"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products..."
+            type="search"
+            value={search}
           />
         </div>
 
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+        <Select onValueChange={setCategoryFilter} value={categoryFilter}>
           <SelectTrigger>
             <SelectValue placeholder="All categories" />
           </SelectTrigger>
@@ -191,8 +197,8 @@ export function ProductsBrowser({ onAddVariant }: ProductsBrowserProps) {
           {productCards.map((product) => (
             <ProductCard
               key={product._id}
-              product={product}
               onAddVariant={onAddVariant ? handleAddVariant : undefined}
+              product={product}
             />
           ))}
         </div>
@@ -200,12 +206,13 @@ export function ProductsBrowser({ onAddVariant }: ProductsBrowserProps) {
 
       {/* Results count */}
       {!isLoading && productCards.length > 0 && (
-        <p className="text-sm text-muted-foreground text-center">
-          Showing {productCards.length} product{productCards.length !== 1 ? 's' : ''}
+        <p className="text-center text-muted-foreground text-sm">
+          Showing {productCards.length} product
+          {productCards.length !== 1 ? "s" : ""}
         </p>
       )}
     </section>
-  )
+  );
 }
 
-export default ProductsBrowser
+export default ProductsBrowser;

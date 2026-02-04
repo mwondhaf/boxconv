@@ -1,7 +1,7 @@
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { getPublicUrl } from "./r2";
-import type { Id } from "./_generated/dataModel";
 
 // =============================================================================
 // HELPERS
@@ -10,10 +10,12 @@ import type { Id } from "./_generated/dataModel";
 /**
  * Add public URLs to a category object from its r2Key fields.
  */
-function getCategoryWithPublicUrls<T extends {
-  thumbnailR2Key?: string;
-  bannerR2Key?: string;
-}>(category: T): T & { thumbnailUrl?: string; bannerUrl?: string } {
+function getCategoryWithPublicUrls<
+  T extends {
+    thumbnailR2Key?: string;
+    bannerR2Key?: string;
+  },
+>(category: T): T & { thumbnailUrl?: string; bannerUrl?: string } {
   return {
     ...category,
     thumbnailUrl: category.thumbnailR2Key
@@ -174,7 +176,10 @@ export const listTree = query({
 
     // First pass: create map with empty children arrays and public URLs
     for (const cat of allCategories) {
-      categoryMap.set(cat._id, { ...getCategoryWithPublicUrls(cat), children: [] });
+      categoryMap.set(cat._id, {
+        ...getCategoryWithPublicUrls(cat),
+        children: [],
+      });
     }
 
     // Second pass: build tree

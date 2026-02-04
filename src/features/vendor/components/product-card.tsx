@@ -1,36 +1,35 @@
-'use client'
+"use client";
 
-import { Package, Plus } from 'lucide-react'
+import type { Id } from "convex/_generated/dataModel";
+import { Package, Plus } from "lucide-react";
 
-import type { Id } from 'convex/_generated/dataModel'
-
-import { Badge } from '~/components/ui/badge'
-import { Button } from '~/components/ui/button'
-import { Card } from '~/components/ui/card'
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 
 // =============================================================================
 // Types
 // =============================================================================
 
 export interface ProductCardProduct {
-  _id: Id<'products'>
-  name: string
-  slug: string
-  description?: string
-  isActive: boolean
+  _id: Id<"products">;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
   images?: Array<{
-    _id: Id<'productImages'>
-    url: string
-    alt?: string
-    isPrimary: boolean
-  }>
-  categoryName?: string
-  brandName?: string
+    _id: Id<"productImages">;
+    url: string;
+    alt?: string;
+    isPrimary: boolean;
+  }>;
+  categoryName?: string;
+  brandName?: string;
 }
 
 export interface ProductCardProps {
-  product: ProductCardProduct
-  onAddVariant?: (product: ProductCardProduct) => void
+  product: ProductCardProduct;
+  onAddVariant?: (product: ProductCardProduct) => void;
 }
 
 // =============================================================================
@@ -38,8 +37,10 @@ export interface ProductCardProps {
 // =============================================================================
 
 export function ProductCard({ product, onAddVariant }: ProductCardProps) {
-  const images = product.images
-  const primaryImage = images ? (images.find((i) => i.isPrimary) || images[0] || null) : null
+  const images = product.images;
+  const primaryImage = images
+    ? images.find((i) => i.isPrimary) || images[0] || null
+    : null;
 
   return (
     <Card className="overflow-hidden py-0">
@@ -48,7 +49,7 @@ export function ProductCard({ product, onAddVariant }: ProductCardProps) {
         {primaryImage ? (
           <div
             aria-label={primaryImage.alt || product.name}
-            className="aspect-4/3 w-full rounded-t-lg bg-center bg-contain bg-no-repeat bg-muted"
+            className="aspect-4/3 w-full rounded-t-lg bg-center bg-contain bg-muted bg-no-repeat"
             role="img"
             style={{
               backgroundImage: `url(${primaryImage.url})`,
@@ -58,7 +59,7 @@ export function ProductCard({ product, onAddVariant }: ProductCardProps) {
             <span className="sr-only">{primaryImage.alt || product.name}</span>
           </div>
         ) : (
-          <div className="aspect-4/3 w-full bg-muted flex items-center justify-center rounded-t-lg">
+          <div className="flex aspect-4/3 w-full items-center justify-center rounded-t-lg bg-muted">
             <Package className="size-8 text-muted-foreground" />
           </div>
         )}
@@ -67,25 +68,27 @@ export function ProductCard({ product, onAddVariant }: ProductCardProps) {
         <div className="px-3 py-2">
           <div className="mb-1 flex items-center justify-between gap-2">
             <h3
-              className="min-w-0 truncate text-sm font-medium"
+              className="min-w-0 truncate font-medium text-sm"
               title={product.name}
             >
               {product.name}
             </h3>
             <Badge
-              variant={product.isActive ? 'default' : 'secondary'}
-              className="shrink-0 text-[10px] px-1.5 py-0"
+              className="shrink-0 px-1.5 py-0 text-[10px]"
+              variant={product.isActive ? "default" : "secondary"}
             >
-              {product.isActive ? 'Active' : 'Inactive'}
+              {product.isActive ? "Active" : "Inactive"}
             </Badge>
           </div>
           {(product.categoryName || product.brandName) && (
-            <div className="text-xs text-muted-foreground truncate">
-              {[product.categoryName, product.brandName].filter(Boolean).join(' · ')}
+            <div className="truncate text-muted-foreground text-xs">
+              {[product.categoryName, product.brandName]
+                .filter(Boolean)
+                .join(" · ")}
             </div>
           )}
           {product.description && (
-            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+            <p className="mt-1 line-clamp-2 text-muted-foreground text-xs">
               {product.description}
             </p>
           )}
@@ -95,20 +98,20 @@ export function ProductCard({ product, onAddVariant }: ProductCardProps) {
         {onAddVariant && (
           <div className="px-3 pb-3">
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
               className="w-full"
               onClick={() => onAddVariant(product)}
+              size="sm"
+              type="button"
+              variant="outline"
             >
-              <Plus className="size-3.5 mr-1.5" />
+              <Plus className="mr-1.5 size-3.5" />
               Add to my store
             </Button>
           </div>
         )}
       </div>
     </Card>
-  )
+  );
 }
 
-export default ProductCard
+export default ProductCard;

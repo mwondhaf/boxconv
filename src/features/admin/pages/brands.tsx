@@ -1,17 +1,10 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { Plus, Tag } from 'lucide-react'
-import { useMutation, useQuery } from 'convex/react'
-import { toast } from 'sonner'
-
-import { api } from 'convex/_generated/api'
-import { BrandsTable } from '../components/brands-table'
-import { BrandFormSheet } from '../components/brand-form-sheet'
-
-import type { Brand } from '../components/brands-table'
-import type { BrandData } from '../components/brand-form-sheet'
-import { Button } from '~/components/ui/button'
+import { api } from "convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
+import { Plus, Tag } from "lucide-react";
+import * as React from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,15 +14,20 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '~/components/ui/alert-dialog'
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
+import type { BrandData } from "../components/brand-form-sheet";
+import { BrandFormSheet } from "../components/brand-form-sheet";
+import type { Brand } from "../components/brands-table";
+import { BrandsTable } from "../components/brands-table";
 
 // =============================================================================
 // Types
 // =============================================================================
 
 interface DeleteConfirmState {
-  open: boolean
-  brand: Brand | null
+  open: boolean;
+  brand: Brand | null;
 }
 
 // =============================================================================
@@ -39,26 +37,26 @@ interface DeleteConfirmState {
 export function AdminBrandsPage() {
   // State
   const [formSheet, setFormSheet] = React.useState<{
-    open: boolean
-    brand: BrandData | null
-  }>({ open: false, brand: null })
+    open: boolean;
+    brand: BrandData | null;
+  }>({ open: false, brand: null });
   const [deleteConfirm, setDeleteConfirm] = React.useState<DeleteConfirmState>({
     open: false,
     brand: null,
-  })
+  });
 
   // Fetch brands from Convex with product counts
-  const brandsResult = useQuery(api.brands.listWithProductCounts, {})
-  const brands = brandsResult ?? []
-  const isLoading = brandsResult === undefined
+  const brandsResult = useQuery(api.brands.listWithProductCounts, {});
+  const brands = brandsResult ?? [];
+  const isLoading = brandsResult === undefined;
 
   // Mutations
-  const deleteBrand = useMutation(api.brands.remove)
+  const deleteBrand = useMutation(api.brands.remove);
 
   // Handlers
   const handleAddBrand = () => {
-    setFormSheet({ open: true, brand: null })
-  }
+    setFormSheet({ open: true, brand: null });
+  };
 
   const handleEditBrand = (brand: Brand) => {
     setFormSheet({
@@ -69,44 +67,42 @@ export function AdminBrandsPage() {
         slug: brand.slug,
         description: brand.description,
       },
-    })
-  }
+    });
+  };
 
   const handleDeleteClick = (brand: Brand) => {
-    setDeleteConfirm({ open: true, brand })
-  }
+    setDeleteConfirm({ open: true, brand });
+  };
 
   const handleConfirmDelete = async () => {
-    if (!deleteConfirm.brand) return
+    if (!deleteConfirm.brand) return;
 
     try {
-      await deleteBrand({ id: deleteConfirm.brand._id })
-      toast.success(`"${deleteConfirm.brand.name}" has been deleted`)
-      setDeleteConfirm({ open: false, brand: null })
+      await deleteBrand({ id: deleteConfirm.brand._id });
+      toast.success(`"${deleteConfirm.brand.name}" has been deleted`);
+      setDeleteConfirm({ open: false, brand: null });
     } catch (error) {
-      console.error('Failed to delete brand:', error)
+      console.error("Failed to delete brand:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Failed to delete brand'
-      )
+        error instanceof Error ? error.message : "Failed to delete brand"
+      );
     }
-  }
+  };
 
   const handleFormSuccess = () => {
     toast.success(
       formSheet.brand
-        ? 'Brand updated successfully'
-        : 'Brand created successfully'
-    )
-  }
+        ? "Brand updated successfully"
+        : "Brand created successfully"
+    );
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <h1 className="flex items-center gap-2 font-bold text-2xl text-foreground">
             <Tag className="size-6" />
             Brands
           </h1>
@@ -115,7 +111,7 @@ export function AdminBrandsPage() {
           </p>
         </div>
         <Button onClick={handleAddBrand}>
-          <Plus className="size-4 mr-1.5" />
+          <Plus className="mr-1.5 size-4" />
           Add Brand
         </Button>
       </div>
@@ -124,22 +120,22 @@ export function AdminBrandsPage() {
       <BrandsTable
         data={brands}
         isLoading={isLoading}
-        onEdit={handleEditBrand}
         onDelete={handleDeleteClick}
+        onEdit={handleEditBrand}
       />
 
       {/* Brand Form Sheet */}
       <BrandFormSheet
-        open={formSheet.open}
-        onOpenChange={(open) => setFormSheet((prev) => ({ ...prev, open }))}
         brand={formSheet.brand}
+        onOpenChange={(open) => setFormSheet((prev) => ({ ...prev, open }))}
         onSuccess={handleFormSuccess}
+        open={formSheet.open}
       />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
-        open={deleteConfirm.open}
         onOpenChange={(open) => setDeleteConfirm((prev) => ({ ...prev, open }))}
+        open={deleteConfirm.open}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -149,8 +145,8 @@ export function AdminBrandsPage() {
               This action cannot be undone.
               {deleteConfirm.brand?.productCount &&
                 deleteConfirm.brand.productCount > 0 && (
-                  <span className="block mt-2 text-destructive font-medium">
-                    Warning: This brand has {deleteConfirm.brand.productCount}{' '}
+                  <span className="mt-2 block font-medium text-destructive">
+                    Warning: This brand has {deleteConfirm.brand.productCount}{" "}
                     associated products. You must remove the brand from those
                     products first.
                   </span>
@@ -160,8 +156,8 @@ export function AdminBrandsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDelete}
             >
               Delete
             </AlertDialogAction>
@@ -169,7 +165,7 @@ export function AdminBrandsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }
 
-export default AdminBrandsPage
+export default AdminBrandsPage;

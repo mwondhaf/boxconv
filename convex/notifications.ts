@@ -11,7 +11,7 @@
  */
 
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { pushNotifications, rateLimiter } from "./components";
 
 // =============================================================================
@@ -99,7 +99,10 @@ export const sendOrderStatusNotification = internalMutation({
     };
 
     const title = titleMap[args.status] || "Order Update";
-    const body = args.message || bodyMap[args.status] || `Order #${args.orderDisplayId} status: ${args.status}`;
+    const body =
+      args.message ||
+      bodyMap[args.status] ||
+      `Order #${args.orderDisplayId} status: ${args.status}`;
 
     try {
       await pushNotifications.sendPushNotification(ctx, {

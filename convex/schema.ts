@@ -1,119 +1,125 @@
-import { defineSchema, defineTable } from 'convex/server'
-import { v } from 'convex/values'
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 // ============================================================================
 // ENUMS (as unions)
 // ============================================================================
 
 const orderStatus = v.union(
-  v.literal('pending'),
-  v.literal('confirmed'),
-  v.literal('preparing'),
-  v.literal('ready_for_pickup'),
-  v.literal('out_for_delivery'),
-  v.literal('delivered'),
-  v.literal('completed'),
-  v.literal('cancelled'),
-  v.literal('canceled'),
-  v.literal('refunded')
-)
+  v.literal("pending"),
+  v.literal("confirmed"),
+  v.literal("preparing"),
+  v.literal("ready_for_pickup"),
+  v.literal("out_for_delivery"),
+  v.literal("delivered"),
+  v.literal("completed"),
+  v.literal("cancelled"),
+  v.literal("canceled"),
+  v.literal("refunded")
+);
 
 const fulfillmentStatus = v.union(
-  v.literal('not_fulfilled'),
-  v.literal('fulfilled'),
-  v.literal('shipped'),
-  v.literal('returned')
-)
+  v.literal("not_fulfilled"),
+  v.literal("fulfilled"),
+  v.literal("shipped"),
+  v.literal("returned")
+);
 
 const paymentStatus = v.union(
-  v.literal('awaiting'),
-  v.literal('captured'),
-  v.literal('refunded'),
-  v.literal('canceled')
-)
+  v.literal("awaiting"),
+  v.literal("captured"),
+  v.literal("refunded"),
+  v.literal("canceled")
+);
 
 const fulfillmentType = v.union(
-  v.literal('delivery'),
-  v.literal('pickup'),
-  v.literal('self_delivery')
-)
+  v.literal("delivery"),
+  v.literal("pickup"),
+  v.literal("self_delivery")
+);
 
 const customerAddressType = v.union(
-  v.literal('hotel'),
-  v.literal('apartment'),
-  v.literal('home'),
-  v.literal('office')
-)
+  v.literal("hotel"),
+  v.literal("apartment"),
+  v.literal("home"),
+  v.literal("office")
+);
 
 const parcelStatus = v.union(
-  v.literal('draft'),
-  v.literal('pending'),
-  v.literal('picked_up'),
-  v.literal('in_transit'),
-  v.literal('delivered'),
-  v.literal('canceled'),
-  v.literal('failed')
-)
+  v.literal("draft"),
+  v.literal("pending"),
+  v.literal("picked_up"),
+  v.literal("in_transit"),
+  v.literal("delivered"),
+  v.literal("canceled"),
+  v.literal("failed")
+);
 
 const parcelSizeCategory = v.union(
-  v.literal('small'),
-  v.literal('medium'),
-  v.literal('large'),
-  v.literal('extra_large')
-)
+  v.literal("small"),
+  v.literal("medium"),
+  v.literal("large"),
+  v.literal("extra_large")
+);
 
 const parcelPaymentStatus = v.union(
-  v.literal('pending'),
-  v.literal('paid'),
-  v.literal('refunded')
-)
+  v.literal("pending"),
+  v.literal("paid"),
+  v.literal("refunded")
+);
 
 const riderStatus = v.union(
-  v.literal('offline'),
-  v.literal('online'),
-  v.literal('busy') // Currently on a delivery
-)
+  v.literal("offline"),
+  v.literal("online"),
+  v.literal("busy") // Currently on a delivery
+);
 
-const promotionType = v.union(v.literal('standard'), v.literal('buyget'))
+const promotionType = v.union(v.literal("standard"), v.literal("buyget"));
 
 const promotionStatus = v.union(
-  v.literal('draft'),
-  v.literal('active'),
-  v.literal('inactive'),
-  v.literal('expired')
-)
+  v.literal("draft"),
+  v.literal("active"),
+  v.literal("inactive"),
+  v.literal("expired")
+);
 
-const campaignBudgetType = v.union(v.literal('spend'), v.literal('usage'))
+const campaignBudgetType = v.union(v.literal("spend"), v.literal("usage"));
 
-const applicationMethodType = v.union(v.literal('fixed'), v.literal('percentage'))
+const applicationMethodType = v.union(
+  v.literal("fixed"),
+  v.literal("percentage")
+);
 
 const applicationMethodTargetType = v.union(
-  v.literal('items'),
-  v.literal('shipping'),
-  v.literal('order')
-)
+  v.literal("items"),
+  v.literal("shipping"),
+  v.literal("order")
+);
 
-const applicationMethodAllocation = v.union(v.literal('each'), v.literal('across'))
+const applicationMethodAllocation = v.union(
+  v.literal("each"),
+  v.literal("across")
+);
 
 const promotionRuleOperator = v.union(
-  v.literal('eq'),
-  v.literal('ne'),
-  v.literal('gt'),
-  v.literal('gte'),
-  v.literal('lt'),
-  v.literal('lte'),
-  v.literal('in')
-)
+  v.literal("eq"),
+  v.literal("ne"),
+  v.literal("gt"),
+  v.literal("gte"),
+  v.literal("lt"),
+  v.literal("lte"),
+  v.literal("in")
+);
 
 const promotionRuleAttribute = v.union(
-  v.literal('product_id'),
-  v.literal('product_category_id'),
-  v.literal('customer_id'),
-  v.literal('customer_group_id'),
-  v.literal('currency_code'),
-  v.literal('cart_total'),
-  v.literal('item_quantity')
-)
+  v.literal("product_id"),
+  v.literal("product_category_id"),
+  v.literal("customer_id"),
+  v.literal("customer_group_id"),
+  v.literal("currency_code"),
+  v.literal("cart_total"),
+  v.literal("item_quantity")
+);
 
 // ============================================================================
 // SCHEMA DEFINITION
@@ -139,10 +145,10 @@ export default defineSchema({
   organizationCategories: defineTable({
     name: v.string(),
     slug: v.string(),
-    parentId: v.optional(v.id('organizationCategories')),
+    parentId: v.optional(v.id("organizationCategories")),
   })
-    .index('by_slug', ['slug'])
-    .index('by_parent', ['parentId']),
+    .index("by_slug", ["slug"])
+    .index("by_parent", ["parentId"]),
 
   // Organizations (Vendors/Stores)
   // NOTE: This table stores business-specific data not available in Clerk.
@@ -164,7 +170,7 @@ export default defineSchema({
     lng: v.optional(v.number()),
     geohash: v.optional(v.string()), // For geospatial queries
     // Category (business-specific)
-    categoryId: v.optional(v.id('organizationCategories')),
+    categoryId: v.optional(v.id("organizationCategories")),
     // Operating Hours (business-specific)
     openingTime: v.optional(v.string()), // "08:00"
     closingTime: v.optional(v.string()), // "22:00"
@@ -174,10 +180,10 @@ export default defineSchema({
     // Metadata
     metadata: v.optional(v.any()),
   })
-    .index('by_clerkOrgId', ['clerkOrgId'])
-    .index('by_slug', ['slug'])
-    .index('by_category', ['categoryId'])
-    .index('by_geohash', ['geohash']),
+    .index("by_clerkOrgId", ["clerkOrgId"])
+    .index("by_slug", ["slug"])
+    .index("by_category", ["categoryId"])
+    .index("by_geohash", ["geohash"]),
 
   // ==========================================================================
   // PRODUCT CATALOG
@@ -188,57 +194,57 @@ export default defineSchema({
     name: v.string(),
     slug: v.string(),
     description: v.optional(v.string()),
-    parentId: v.optional(v.id('categories')),
+    parentId: v.optional(v.id("categories")),
     thumbnailR2Key: v.optional(v.string()), // R2 object key for thumbnail
     bannerR2Key: v.optional(v.string()), // R2 object key for banner
     isActive: v.boolean(),
   })
-    .index('by_slug', ['slug'])
-    .index('by_parent', ['parentId'])
-    .index('by_active', ['isActive']),
+    .index("by_slug", ["slug"])
+    .index("by_parent", ["parentId"])
+    .index("by_active", ["isActive"]),
 
   // Brands
   brands: defineTable({
     name: v.string(),
     slug: v.string(),
     description: v.optional(v.string()),
-  }).index('by_slug', ['slug']),
+  }).index("by_slug", ["slug"]),
 
   // Master Products (Admin managed)
   products: defineTable({
     name: v.string(),
     slug: v.string(),
     description: v.optional(v.string()),
-    brandId: v.optional(v.id('brands')),
-    categoryId: v.id('categories'),
+    brandId: v.optional(v.id("brands")),
+    categoryId: v.id("categories"),
     isActive: v.boolean(),
   })
-    .index('by_slug', ['slug'])
-    .index('by_category', ['categoryId'])
-    .index('by_brand', ['brandId'])
-    .index('by_active', ['isActive'])
-    .searchIndex('search_name', { searchField: 'name' }),
+    .index("by_slug", ["slug"])
+    .index("by_category", ["categoryId"])
+    .index("by_brand", ["brandId"])
+    .index("by_active", ["isActive"])
+    .searchIndex("search_name", { searchField: "name" }),
 
   // Product Images
   productImages: defineTable({
-    productId: v.id('products'),
+    productId: v.id("products"),
     r2Key: v.string(), // R2 object key - public URL generated from this
     alt: v.optional(v.string()),
     isPrimary: v.boolean(),
   })
-    .index('by_product', ['productId'])
-    .index('by_primary', ['productId', 'isPrimary']),
+    .index("by_product", ["productId"])
+    .index("by_primary", ["productId", "isPrimary"]),
 
   // Product Tags
   productTags: defineTable({
-    productId: v.id('products'),
+    productId: v.id("products"),
     value: v.string(),
-  }).index('by_product', ['productId']),
+  }).index("by_product", ["productId"]),
 
   // Product Variants (Vendor-specific listings)
   productVariants: defineTable({
-    productId: v.id('products'),
-    organizationId: v.id('organizations'),
+    productId: v.id("products"),
+    organizationId: v.id("organizations"),
     sku: v.string(),
     unit: v.string(), // "kg", "piece", "500ml"
     weightGrams: v.optional(v.number()),
@@ -247,29 +253,29 @@ export default defineSchema({
     isAvailable: v.boolean(),
     isApproved: v.boolean(),
   })
-    .index('by_product', ['productId'])
-    .index('by_organization', ['organizationId'])
-    .index('by_org_product', ['organizationId', 'productId'])
-    .index('by_org_sku', ['organizationId', 'sku'])
-    .index('by_available', ['organizationId', 'isAvailable']),
+    .index("by_product", ["productId"])
+    .index("by_organization", ["organizationId"])
+    .index("by_org_product", ["organizationId", "productId"])
+    .index("by_org_sku", ["organizationId", "sku"])
+    .index("by_available", ["organizationId", "isAvailable"]),
 
   // Price Sets (container for variant pricing)
   priceSets: defineTable({
-    variantId: v.id('productVariants'),
-    organizationId: v.id('organizations'),
+    variantId: v.id("productVariants"),
+    organizationId: v.id("organizations"),
   })
-    .index('by_variant', ['variantId'])
-    .index('by_organization', ['organizationId']),
+    .index("by_variant", ["variantId"])
+    .index("by_organization", ["organizationId"]),
 
   // Money Amounts (actual prices with tiered pricing support)
   moneyAmounts: defineTable({
-    priceSetId: v.id('priceSets'),
+    priceSetId: v.id("priceSets"),
     currency: v.string(), // Default: 'UGX'
     amount: v.number(), // Regular price (in smallest unit)
     saleAmount: v.optional(v.number()), // Discounted price
     minQuantity: v.optional(v.number()), // Tiered pricing
     maxQuantity: v.optional(v.number()),
-  }).index('by_priceSet', ['priceSetId']),
+  }).index("by_priceSet", ["priceSetId"]),
 
   // ==========================================================================
   // CUSTOMERS
@@ -295,16 +301,16 @@ export default defineSchema({
     directions: v.optional(v.string()),
     isDefault: v.boolean(),
   })
-    .index('by_clerkId', ['clerkId'])
-    .index('by_default', ['clerkId', 'isDefault']),
+    .index("by_clerkId", ["clerkId"])
+    .index("by_default", ["clerkId", "isDefault"]),
 
   // Organization Customers (links customers to vendors)
   organizationCustomers: defineTable({
-    organizationId: v.id('organizations'),
+    organizationId: v.id("organizations"),
     clerkId: v.string(), // Clerk user ID
   })
-    .index('by_organization', ['organizationId'])
-    .index('by_clerkId', ['clerkId']),
+    .index("by_organization", ["organizationId"])
+    .index("by_clerkId", ["clerkId"]),
 
   // ==========================================================================
   // ORDERS & FULFILLMENT
@@ -318,8 +324,8 @@ export default defineSchema({
     paymentStatus,
     fulfillmentType,
     customerClerkId: v.string(), // Clerk user ID of customer
-    organizationId: v.id('organizations'),
-    deliveryAddressId: v.optional(v.id('customerAddresses')),
+    organizationId: v.id("organizations"),
+    deliveryAddressId: v.optional(v.id("customerAddresses")),
     // External delivery info
     deliveryQuoteId: v.optional(v.string()),
     riderId: v.optional(v.string()), // External rider ID
@@ -332,27 +338,27 @@ export default defineSchema({
     discountTotal: v.number(),
     deliveryTotal: v.number(),
   })
-    .index('by_customerClerkId', ['customerClerkId'])
-    .index('by_organization', ['organizationId'])
-    .index('by_status', ['status'])
-    .index('by_fulfillmentStatus', ['fulfillmentStatus'])
-    .index('by_displayId', ['displayId']),
+    .index("by_customerClerkId", ["customerClerkId"])
+    .index("by_organization", ["organizationId"])
+    .index("by_status", ["status"])
+    .index("by_fulfillmentStatus", ["fulfillmentStatus"])
+    .index("by_displayId", ["displayId"]),
 
   // Order Items
   orderItems: defineTable({
-    orderId: v.id('orders'),
-    productId: v.id('products'),
-    variantId: v.id('productVariants'),
+    orderId: v.id("orders"),
+    productId: v.id("products"),
+    variantId: v.id("productVariants"),
     title: v.string(), // Snapshot of product name
     quantity: v.number(),
     unitPrice: v.number(),
     subtotal: v.number(),
     taxTotal: v.number(),
-  }).index('by_order', ['orderId']),
+  }).index("by_order", ["orderId"]),
 
   // Order Events (audit log)
   orderEvents: defineTable({
-    orderId: v.id('orders'),
+    orderId: v.id("orders"),
     clerkId: v.string(), // Actor (Clerk user ID)
     eventType: v.string(), // 'created', 'status_changed', 'payment_captured', etc.
     fromOrderStatus: v.optional(v.string()),
@@ -367,11 +373,11 @@ export default defineSchema({
     snapshotTaxTotal: v.number(),
     snapshotDiscountTotal: v.number(),
     snapshotDeliveryTotal: v.number(),
-  }).index('by_order', ['orderId']),
+  }).index("by_order", ["orderId"]),
 
   // Order Item Events (audit log for item changes)
   orderItemEvents: defineTable({
-    orderId: v.id('orders'),
+    orderId: v.id("orders"),
     orderItemId: v.string(), // Raw ID
     clerkId: v.string(), // Actor (Clerk user ID)
     eventType: v.string(), // 'add', 'exchange', 'remove'
@@ -382,7 +388,7 @@ export default defineSchema({
     snapshotUnitPrice: v.number(),
     snapshotSubtotal: v.number(),
     snapshotTaxTotal: v.number(),
-  }).index('by_order', ['orderId']),
+  }).index("by_order", ["orderId"]),
 
   // Rider Locations (for internal rider tracking)
   riderLocations: defineTable({
@@ -393,11 +399,11 @@ export default defineSchema({
     status: riderStatus,
     lastUpdatedAt: v.number(),
     // Current active order (if any)
-    activeOrderId: v.optional(v.id('orders')),
+    activeOrderId: v.optional(v.id("orders")),
   })
-    .index('by_clerkId', ['clerkId'])
-    .index('by_status', ['status'])
-    .index('by_geohash', ['geohash']),
+    .index("by_clerkId", ["clerkId"])
+    .index("by_status", ["status"])
+    .index("by_geohash", ["geohash"]),
 
   // ==========================================================================
   // PARCEL / P2P DELIVERY
@@ -452,19 +458,19 @@ export default defineSchema({
     cancelReason: v.optional(v.string()),
     metadata: v.optional(v.any()),
   })
-    .index('by_senderClerkId', ['senderClerkId'])
-    .index('by_status', ['status'])
-    .index('by_displayId', ['displayId']),
+    .index("by_senderClerkId", ["senderClerkId"])
+    .index("by_status", ["status"])
+    .index("by_displayId", ["displayId"]),
 
   // Parcel Events (audit log)
   parcelEvents: defineTable({
-    parcelId: v.id('parcels'),
+    parcelId: v.id("parcels"),
     eventType: v.string(), // 'created', 'status_changed', 'assigned', etc.
     status: v.optional(v.string()),
     description: v.optional(v.string()),
     clerkId: v.optional(v.string()), // Actor (Clerk user ID)
     metadata: v.optional(v.any()),
-  }).index('by_parcel', ['parcelId']),
+  }).index("by_parcel", ["parcelId"]),
 
   // ==========================================================================
   // PROMOTIONS SYSTEM
@@ -477,20 +483,20 @@ export default defineSchema({
     campaignIdentifier: v.optional(v.string()), // External tracking
     startsAt: v.optional(v.number()),
     endsAt: v.optional(v.number()),
-    organizationId: v.optional(v.id('organizations')), // null = platform-wide
+    organizationId: v.optional(v.id("organizations")), // null = platform-wide
     deletedAt: v.optional(v.number()), // Soft delete
   })
-    .index('by_organization', ['organizationId'])
-    .index('by_active', ['startsAt', 'endsAt']),
+    .index("by_organization", ["organizationId"])
+    .index("by_active", ["startsAt", "endsAt"]),
 
   // Campaign Budgets
   campaignBudgets: defineTable({
-    campaignId: v.id('campaigns'),
+    campaignId: v.id("campaigns"),
     type: campaignBudgetType,
     currencyCode: v.string(), // Default: 'UGX'
     limitAmount: v.optional(v.number()),
     usedAmount: v.number(), // Default: 0
-  }).index('by_campaign', ['campaignId']),
+  }).index("by_campaign", ["campaignId"]),
 
   // Promotions
   promotions: defineTable({
@@ -499,8 +505,8 @@ export default defineSchema({
     status: promotionStatus,
     isAutomatic: v.boolean(),
     isTaxInclusive: v.boolean(),
-    campaignId: v.optional(v.id('campaigns')),
-    organizationId: v.optional(v.id('organizations')), // null = platform-wide
+    campaignId: v.optional(v.id("campaigns")),
+    organizationId: v.optional(v.id("organizations")), // null = platform-wide
     startsAt: v.optional(v.number()),
     endsAt: v.optional(v.number()),
     usageLimit: v.optional(v.number()),
@@ -508,14 +514,14 @@ export default defineSchema({
     customerUsageLimit: v.optional(v.number()),
     deletedAt: v.optional(v.number()), // Soft delete
   })
-    .index('by_code', ['code'])
-    .index('by_organization', ['organizationId'])
-    .index('by_status', ['status'])
-    .index('by_campaign', ['campaignId']),
+    .index("by_code", ["code"])
+    .index("by_organization", ["organizationId"])
+    .index("by_status", ["status"])
+    .index("by_campaign", ["campaignId"]),
 
   // Application Methods (how discounts are applied)
   applicationMethods: defineTable({
-    promotionId: v.id('promotions'),
+    promotionId: v.id("promotions"),
     type: applicationMethodType,
     targetType: applicationMethodTargetType,
     allocation: applicationMethodAllocation,
@@ -524,42 +530,42 @@ export default defineSchema({
     maxQuantity: v.optional(v.number()),
     buyRulesMinQuantity: v.optional(v.number()), // Buy X
     applyToQuantity: v.optional(v.number()), // Get Y free
-  }).index('by_promotion', ['promotionId']),
+  }).index("by_promotion", ["promotionId"]),
 
   // Promotion Rules
   promotionRules: defineTable({
-    promotionId: v.id('promotions'),
+    promotionId: v.id("promotions"),
     description: v.optional(v.string()),
     attribute: promotionRuleAttribute,
     operator: promotionRuleOperator,
-  }).index('by_promotion', ['promotionId']),
+  }).index("by_promotion", ["promotionId"]),
 
   // Promotion Rule Values
   promotionRuleValues: defineTable({
-    promotionRuleId: v.id('promotionRules'),
+    promotionRuleId: v.id("promotionRules"),
     value: v.string(),
-  }).index('by_rule', ['promotionRuleId']),
+  }).index("by_rule", ["promotionRuleId"]),
 
   // Promotion Usage (tracks when promotions are used)
   promotionUsages: defineTable({
-    promotionId: v.id('promotions'),
-    orderId: v.id('orders'),
+    promotionId: v.id("promotions"),
+    orderId: v.id("orders"),
     customerClerkId: v.string(), // Clerk user ID of customer
     discountAmount: v.number(),
     currencyCode: v.string(), // Default: 'UGX'
   })
-    .index('by_promotion', ['promotionId'])
-    .index('by_order', ['orderId'])
-    .index('by_customerClerkId', ['customerClerkId']),
+    .index("by_promotion", ["promotionId"])
+    .index("by_order", ["orderId"])
+    .index("by_customerClerkId", ["customerClerkId"]),
 
   // Campaign Budget Usage
   campaignBudgetUsages: defineTable({
-    campaignBudgetId: v.id('campaignBudgets'),
-    promotionId: v.id('promotions'),
+    campaignBudgetId: v.id("campaignBudgets"),
+    promotionId: v.id("promotions"),
     amount: v.number(),
   })
-    .index('by_budget', ['campaignBudgetId'])
-    .index('by_promotion', ['promotionId']),
+    .index("by_budget", ["campaignBudgetId"])
+    .index("by_promotion", ["promotionId"]),
 
   // ==========================================================================
   // CART (Ephemeral - consider Redis/session in production)
@@ -569,22 +575,22 @@ export default defineSchema({
   carts: defineTable({
     clerkId: v.optional(v.string()), // Clerk user ID (guest carts have no user)
     sessionId: v.optional(v.string()), // For guest carts
-    organizationId: v.id('organizations'),
+    organizationId: v.id("organizations"),
     currencyCode: v.string(), // Default: 'UGX'
     expiresAt: v.number(), // Cart expiration timestamp
   })
-    .index('by_clerkId', ['clerkId'])
-    .index('by_session', ['sessionId'])
-    .index('by_organization', ['organizationId']),
+    .index("by_clerkId", ["clerkId"])
+    .index("by_session", ["sessionId"])
+    .index("by_organization", ["organizationId"]),
 
   // Cart Items
   cartItems: defineTable({
-    cartId: v.id('carts'),
-    variantId: v.id('productVariants'),
+    cartId: v.id("carts"),
+    variantId: v.id("productVariants"),
     quantity: v.number(),
   })
-    .index('by_cart', ['cartId'])
-    .index('by_variant', ['variantId']),
+    .index("by_cart", ["cartId"])
+    .index("by_variant", ["variantId"]),
 
   // ==========================================================================
   // COUNTERS (for display IDs)
@@ -593,5 +599,5 @@ export default defineSchema({
   counters: defineTable({
     name: v.string(), // 'orders', 'parcels', etc.
     value: v.number(),
-  }).index('by_name', ['name']),
-})
+  }).index("by_name", ["name"]),
+});

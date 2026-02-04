@@ -1,25 +1,25 @@
-import { createContext, useContext, type ReactNode } from 'react'
-import { createContextualCan } from '@casl/react'
-import { useAbility } from '~/shared/stores/ability-store'
-import type { AppAbility } from '~/shared/lib/ability'
+import { createContextualCan } from "@casl/react";
+import { createContext, type ReactNode, useContext } from "react";
+import type { AppAbility } from "~/shared/lib/ability";
+import { useAbility } from "~/shared/stores/ability-store";
 
 // Create the CASL context
-export const AbilityContext = createContext<AppAbility>(undefined!)
+export const AbilityContext = createContext<AppAbility>(undefined!);
 
 // Create the Can component bound to our ability type
-export const Can = createContextualCan(AbilityContext.Consumer)
+export const Can = createContextualCan(AbilityContext.Consumer);
 
 // Hook to get ability from context (alternative to zustand store)
 export function useAbilityContext(): AppAbility {
-  const ability = useContext(AbilityContext)
+  const ability = useContext(AbilityContext);
   if (!ability) {
-    throw new Error('useAbilityContext must be used within AbilityProvider')
+    throw new Error("useAbilityContext must be used within AbilityProvider");
   }
-  return ability
+  return ability;
 }
 
 interface AbilityProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 /**
@@ -45,11 +45,11 @@ interface AbilityProviderProps {
  * ```
  */
 export function AbilityProvider({ children }: AbilityProviderProps) {
-  const ability = useAbility()
+  const ability = useAbility();
 
   return (
     <AbilityContext.Provider value={ability}>
       {children}
     </AbilityContext.Provider>
-  )
+  );
 }

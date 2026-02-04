@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet } from "@tanstack/react-router";
 import {
   Bike,
   Boxes,
@@ -14,9 +14,9 @@ import {
   ShoppingCart,
   Tag,
   Users,
-} from 'lucide-react'
+} from "lucide-react";
 
-import type { NavMainItem } from '~/components/sidebar'
+import type { NavMainItem } from "~/components/sidebar";
 import {
   AppSidebar,
   SidebarInset,
@@ -25,8 +25,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from '~/components/sidebar'
-import { Separator } from '~/components/ui/separator'
+} from "~/components/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,79 +33,80 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '~/components/ui/breadcrumb'
-import { useSyncAbility } from '~/shared/hooks/use-sync-ability'
+} from "~/components/ui/breadcrumb";
+import { Separator } from "~/components/ui/separator";
+import { useSyncAbility } from "~/shared/hooks/use-sync-ability";
 
 /**
  * Admin navigation items - platform admins have full access
  */
 const adminNavItems: Array<NavMainItem> = [
   {
-    title: 'Dashboard',
-    url: '/a',
+    title: "Dashboard",
+    url: "/a",
     icon: LayoutDashboard,
   },
   {
-    title: 'Orders',
-    url: '/a/orders',
+    title: "Orders",
+    url: "/a/orders",
     icon: ShoppingCart,
   },
   {
-    title: 'Parcels',
-    url: '/a/parcels',
+    title: "Parcels",
+    url: "/a/parcels",
     icon: PackageSearch,
   },
   {
-    title: 'Riders',
-    url: '/a/riders',
+    title: "Riders",
+    url: "/a/riders",
     icon: Bike,
   },
   {
-    title: 'Organizations',
-    url: '/a/organizations',
+    title: "Organizations",
+    url: "/a/organizations",
     icon: Network,
   },
   {
-    title: 'Vendors',
-    url: '/a/vendors',
+    title: "Vendors",
+    url: "/a/vendors",
     icon: Building2,
   },
   {
-    title: 'Customers',
-    url: '/a/customers',
+    title: "Customers",
+    url: "/a/customers",
     icon: Users,
   },
   {
-    title: 'Products',
-    url: '/a/products',
+    title: "Products",
+    url: "/a/products",
     icon: Package,
   },
   {
-    title: 'Variants',
-    url: '/a/variants',
+    title: "Variants",
+    url: "/a/variants",
     icon: Boxes,
   },
   {
-    title: 'Categories',
-    url: '/a/categories',
+    title: "Categories",
+    url: "/a/categories",
     icon: FolderTree,
   },
   {
-    title: 'Brands',
-    url: '/a/brands',
+    title: "Brands",
+    url: "/a/brands",
     icon: Tag,
   },
   {
-    title: 'Promotions',
-    url: '/a/promotions',
+    title: "Promotions",
+    url: "/a/promotions",
     icon: Percent,
   },
   {
-    title: 'Settings',
-    url: '/a/settings',
+    title: "Settings",
+    url: "/a/settings",
     icon: Settings,
   },
-]
+];
 
 /**
  * Admin header component for the sidebar
@@ -115,45 +115,48 @@ function AdminHeader() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton size="lg" className="cursor-default hover:bg-transparent">
-          <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+        <SidebarMenuButton
+          className="cursor-default hover:bg-transparent"
+          size="lg"
+        >
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Shield className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">BoxKuBox</span>
-            <span className="truncate text-xs text-muted-foreground">Admin Panel</span>
+            <span className="truncate text-muted-foreground text-xs">
+              Admin Panel
+            </span>
           </div>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
 
 export function AdminLayout() {
   // Sync ability store with Clerk auth context
-  useSyncAbility()
+  useSyncAbility();
 
   return (
     <SidebarProvider>
       <AppSidebar
+        headerContent={<AdminHeader />}
         navItems={adminNavItems}
         navLabel="Platform"
-        headerContent={<AdminHeader />}
       />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
-              orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
+              orientation="vertical"
             />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/a">
-                    Admin Dashboard
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/a">Admin Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -168,5 +171,5 @@ export function AdminLayout() {
         </main>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

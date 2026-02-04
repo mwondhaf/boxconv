@@ -1,26 +1,25 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { DollarSign, Loader2, Package, Tag } from 'lucide-react'
-import { useForm } from '@tanstack/react-form'
-import { useMutation, useQuery } from 'convex/react'
-import slugify from 'slugify'
-import { z } from 'zod'
-import { toast } from 'sonner'
-
-import { api } from 'convex/_generated/api'
-
-import { useProductImages } from '../hooks/use-catalog'
-import { ProductImageUpload } from './product-image-upload'
-
-import type { Id } from 'convex/_generated/dataModel'
-
-import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
-import { Textarea } from '~/components/ui/textarea'
-import { Switch } from '~/components/ui/switch'
-import { Separator } from '~/components/ui/separator'
+import { useForm } from "@tanstack/react-form";
+import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
+import { DollarSign, Loader2, Package, Tag } from "lucide-react";
+import * as React from "react";
+import slugify from "slugify";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -28,35 +27,32 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from '~/components/ui/sheet'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select'
+} from "~/components/ui/sheet";
+import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
+import { useProductImages } from "../hooks/use-catalog";
+import { ProductImageUpload } from "./product-image-upload";
 
 // =============================================================================
 // Types
 // =============================================================================
 
 export interface ProductData {
-  _id: Id<'products'>
-  name: string
-  slug: string
-  description?: string
-  brandId?: Id<'brands'>
-  categoryId: Id<'categories'>
-  isActive: boolean
-  tags?: Array<string>
+  _id: Id<"products">;
+  name: string;
+  slug: string;
+  description?: string;
+  brandId?: Id<"brands">;
+  categoryId: Id<"categories">;
+  isActive: boolean;
+  tags?: Array<string>;
 }
 
 export interface ProductFormSheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  product: ProductData | null
-  onSuccess?: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  product: ProductData | null;
+  onSuccess?: () => void;
 }
 
 // =============================================================================
@@ -64,29 +60,29 @@ export interface ProductFormSheetProps {
 // =============================================================================
 
 const productSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, "Name is required"),
   description: z.string(),
   brandId: z.string(),
-  categoryId: z.string().min(1, 'Category is required'),
+  categoryId: z.string().min(1, "Category is required"),
   isActive: z.boolean(),
   tags: z.string(),
-})
+});
 
 // =============================================================================
 // Helpers
 // =============================================================================
 
 function generateSlug(name: string): string {
-  return slugify(name, { lower: true, strict: true })
+  return slugify(name, { lower: true, strict: true });
 }
 
 function getErrorMessage(error: unknown): string | undefined {
-  if (!error) return undefined
-  if (typeof error === 'string') return error
-  if (typeof error === 'object' && 'message' in error) {
-    return (error as { message: string }).message
+  if (!error) return undefined;
+  if (typeof error === "string") return error;
+  if (typeof error === "object" && "message" in error) {
+    return (error as { message: string }).message;
   }
-  return String(error)
+  return String(error);
 }
 
 // =============================================================================
@@ -99,47 +95,51 @@ export function ProductFormSheet({
   product,
   onSuccess,
 }: ProductFormSheetProps) {
-  const isEditing = !!product
+  const isEditing = !!product;
 
   // Queries
-  const categories = useQuery(api.categories.list, { isActive: undefined })
-  const brands = useQuery(api.brands.list, {})
-  const productImages = useProductImages(product?._id)
+  const categories = useQuery(api.categories.list, { isActive: undefined });
+  const brands = useQuery(api.brands.list, {});
+  const productImages = useProductImages(product?._id);
 
   // Mutations
-  const createProduct = useMutation(api.products.create)
-  const updateProduct = useMutation(api.products.update)
+  const createProduct = useMutation(api.products.create);
+  const updateProduct = useMutation(api.products.update);
 
-  const [serverError, setServerError] = React.useState<string | null>(null)
+  const [serverError, setServerError] = React.useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
-      name: product?.name ?? '',
-      description: product?.description ?? '',
-      brandId: product?.brandId ? product.brandId.toString() : '',
-      categoryId: product ? product.categoryId.toString() : '',
+      name: product?.name ?? "",
+      description: product?.description ?? "",
+      brandId: product?.brandId ? product.brandId.toString() : "",
+      categoryId: product ? product.categoryId.toString() : "",
       isActive: product?.isActive ?? true,
-      tags: product?.tags ? product.tags.join(', ') : '',
+      tags: product?.tags ? product.tags.join(", ") : "",
     },
     validators: {
       onSubmit: ({ value }) => {
-        const result = productSchema.safeParse(value)
+        const result = productSchema.safeParse(value);
         if (!result.success) {
-          const issue = result.error.issues[0]
-          const fieldName = issue.path.length > 0 ? String(issue.path[0]) : 'name'
-          return { [fieldName]: issue.message }
+          const issue = result.error.issues[0];
+          const fieldName =
+            issue.path.length > 0 ? String(issue.path[0]) : "name";
+          return { [fieldName]: issue.message };
         }
-        return undefined
+        return undefined;
       },
     },
     onSubmit: async ({ value }) => {
-      setServerError(null)
+      setServerError(null);
 
       try {
-        const slug = generateSlug(value.name)
+        const slug = generateSlug(value.name);
         const tags = value.tags
-          ? value.tags.split(',').map((t) => t.trim()).filter(Boolean)
-          : undefined
+          ? value.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : undefined;
 
         if (product) {
           await updateProduct({
@@ -147,60 +147,65 @@ export function ProductFormSheet({
             name: value.name.trim(),
             slug,
             description: value.description.trim() || undefined,
-            brandId: value.brandId ? (value.brandId as Id<'brands'>) : undefined,
-            categoryId: value.categoryId as Id<'categories'>,
+            brandId: value.brandId
+              ? (value.brandId as Id<"brands">)
+              : undefined,
+            categoryId: value.categoryId as Id<"categories">,
             isActive: value.isActive,
             tags,
-          })
-          toast.success('Product updated')
+          });
+          toast.success("Product updated");
         } else {
           await createProduct({
             name: value.name.trim(),
             slug,
             description: value.description.trim() || undefined,
-            brandId: value.brandId ? (value.brandId as Id<'brands'>) : undefined,
-            categoryId: value.categoryId as Id<'categories'>,
+            brandId: value.brandId
+              ? (value.brandId as Id<"brands">)
+              : undefined,
+            categoryId: value.categoryId as Id<"categories">,
             isActive: value.isActive,
             tags,
-          })
-          toast.success('Product created')
+          });
+          toast.success("Product created");
         }
 
-        onSuccess?.()
-        handleOpenChange(false)
+        onSuccess?.();
+        handleOpenChange(false);
       } catch (error) {
-        console.error('Failed to save product:', error)
-        const message = error instanceof Error ? error.message : 'Failed to save product'
-        setServerError(message)
-        toast.error(message)
+        console.error("Failed to save product:", error);
+        const message =
+          error instanceof Error ? error.message : "Failed to save product";
+        setServerError(message);
+        toast.error(message);
       }
     },
-  })
+  });
 
   // Reset form when product changes
   React.useEffect(() => {
     if (product) {
-      form.setFieldValue('name', product.name)
-      form.setFieldValue('description', product.description ?? '')
-      form.setFieldValue('brandId', product.brandId?.toString() ?? '')
-      form.setFieldValue('categoryId', product.categoryId.toString())
-      form.setFieldValue('isActive', product.isActive)
-      form.setFieldValue('tags', product.tags ? product.tags.join(', ') : '')
+      form.setFieldValue("name", product.name);
+      form.setFieldValue("description", product.description ?? "");
+      form.setFieldValue("brandId", product.brandId?.toString() ?? "");
+      form.setFieldValue("categoryId", product.categoryId.toString());
+      form.setFieldValue("isActive", product.isActive);
+      form.setFieldValue("tags", product.tags ? product.tags.join(", ") : "");
     } else {
-      form.reset()
+      form.reset();
     }
-  }, [product])
+  }, [product]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
-      form.reset()
-      setServerError(null)
+      form.reset();
+      setServerError(null);
     }
-    onOpenChange(nextOpen)
-  }
+    onOpenChange(nextOpen);
+  };
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
+    <Sheet onOpenChange={handleOpenChange} open={open}>
       <SheetContent
         aria-describedby={undefined}
         className="flex flex-col sm:max-w-xl"
@@ -208,21 +213,21 @@ export function ProductFormSheet({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Package className="size-5" />
-            {isEditing ? `Edit ${product.name}` : 'Create product'}
+            {isEditing ? `Edit ${product.name}` : "Create product"}
           </SheetTitle>
           <SheetDescription>
             {isEditing
-              ? 'Update the product information below.'
-              : 'Fill in the details to create a new product.'}
+              ? "Update the product information below."
+              : "Fill in the details to create a new product."}
           </SheetDescription>
         </SheetHeader>
 
         <form
           className="flex min-h-0 flex-1 flex-col"
           onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            form.handleSubmit()
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
           }}
         >
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -230,10 +235,10 @@ export function ProductFormSheet({
             {isEditing && (
               <>
                 <ProductImageUpload
-                  productId={product._id}
-                  productName={product.name}
                   images={productImages ?? []}
                   maxImages={5}
+                  productId={product._id}
+                  productName={product.name}
                 />
                 <Separator />
               </>
@@ -241,7 +246,7 @@ export function ProductFormSheet({
 
             {/* Basic Information */}
             <div className="space-y-3">
-              <h3 className="text-sm font-medium flex items-center gap-2">
+              <h3 className="flex items-center gap-2 font-medium text-sm">
                 <Package className="size-4" />
                 Basic Information
               </h3>
@@ -268,7 +273,8 @@ export function ProductFormSheet({
                           ))}
                       </SelectContent>
                     </Select>
-                    {field.state.meta.isTouched && field.state.meta.errors[0] ? (
+                    {field.state.meta.isTouched &&
+                    field.state.meta.errors[0] ? (
                       <div className="text-destructive text-sm" role="alert">
                         {getErrorMessage(field.state.meta.errors[0])}
                       </div>
@@ -283,9 +289,9 @@ export function ProductFormSheet({
                     <Label htmlFor="product-brand">Brand</Label>
                     <Select
                       onValueChange={(val) =>
-                        field.handleChange(val === 'none' ? '' : val)
+                        field.handleChange(val === "none" ? "" : val)
                       }
-                      value={field.state.value || 'none'}
+                      value={field.state.value || "none"}
                     >
                       <SelectTrigger id="product-brand">
                         <SelectValue placeholder="No brand" />
@@ -315,7 +321,8 @@ export function ProductFormSheet({
                       type="text"
                       value={field.state.value}
                     />
-                    {field.state.meta.isTouched && field.state.meta.errors[0] ? (
+                    {field.state.meta.isTouched &&
+                    field.state.meta.errors[0] ? (
                       <div className="text-destructive text-sm" role="alert">
                         {getErrorMessage(field.state.meta.errors[0])}
                       </div>
@@ -345,7 +352,7 @@ export function ProductFormSheet({
 
             {/* Tags */}
             <div className="space-y-3">
-              <h3 className="text-sm font-medium flex items-center gap-2">
+              <h3 className="flex items-center gap-2 font-medium text-sm">
                 <Tag className="size-4" />
                 Tags
               </h3>
@@ -361,7 +368,7 @@ export function ProductFormSheet({
                       type="text"
                       value={field.state.value}
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Separate tags with commas
                     </p>
                   </div>
@@ -373,7 +380,7 @@ export function ProductFormSheet({
 
             {/* Status */}
             <div className="space-y-3">
-              <h3 className="text-sm font-medium flex items-center gap-2">
+              <h3 className="flex items-center gap-2 font-medium text-sm">
                 <DollarSign className="size-4" />
                 Status
               </h3>
@@ -381,16 +388,16 @@ export function ProductFormSheet({
                 {(field) => (
                   <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
                     <div>
-                      <Label htmlFor="product-active" className="font-medium">
+                      <Label className="font-medium" htmlFor="product-active">
                         Active
                       </Label>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         Active products are visible to customers
                       </p>
                     </div>
                     <Switch
-                      id="product-active"
                       checked={field.state.value}
+                      id="product-active"
                       onCheckedChange={field.handleChange}
                     />
                   </div>
@@ -435,9 +442,9 @@ export function ProductFormSheet({
                         Saving...
                       </>
                     ) : isEditing ? (
-                      'Save Changes'
+                      "Save Changes"
                     ) : (
-                      'Create'
+                      "Create"
                     )}
                   </Button>
                 </div>
@@ -447,7 +454,7 @@ export function ProductFormSheet({
         </form>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
-export default ProductFormSheet
+export default ProductFormSheet;

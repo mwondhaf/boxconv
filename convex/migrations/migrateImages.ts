@@ -141,7 +141,7 @@ export const dryRun = internalMutation({
       if ("url" in doc || "storageId" in doc) {
         imagesWithOldFields++;
       }
-      if (!("r2Key" in doc) || !doc.r2Key) {
+      if (!("r2Key" in doc && doc.r2Key)) {
         imagesWithoutR2Key++;
       }
     }

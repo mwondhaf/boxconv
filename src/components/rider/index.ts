@@ -1,1 +1,1 @@
-export { RiderSectionCards, type RiderStatsData } from "./rider-section-cards"
+export { RiderSectionCards, type RiderStatsData } from "./rider-section-cards";

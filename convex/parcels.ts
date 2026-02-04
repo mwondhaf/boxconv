@@ -15,12 +15,8 @@
  */
 
 import { v } from "convex/values";
-import {
-  mutation,
-  query,
-  internalMutation,
-} from "./_generated/server";
 import { internal } from "./_generated/api";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 // =============================================================================
 // TYPES & VALIDATORS
@@ -51,7 +47,14 @@ const parcelPaymentStatusValidator = v.union(
 );
 
 // Type aliases for use in the module
-type ParcelStatus = "draft" | "pending" | "picked_up" | "in_transit" | "delivered" | "canceled" | "failed";
+type ParcelStatus =
+  | "draft"
+  | "pending"
+  | "picked_up"
+  | "in_transit"
+  | "delivered"
+  | "canceled"
+  | "failed";
 
 // =============================================================================
 // COUNTER HELPER
@@ -72,14 +75,13 @@ export const getNextDisplayId = internalMutation({
       const nextValue = counter.value + 1;
       await ctx.db.patch(counter._id, { value: nextValue });
       return nextValue;
-    } else {
-      // Initialize counter starting at 5000 (different range from orders)
-      await ctx.db.insert("counters", {
-        name: "parcel_display_id",
-        value: 5001,
-      });
-      return 5000;
     }
+    // Initialize counter starting at 5000 (different range from orders)
+    await ctx.db.insert("counters", {
+      name: "parcel_display_id",
+      value: 5001,
+    });
+    return 5000;
   },
 });
 
@@ -91,7 +93,7 @@ export const getNextDisplayId = internalMutation({
  * Generate a random 6-digit verification code
  */
 function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return Math.floor(100_000 + Math.random() * 900_000).toString();
 }
 
 /**
@@ -112,21 +114,21 @@ function generateParcelCodes(): { pickupCode: string; deliveryCode: string } {
  * Size category multipliers for fare calculation
  */
 const SIZE_MULTIPLIERS: Record<string, number> = {
-  small: 1.0,      // Documents, small items
-  medium: 1.3,     // Parcels up to 5kg
-  large: 1.6,      // Parcels up to 15kg
-  extra_large: 2.0 // Heavy/bulky items
+  small: 1.0, // Documents, small items
+  medium: 1.3, // Parcels up to 5kg
+  large: 1.6, // Parcels up to 15kg
+  extra_large: 2.0, // Heavy/bulky items
 };
 
 /**
  * Base fares and distance rates (in UGX)
  */
 const FARE_CONFIG = {
-  baseFare: 3000,           // Base fee for any delivery
-  perKmRate: 1000,          // Per kilometer rate
-  fragileMultiplier: 1.2,   // 20% extra for fragile items
-  minFare: 5000,            // Minimum fare
-  maxFare: 50000,           // Maximum fare cap
+  baseFare: 3000, // Base fee for any delivery
+  perKmRate: 1000, // Per kilometer rate
+  fragileMultiplier: 1.2, // 20% extra for fragile items
+  minFare: 5000, // Minimum fare
+  maxFare: 50_000, // Maximum fare cap
 };
 
 /**
@@ -179,7 +181,7 @@ function calculateParcelFare(params: {
   const distanceFare = Math.round(distanceKm * FARE_CONFIG.perKmRate);
   const sizeMultiplier = SIZE_MULTIPLIERS[sizeCategory] ?? 1.0;
 
-  let subtotal = (baseFare + distanceFare) * sizeMultiplier;
+  const subtotal = (baseFare + distanceFare) * sizeMultiplier;
 
   const fragileCharge = isFragile
     ? Math.round(subtotal * (FARE_CONFIG.fragileMultiplier - 1))
@@ -303,11 +305,9 @@ export const listByCustomer = query({
   handler: async (ctx, args) => {
     const limit = args.limit ?? 20;
 
-    let parcelsQuery = ctx.db
+    const parcelsQuery = ctx.db
       .query("parcels")
-      .withIndex("by_senderClerkId", (q) =>
-        q.eq("senderClerkId", args.clerkId)
-      )
+      .withIndex("by_senderClerkId", (q) => q.eq("senderClerkId", args.clerkId))
       .order("desc");
 
     // Note: Convex doesn't support combined index filtering easily,
@@ -342,7 +342,7 @@ export const listAll = query({
   handler: async (ctx, args) => {
     const limit = args.limit ?? 50;
 
-    let parcelsQuery = ctx.db.query("parcels").order("desc");
+    const parcelsQuery = ctx.db.query("parcels").order("desc");
 
     const parcels = await parcelsQuery.take(limit);
 
@@ -372,12 +372,12 @@ export const getActiveParcels = query({
 
     const parcels = await ctx.db
       .query("parcels")
-      .withIndex("by_senderClerkId", (q) =>
-        q.eq("senderClerkId", args.clerkId)
-      )
+      .withIndex("by_senderClerkId", (q) => q.eq("senderClerkId", args.clerkId))
       .collect();
 
-    return parcels.filter((p) => activeStatuses.includes(p.status as ParcelStatus));
+    return parcels.filter((p) =>
+      activeStatuses.includes(p.status as ParcelStatus)
+    );
   },
 });
 
@@ -457,12 +457,16 @@ export const getStats = query({
 
     return {
       total: allParcels.length,
-      pending: allParcels.filter((p) => p.status === "pending" || p.status === "draft").length,
+      pending: allParcels.filter(
+        (p) => p.status === "pending" || p.status === "draft"
+      ).length,
       inProgress: allParcels.filter((p) =>
         ["picked_up", "in_transit"].includes(p.status)
       ).length,
       delivered: allParcels.filter((p) => p.status === "delivered").length,
-      cancelled: allParcels.filter((p) => p.status === "canceled" || p.status === "failed").length,
+      cancelled: allParcels.filter(
+        (p) => p.status === "canceled" || p.status === "failed"
+      ).length,
       todayTotal: todayParcels.length,
       todayDelivered: todayParcels.filter((p) => p.status === "delivered")
         .length,
@@ -529,7 +533,9 @@ export const create = mutation({
     }
 
     // Generate display ID
-    const displayId: number = await ctx.runMutation(internal.parcels.getNextDisplayId);
+    const displayId: number = await ctx.runMutation(
+      internal.parcels.getNextDisplayId
+    );
 
     // Generate verification codes
     const codes = generateParcelCodes();
@@ -665,7 +671,8 @@ export const updateStatus = mutation({
       eventType: "status_changed",
       status: args.status,
       description:
-        args.reason ?? `Status changed from ${previousStatus} to ${args.status}`,
+        args.reason ??
+        `Status changed from ${previousStatus} to ${args.status}`,
       clerkId: args.actorClerkId,
     });
 
@@ -865,7 +872,11 @@ export const cancel = mutation({
     }
 
     // If customer is cancelling, they can only cancel pending/draft
-    if (args.isCustomer && parcel.status !== "pending" && parcel.status !== "draft") {
+    if (
+      args.isCustomer &&
+      parcel.status !== "pending" &&
+      parcel.status !== "draft"
+    ) {
       throw new Error(
         "Customers can only cancel parcels before pickup. Contact support for assistance."
       );
@@ -979,7 +990,11 @@ export const regenerateCodes = mutation({
     }
 
     // Only allow regeneration for non-completed parcels
-    const terminalStatuses: ParcelStatus[] = ["delivered", "canceled", "failed"];
+    const terminalStatuses: ParcelStatus[] = [
+      "delivered",
+      "canceled",
+      "failed",
+    ];
     if (terminalStatuses.includes(parcel.status as ParcelStatus)) {
       throw new Error("Cannot regenerate codes for completed parcels");
     }

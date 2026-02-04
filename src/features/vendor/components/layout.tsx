@@ -1,22 +1,21 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet } from "@tanstack/react-router";
 import {
+  Layers,
   LayoutDashboard,
   Package,
-  Layers,
-  ShoppingCart,
-  Users,
   Settings,
+  ShoppingCart,
   UserPlus,
-} from 'lucide-react'
+  Users,
+} from "lucide-react";
 
 import {
   AppSidebar,
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
   type NavMainItem,
-} from '~/components/sidebar'
-import { Separator } from '~/components/ui/separator'
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "~/components/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,91 +23,90 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '~/components/ui/breadcrumb'
-import { useSyncAbility } from '~/shared/hooks/use-sync-ability'
-import { useCan } from '~/shared/stores/ability-store'
+} from "~/components/ui/breadcrumb";
+import { Separator } from "~/components/ui/separator";
+import { useSyncAbility } from "~/shared/hooks/use-sync-ability";
+import { useCan } from "~/shared/stores/ability-store";
 
 /**
  * Build navigation items based on user permissions
  */
 function useVendorNavItems(): NavMainItem[] {
-  const canManageMembers = useCan('manage', 'Member')
+  const canManageMembers = useCan("manage", "Member");
 
   const navItems: NavMainItem[] = [
     {
-      title: 'Dashboard',
-      url: '/v',
+      title: "Dashboard",
+      url: "/v",
       icon: LayoutDashboard,
     },
     {
-      title: 'Products',
-      url: '/v/products',
+      title: "Products",
+      url: "/v/products",
       icon: Package,
     },
     {
-      title: 'Variants',
-      url: '/v/variants',
+      title: "Variants",
+      url: "/v/variants",
       icon: Layers,
     },
     {
-      title: 'Orders',
-      url: '/v/orders',
+      title: "Orders",
+      url: "/v/orders",
       icon: ShoppingCart,
     },
     {
-      title: 'Customers',
-      url: '/v/customers',
+      title: "Customers",
+      url: "/v/customers",
       icon: Users,
     },
-  ]
+  ];
 
   // Only show Team if user can manage members
   if (canManageMembers) {
     navItems.push({
-      title: 'Team',
-      url: '/v/team',
+      title: "Team",
+      url: "/v/team",
       icon: UserPlus,
-    })
+    });
   }
 
   // Always show Settings in the sidebar for easy access
   navItems.push({
-    title: 'Settings',
-    url: '/v/settings',
+    title: "Settings",
+    url: "/v/settings",
     icon: Settings,
-  })
+  });
 
-  return navItems
+  return navItems;
 }
 
 export function VendorLayout() {
   // Sync ability store with Clerk auth context
-  useSyncAbility()
+  useSyncAbility();
 
-  const navItems = useVendorNavItems()
+  const navItems = useVendorNavItems();
 
   return (
     <SidebarProvider>
       <AppSidebar
+        hideCreateOrg
         navItems={navItems}
         navLabel="Vendor"
         showOrgSwitcher
-        hideCreateOrg
       />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
-              orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
+              orientation="vertical"
             />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/v">
-                    Vendor Dashboard
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/v">Vendor Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -123,5 +121,5 @@ export function VendorLayout() {
         </main>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

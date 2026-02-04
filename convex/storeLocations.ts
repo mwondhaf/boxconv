@@ -6,7 +6,7 @@
  */
 
 import { v } from "convex/values";
-import { query, internalMutation } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import { storeLocations } from "./components";
 
 // =============================================================================
@@ -242,7 +242,7 @@ export const isWithinDeliveryZone = query({
   },
   handler: async (ctx, args) => {
     const store = await ctx.db.get(args.storeId);
-    if (!store || !store.lat || !store.lng) {
+    if (!(store && store.lat && store.lng)) {
       return { withinZone: false, reason: "Store location not available" };
     }
 

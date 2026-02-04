@@ -11,7 +11,7 @@
  */
 
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 // =============================================================================
 // QUERIES
@@ -198,9 +198,9 @@ function formatTimestamp(timestamp: number): string {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - timestamp;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+  const diffMins = Math.floor(diffMs / 60_000);
+  const diffHours = Math.floor(diffMs / 3_600_000);
+  const diffDays = Math.floor(diffMs / 86_400_000);
 
   // Within last hour
   if (diffMins < 60) {

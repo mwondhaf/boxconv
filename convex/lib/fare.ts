@@ -76,10 +76,10 @@ export const DEFAULT_FARE_CONFIG: FareConfig = {
   baseFare: 2000, // UGX 2,000 base
   perKmRate: 500, // UGX 500 per km
   minimumFare: 3000, // UGX 3,000 minimum
-  maximumFare: 50000, // UGX 50,000 maximum
+  maximumFare: 50_000, // UGX 50,000 maximum
   surgeMultiplier: 1.0, // No surge by default
-  freeDeliveryThreshold: 100000, // Free delivery for orders over UGX 100,000
-  smallOrderThreshold: 15000, // Small order fee for orders under UGX 15,000
+  freeDeliveryThreshold: 100_000, // Free delivery for orders over UGX 100,000
+  smallOrderThreshold: 15_000, // Small order fee for orders under UGX 15,000
   smallOrderFee: 1500, // UGX 1,500 small order fee
   currency: "UGX",
 };
@@ -157,9 +157,9 @@ export function calculateFare(
   }
 
   // Apply heavy item fee (for items over 10kg)
-  if (weightGrams > 10000) {
+  if (weightGrams > 10_000) {
     // UGX 200 per kg over 10kg
-    const excessKg = (weightGrams - 10000) / 1000;
+    const excessKg = (weightGrams - 10_000) / 1000;
     breakdown.heavyItemFee = Math.round(excessKg * 200);
   }
 
@@ -199,10 +199,7 @@ export function calculateFare(
  * @param baseSurge - Base surge multiplier from config
  * @returns Effective surge multiplier
  */
-function getSurgeMultiplier(
-  hourOfDay?: number,
-  baseSurge: number = 1.0
-): number {
+function getSurgeMultiplier(hourOfDay?: number, baseSurge = 1.0): number {
   if (hourOfDay === undefined) {
     return baseSurge;
   }
@@ -239,7 +236,7 @@ function getSurgeMultiplier(
  */
 export function estimateDeliveryTime(
   distanceKm: number,
-  isExpress: boolean = false
+  isExpress = false
 ): { minMinutes: number; maxMinutes: number } {
   // Base preparation time
   const prepTime = isExpress ? 5 : 15;
@@ -265,7 +262,7 @@ export function estimateDeliveryTime(
  * @param currency - Currency code
  * @returns Formatted string
  */
-export function formatFare(amount: number, currency: string = "UGX"): string {
+export function formatFare(amount: number, currency = "UGX"): string {
   // For UGX, we don't use decimals
   if (currency === "UGX") {
     return `UGX ${amount.toLocaleString()}`;
@@ -274,7 +271,7 @@ export function formatFare(amount: number, currency: string = "UGX"): string {
   // For other currencies, assume 2 decimal places
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: currency,
+    currency,
   }).format(amount / 100);
 }
 
@@ -290,8 +287,8 @@ export function formatFare(amount: number, currency: string = "UGX"): string {
 export function calculateParcelFare(
   distanceKm: number,
   sizeCategory: "small" | "medium" | "large" | "xlarge",
-  isFragile: boolean = false,
-  declaredValue: number = 0
+  isFragile = false,
+  declaredValue = 0
 ): FareBreakdown {
   // Size-based multipliers
   const sizeMultipliers: Record<string, number> = {
@@ -308,7 +305,7 @@ export function calculateParcelFare(
     baseFare: Math.round(3000 * sizeMultiplier), // Base varies by size
     perKmRate: Math.round(600 * sizeMultiplier), // Per-km varies by size
     minimumFare: Math.round(4000 * sizeMultiplier),
-    maximumFare: 100000,
+    maximumFare: 100_000,
     currency: "UGX",
   };
 

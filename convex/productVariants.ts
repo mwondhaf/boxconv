@@ -175,7 +175,7 @@ export const listByProduct = query({
     organizationId: v.optional(v.id("organizations")),
   },
   handler: async (ctx, args) => {
-    let variantsQuery = ctx.db
+    const variantsQuery = ctx.db
       .query("productVariants")
       .withIndex("by_product", (q) => q.eq("productId", args.productId));
 
@@ -243,7 +243,9 @@ export const listByOrganization = query({
       variantsQuery = ctx.db
         .query("productVariants")
         .withIndex("by_available", (q) =>
-          q.eq("organizationId", args.organizationId).eq("isAvailable", args.isAvailable!)
+          q
+            .eq("organizationId", args.organizationId)
+            .eq("isAvailable", args.isAvailable!)
         );
     } else {
       variantsQuery = ctx.db
@@ -400,9 +402,7 @@ export const create = mutation({
       .first();
 
     if (existingSku) {
-      throw new Error(
-        `SKU "${args.sku}" already exists in this organization`
-      );
+      throw new Error(`SKU "${args.sku}" already exists in this organization`);
     }
 
     // Create variant
@@ -764,7 +764,7 @@ export const listForCustomerBrowsing = query({
     const enrichedVariants = await Promise.all(
       variants.map(async (variant) => {
         const product = await ctx.db.get(variant.productId);
-        if (!product || !product.isActive) return null;
+        if (!(product && product.isActive)) return null;
 
         // Filter by category if provided
         if (args.categoryId && product.categoryId !== args.categoryId) {
@@ -776,7 +776,7 @@ export const listForCustomerBrowsing = query({
           const searchLower = args.search.toLowerCase();
           const nameMatch = product.name.toLowerCase().includes(searchLower);
           const skuMatch = variant.sku.toLowerCase().includes(searchLower);
-          if (!nameMatch && !skuMatch) return null;
+          if (!(nameMatch || skuMatch)) return null;
         }
 
         const priceSet = await ctx.db
@@ -810,7 +810,9 @@ export const listForCustomerBrowsing = query({
           }));
 
           // Sort by minQuantity for tiered pricing display
-          priceAmounts.sort((a, b) => (a.minQuantity ?? 0) - (b.minQuantity ?? 0));
+          priceAmounts.sort(
+            (a, b) => (a.minQuantity ?? 0) - (b.minQuantity ?? 0)
+          );
 
           // Get base price (lowest tier)
           if (moneyAmounts.length > 0) {
@@ -830,7 +832,8 @@ export const listForCustomerBrowsing = query({
           .first();
 
         // Calculate effective price for display
-        const effectivePrice = salePrice && salePrice < price ? salePrice : price;
+        const effectivePrice =
+          salePrice && salePrice < price ? salePrice : price;
 
         return {
           _id: variant._id,
@@ -872,10 +875,10 @@ export const getForCustomer = query({
     if (!variant) return null;
 
     // Only return if available and approved
-    if (!variant.isAvailable || !variant.isApproved) return null;
+    if (!(variant.isAvailable && variant.isApproved)) return null;
 
     const product = await ctx.db.get(variant.productId);
-    if (!product || !product.isActive) return null;
+    if (!(product && product.isActive)) return null;
 
     // Get organization
     const organization = await ctx.db.get(variant.organizationId);
@@ -918,7 +921,9 @@ export const getForCustomer = query({
     }
 
     // Get category and brand info
-    const category = product.categoryId ? await ctx.db.get(product.categoryId) : null;
+    const category = product.categoryId
+      ? await ctx.db.get(product.categoryId)
+      : null;
     const brand = product.brandId ? await ctx.db.get(product.brandId) : null;
 
     return {

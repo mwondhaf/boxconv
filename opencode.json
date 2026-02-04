@@ -2,29 +2,17 @@
   "mcp": {
     "clerk": {
       "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://mcp.clerk.com/mcp"
-      ],
+      "args": ["-y", "mcp-remote", "https://mcp.clerk.com/mcp"],
       "enabled": true
     },
     "convex-mcp": {
       "command": "npx",
-      "args": [
-        "-y",
-        "convex@latest",
-        "mcp",
-        "start"
-      ],
+      "args": ["-y", "convex@latest", "mcp", "start"],
       "enabled": true
     },
     "shadcn": {
       "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp"
-      ],
+      "args": ["shadcn@latest", "mcp"],
       "enabled": true
     }
   }

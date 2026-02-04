@@ -42,10 +42,16 @@ export const validateOrder = internalMutation({
     for (const item of items) {
       const variant = await ctx.db.get(item.variantId);
       if (!variant) {
-        return { valid: false, reason: `Product variant not found: ${item.title}` };
+        return {
+          valid: false,
+          reason: `Product variant not found: ${item.title}`,
+        };
       }
       if (!variant.isAvailable) {
-        return { valid: false, reason: `Product no longer available: ${item.title}` };
+        return {
+          valid: false,
+          reason: `Product no longer available: ${item.title}`,
+        };
       }
     }
 
@@ -57,7 +63,10 @@ export const validateOrder = internalMutation({
 
     // Check if store is busy/closed
     if (org.isBusy) {
-      return { valid: false, reason: "Store is currently not accepting orders" };
+      return {
+        valid: false,
+        reason: "Store is currently not accepting orders",
+      };
     }
 
     return { valid: true };

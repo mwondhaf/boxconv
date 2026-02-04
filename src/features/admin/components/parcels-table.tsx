@@ -5,30 +5,20 @@
  * Used in admin parcels page for managing P2P deliveries.
  */
 
-'use client'
+"use client";
 
-import * as React from 'react'
 import {
-  Package,
-  MapPin,
-
-  MoreHorizontal,
-  Eye,
-  CheckCircle,
-  XCircle,
-  Truck,
   ArrowUpDown,
-} from 'lucide-react'
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '~/components/ui/table'
-import { Button } from '~/components/ui/button'
+  CheckCircle,
+  Eye,
+  MapPin,
+  MoreHorizontal,
+  Package,
+  Truck,
+  XCircle,
+} from "lucide-react";
+import * as React from "react";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,68 +26,74 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu'
-import { Skeleton } from '~/components/ui/skeleton'
-import { cn } from '~/lib/utils'
-
+} from "~/components/ui/dropdown-menu";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
-  ParcelStatusBadge,
-  ParcelPaymentBadge,
-  ParcelSizeBadge,
-  type ParcelStatus,
-  type ParcelPaymentStatus,
-  type ParcelSizeCategory,
-} from './parcel-status-badge'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { cn } from "~/lib/utils";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import {
   formatCurrency,
-  formatRelativeTime,
   formatDistance,
-} from '../hooks/use-parcels'
-
-import type { Id } from '../../../../convex/_generated/dataModel'
+  formatRelativeTime,
+} from "../hooks/use-parcels";
+import {
+  ParcelPaymentBadge,
+  type ParcelPaymentStatus,
+  ParcelSizeBadge,
+  type ParcelSizeCategory,
+  type ParcelStatus,
+  ParcelStatusBadge,
+} from "./parcel-status-badge";
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 export interface Parcel {
-  _id: Id<'parcels'>
-  _creationTime: number
-  displayId: number
-  senderClerkId: string
+  _id: Id<"parcels">;
+  _creationTime: number;
+  displayId: number;
+  senderClerkId: string;
   // Pickup
-  pickupName: string
-  pickupPhone: string
-  pickupAddress: string
+  pickupName: string;
+  pickupPhone: string;
+  pickupAddress: string;
   // Dropoff
-  recipientName: string
-  recipientPhone: string
-  dropoffAddress: string
+  recipientName: string;
+  recipientPhone: string;
+  dropoffAddress: string;
   // Package
-  description: string
-  sizeCategory: ParcelSizeCategory
-  fragile: boolean
+  description: string;
+  sizeCategory: ParcelSizeCategory;
+  fragile: boolean;
   // Status - matches schema: draft, pending, picked_up, in_transit, delivered, canceled, failed
-  status: ParcelStatus
-  paymentStatus: ParcelPaymentStatus
+  status: ParcelStatus;
+  paymentStatus: ParcelPaymentStatus;
   // Rider
-  externalRiderName?: string
+  externalRiderName?: string;
   // Pricing
-  estimatedDistance?: number
-  priceAmount?: number
-  priceCurrency: string
+  estimatedDistance?: number;
+  priceAmount?: number;
+  priceCurrency: string;
   // Timestamps
-  pickedUpAt?: number
-  deliveredAt?: number
+  pickedUpAt?: number;
+  deliveredAt?: number;
 }
 
 export interface ParcelsTableProps {
-  data: Parcel[]
-  isLoading?: boolean
-  onView?: (parcel: Parcel) => void
-  onConfirm?: (parcel: Parcel) => void
-  onCancel?: (parcel: Parcel) => void
-  onAssignRider?: (parcel: Parcel) => void
+  data: Parcel[];
+  isLoading?: boolean;
+  onView?: (parcel: Parcel) => void;
+  onConfirm?: (parcel: Parcel) => void;
+  onCancel?: (parcel: Parcel) => void;
+  onAssignRider?: (parcel: Parcel) => void;
 }
 
 // =============================================================================
@@ -112,77 +108,79 @@ export function ParcelsTable({
   onCancel,
   onAssignRider,
 }: ParcelsTableProps) {
-  const [sortField, setSortField] = React.useState<string>('_creationTime')
-  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
+  const [sortField, setSortField] = React.useState<string>("_creationTime");
+  const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(
+    "desc"
+  );
 
   // Sort data
   const sortedData = React.useMemo(() => {
     return [...data].sort((a, b) => {
-      let aValue: any = a[sortField as keyof Parcel]
-      let bValue: any = b[sortField as keyof Parcel]
+      let aValue: any = a[sortField as keyof Parcel];
+      let bValue: any = b[sortField as keyof Parcel];
 
       // Handle undefined values
-      if (aValue === undefined) aValue = ''
-      if (bValue === undefined) bValue = ''
+      if (aValue === undefined) aValue = "";
+      if (bValue === undefined) bValue = "";
 
       // Handle numbers
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
       }
 
       // Handle strings
-      const comparison = String(aValue).localeCompare(String(bValue))
-      return sortDirection === 'asc' ? comparison : -comparison
-    })
-  }, [data, sortField, sortDirection])
+      const comparison = String(aValue).localeCompare(String(bValue));
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+  }, [data, sortField, sortDirection]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortField(field)
-      setSortDirection('desc')
+      setSortField(field);
+      setSortDirection("desc");
     }
-  }
+  };
 
   const SortableHeader = ({
     field,
     children,
   }: {
-    field: string
-    children: React.ReactNode
+    field: string;
+    children: React.ReactNode;
   }) => (
     <Button
-      variant="ghost"
-      size="sm"
       className="-ml-3 h-8 data-[state=open]:bg-accent"
       onClick={() => handleSort(field)}
+      size="sm"
+      variant="ghost"
     >
       {children}
       <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
-  )
+  );
 
   if (isLoading) {
     return (
       <div className="space-y-3">
         {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" key={i} />
         ))}
       </div>
-    )
+    );
   }
 
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Package className="size-12 text-muted-foreground/50 mb-4" />
-        <h3 className="text-lg font-medium">No parcels found</h3>
-        <p className="text-sm text-muted-foreground">
+        <Package className="mb-4 size-12 text-muted-foreground/50" />
+        <h3 className="font-medium text-lg">No parcels found</h3>
+        <p className="text-muted-foreground text-sm">
           Parcel deliveries will appear here when customers create them.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -208,59 +206,64 @@ export function ParcelsTable({
             <TableHead>
               <SortableHeader field="_creationTime">Created</SortableHeader>
             </TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[50px]" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedData.map((parcel) => (
             <TableRow
-              key={parcel._id}
               className={cn(
-                'cursor-pointer hover:bg-muted/50',
-                (parcel.status === 'canceled' || parcel.status === 'failed') && 'opacity-60'
+                "cursor-pointer hover:bg-muted/50",
+                (parcel.status === "canceled" || parcel.status === "failed") &&
+                  "opacity-60"
               )}
+              key={parcel._id}
               onClick={() => onView?.(parcel)}
             >
-              <TableCell className="font-medium">
-                #{parcel.displayId}
-              </TableCell>
+              <TableCell className="font-medium">#{parcel.displayId}</TableCell>
               <TableCell>
                 <div className="flex flex-col gap-1">
-                  <ParcelStatusBadge status={parcel.status as ParcelStatus} size="sm" />
-                  <ParcelPaymentBadge
-                    status={parcel.paymentStatus as ParcelPaymentStatus}
+                  <ParcelStatusBadge
                     size="sm"
+                    status={parcel.status as ParcelStatus}
+                  />
+                  <ParcelPaymentBadge
                     showIcon={false}
+                    size="sm"
+                    status={parcel.paymentStatus as ParcelPaymentStatus}
                   />
                 </div>
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-sm font-medium">
+                  <div className="flex items-center gap-1 font-medium text-sm">
                     <MapPin className="size-3 text-blue-500" />
                     {parcel.pickupName}
                   </div>
-                  <div className="text-xs text-muted-foreground truncate max-w-[150px]">
+                  <div className="max-w-[150px] truncate text-muted-foreground text-xs">
                     {parcel.pickupAddress}
                   </div>
                 </div>
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-sm font-medium">
+                  <div className="flex items-center gap-1 font-medium text-sm">
                     <MapPin className="size-3 text-green-500" />
                     {parcel.recipientName}
                   </div>
-                  <div className="text-xs text-muted-foreground truncate max-w-[150px]">
+                  <div className="max-w-[150px] truncate text-muted-foreground text-xs">
                     {parcel.dropoffAddress}
                   </div>
                 </div>
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <ParcelSizeBadge size={parcel.sizeCategory as ParcelSizeCategory} variant="short" />
+                  <ParcelSizeBadge
+                    size={parcel.sizeCategory as ParcelSizeCategory}
+                    variant="short"
+                  />
                   {parcel.fragile && (
-                    <span className="text-xs text-destructive block">
+                    <span className="block text-destructive text-xs">
                       ⚠️ Fragile
                     </span>
                   )}
@@ -271,10 +274,10 @@ export function ParcelsTable({
                   <div className="font-medium">
                     {parcel.priceAmount
                       ? formatCurrency(parcel.priceAmount, parcel.priceCurrency)
-                      : '—'}
+                      : "—"}
                   </div>
                   {parcel.estimatedDistance && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {formatDistance(parcel.estimatedDistance)}
                     </div>
                   )}
@@ -293,7 +296,7 @@ export function ParcelsTable({
                 )}
               </TableCell>
               <TableCell>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   {formatRelativeTime(parcel._creationTime)}
                 </div>
               </TableCell>
@@ -301,9 +304,9 @@ export function ParcelsTable({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="icon"
                       onClick={(e) => e.stopPropagation()}
+                      size="icon"
+                      variant="ghost"
                     >
                       <MoreHorizontal className="size-4" />
                       <span className="sr-only">Actions</span>
@@ -316,36 +319,40 @@ export function ParcelsTable({
                       <Eye className="mr-2 size-4" />
                       View Details
                     </DropdownMenuItem>
-                    {(parcel.status === 'draft' || parcel.status === 'pending') && (
+                    {(parcel.status === "draft" ||
+                      parcel.status === "pending") && (
                       <DropdownMenuItem
                         onClick={(e) => {
-                          e.stopPropagation()
-                          onConfirm?.(parcel)
+                          e.stopPropagation();
+                          onConfirm?.(parcel);
                         }}
                       >
                         <CheckCircle className="mr-2 size-4" />
-                        {parcel.status === 'draft' ? 'Confirm' : 'View Details'}
+                        {parcel.status === "draft" ? "Confirm" : "View Details"}
                       </DropdownMenuItem>
                     )}
-                    {(parcel.status === 'draft' || parcel.status === 'pending') && (
+                    {(parcel.status === "draft" ||
+                      parcel.status === "pending") && (
                       <DropdownMenuItem
                         onClick={(e) => {
-                          e.stopPropagation()
-                          onAssignRider?.(parcel)
+                          e.stopPropagation();
+                          onAssignRider?.(parcel);
                         }}
                       >
                         <Truck className="mr-2 size-4" />
                         Assign Rider
                       </DropdownMenuItem>
                     )}
-                    {!['delivered', 'canceled', 'failed'].includes(parcel.status) && (
+                    {!["delivered", "canceled", "failed"].includes(
+                      parcel.status
+                    ) && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={(e) => {
-                            e.stopPropagation()
-                            onCancel?.(parcel)
+                            e.stopPropagation();
+                            onCancel?.(parcel);
                           }}
                         >
                           <XCircle className="mr-2 size-4" />
@@ -361,11 +368,11 @@ export function ParcelsTable({
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
 
 // =============================================================================
 // EXPORTS
 // =============================================================================
 
-export type { ParcelStatus, ParcelPaymentStatus, ParcelSizeCategory }
+export type { ParcelStatus, ParcelPaymentStatus, ParcelSizeCategory };

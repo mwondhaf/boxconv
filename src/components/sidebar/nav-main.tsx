@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { ChevronRight, type LucideIcon } from 'lucide-react'
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation } from "@tanstack/react-router";
+import { ChevronRight, type LucideIcon } from "lucide-react";
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '~/components/ui/collapsible'
+} from "~/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,26 +17,26 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from '~/components/ui/sidebar'
+} from "~/components/ui/sidebar";
 
 export interface NavMainItem {
-  title: string
-  url: string
-  icon?: LucideIcon
-  isActive?: boolean
+  title: string;
+  url: string;
+  icon?: LucideIcon;
+  isActive?: boolean;
   items?: {
-    title: string
-    url: string
-  }[]
+    title: string;
+    url: string;
+  }[];
 }
 
 interface NavMainProps {
-  items: NavMainItem[]
-  label?: string
+  items: NavMainItem[];
+  label?: string;
 }
 
-export function NavMain({ items, label = 'Navigation' }: NavMainProps) {
-  const location = useLocation()
+export function NavMain({ items, label = "Navigation" }: NavMainProps) {
+  const location = useLocation();
 
   return (
     <SidebarGroup>
@@ -46,16 +46,16 @@ export function NavMain({ items, label = 'Navigation' }: NavMainProps) {
           const isActive =
             item.isActive ??
             (location.pathname === item.url ||
-              item.items?.some((sub) => location.pathname === sub.url))
+              item.items?.some((sub) => location.pathname === sub.url));
 
           // If item has sub-items, render as collapsible
           if (item.items && item.items.length > 0) {
             return (
               <Collapsible
-                key={item.title}
                 asChild
-                defaultOpen={isActive}
                 className="group/collapsible"
+                defaultOpen={isActive}
+                key={item.title}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -83,7 +83,7 @@ export function NavMain({ items, label = 'Navigation' }: NavMainProps) {
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
-            )
+            );
           }
 
           // Simple nav item without sub-items
@@ -91,8 +91,8 @@ export function NavMain({ items, label = 'Navigation' }: NavMainProps) {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
-                tooltip={item.title}
                 isActive={location.pathname === item.url}
+                tooltip={item.title}
               >
                 <Link to={item.url}>
                   {item.icon && <item.icon />}
@@ -100,9 +100,9 @@ export function NavMain({ items, label = 'Navigation' }: NavMainProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          )
+          );
         })}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

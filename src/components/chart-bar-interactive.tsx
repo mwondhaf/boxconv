@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import * as React from "react";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import {
   Card,
@@ -9,15 +9,15 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card"
+} from "~/components/ui/card";
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
-} from "~/components/ui/chart"
+} from "~/components/ui/chart";
 
-export const description = "An interactive bar chart"
+export const description = "An interactive bar chart";
 
 const chartData = [
   { date: "2024-04-01", desktop: 222, mobile: 150 },
@@ -111,7 +111,7 @@ const chartData = [
   { date: "2024-06-28", desktop: 149, mobile: 200 },
   { date: "2024-06-29", desktop: 103, mobile: 160 },
   { date: "2024-06-30", desktop: 446, mobile: 400 },
-]
+];
 
 const chartConfig = {
   views: {
@@ -125,11 +125,11 @@ const chartConfig = {
     label: "Mobile",
     color: "var(--chart-1)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export function ChartBarInteractive() {
   const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>("desktop")
+    React.useState<keyof typeof chartConfig>("desktop");
 
   const total = React.useMemo(
     () => ({
@@ -137,12 +137,12 @@ export function ChartBarInteractive() {
       mobile: chartData.reduce((acc, curr) => acc + curr.mobile, 0),
     }),
     []
-  )
+  );
 
   return (
     <Card className="py-0">
-      <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
-        <div className="flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3 sm:!py-0">
+      <CardHeader className="!p-0 flex flex-col items-stretch border-b sm:flex-row">
+        <div className="sm:!py-0 flex flex-1 flex-col justify-center gap-1 px-6 pt-4 pb-3">
           <CardTitle>Bar Chart - Interactive</CardTitle>
           <CardDescription>
             Showing total visitors for the last 3 months
@@ -150,29 +150,29 @@ export function ChartBarInteractive() {
         </div>
         <div className="flex">
           {["desktop", "mobile"].map((key) => {
-            const chart = key as keyof typeof chartConfig
+            const chart = key as keyof typeof chartConfig;
             return (
               <button
-                key={chart}
+                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s data-[active=true]:bg-muted/50 sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
                 data-active={activeChart === chart}
-                className="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-t-0 sm:border-s sm:px-8 sm:py-6"
+                key={chart}
                 onClick={() => setActiveChart(chart)}
               >
                 <span className="text-muted-foreground text-xs">
                   {chartConfig[chart].label}
                 </span>
-                <span className="text-lg leading-none font-bold sm:text-3xl">
+                <span className="font-bold text-lg leading-none sm:text-3xl">
                   {total[key as keyof typeof total].toLocaleString()}
                 </span>
               </button>
-            )
+            );
           })}
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
         <ChartContainer
-          config={chartConfig}
           className="aspect-auto h-[250px] w-full"
+          config={chartConfig}
         >
           <BarChart
             accessibilityLayer
@@ -184,31 +184,31 @@ export function ChartBarInteractive() {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="date"
-              tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              dataKey="date"
               minTickGap={32}
               tickFormatter={(value) => {
-                const date = new Date(value)
+                const date = new Date(value);
                 return date.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
-                })
+                });
               }}
+              tickLine={false}
+              tickMargin={8}
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
                   className="w-[150px]"
-                  nameKey="views"
                   labelFormatter={(value) => {
                     return new Date(value).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
-                    })
+                    });
                   }}
+                  nameKey="views"
                 />
               }
             />
@@ -217,5 +217,5 @@ export function ChartBarInteractive() {
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

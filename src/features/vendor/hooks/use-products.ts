@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
 
 // =============================================================================
 // PRODUCT QUERIES
@@ -161,7 +161,10 @@ export function useCategory(categoryId: Id<"categories"> | undefined) {
 /**
  * List all categories
  */
-export function useCategories(options?: { isActive?: boolean; limit?: number }) {
+export function useCategories(options?: {
+  isActive?: boolean;
+  limit?: number;
+}) {
   return useQuery(api.categories.list, {
     isActive: options?.isActive,
     limit: options?.limit,
@@ -294,7 +297,9 @@ export function useDeleteBrand() {
 /**
  * Get a single variant by ID with pricing
  */
-export function useProductVariant(variantId: Id<"productVariants"> | undefined) {
+export function useProductVariant(
+  variantId: Id<"productVariants"> | undefined
+) {
   return useQuery(
     api.productVariants.get,
     variantId ? { id: variantId } : "skip"

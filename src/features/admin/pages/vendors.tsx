@@ -1,30 +1,26 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useQuery as useConvexQuery } from 'convex/react'
-import { Store, MapPin, Clock, MoreHorizontal, Pencil, Eye } from 'lucide-react'
-
-import { listOrganizations } from '../api/organizations'
-import { VendorFormSheet, type VendorBusinessData } from '../components/vendor-form-sheet'
-import { api } from '../../../../convex/_generated/api'
-
-import { Button } from '~/components/ui/button'
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery as useConvexQuery } from "convex/react";
+import {
+  Clock,
+  Eye,
+  MapPin,
+  MoreHorizontal,
+  Pencil,
+  Store,
+} from "lucide-react";
+import * as React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '~/components/ui/table'
+} from "~/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,22 +28,34 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu'
-import { Badge } from '~/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+} from "~/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { api } from "../../../../convex/_generated/api";
+import { listOrganizations } from "../api/organizations";
+import {
+  type VendorBusinessData,
+  VendorFormSheet,
+} from "../components/vendor-form-sheet";
 
 // =============================================================================
 // Types
 // =============================================================================
 
 interface ClerkOrganization {
-  id: string
-  name: string
-  slug: string
-  imageUrl: string
-  membersCount: number
-  createdAt: number
-  updatedAt: number
+  id: string;
+  name: string;
+  slug: string;
+  imageUrl: string;
+  membersCount: number;
+  createdAt: number;
+  updatedAt: number;
 }
 
 // =============================================================================
@@ -55,36 +63,41 @@ interface ClerkOrganization {
 // =============================================================================
 
 export function AdminVendorsPage() {
-  const queryClient = useQueryClient()
-  const [selectedVendor, setSelectedVendor] = React.useState<VendorBusinessData | null>(null)
-  const [editSheetOpen, setEditSheetOpen] = React.useState(false)
+  const queryClient = useQueryClient();
+  const [selectedVendor, setSelectedVendor] =
+    React.useState<VendorBusinessData | null>(null);
+  const [editSheetOpen, setEditSheetOpen] = React.useState(false);
 
   // Fetch organizations from Clerk
-  const { data: clerkData, isLoading: clerkLoading, error: clerkError } = useQuery({
-    queryKey: ['organizations'],
+  const {
+    data: clerkData,
+    isLoading: clerkLoading,
+    error: clerkError,
+  } = useQuery({
+    queryKey: ["organizations"],
     queryFn: () => listOrganizations({ data: { limit: 100, offset: 0 } }),
-  })
+  });
 
   // Fetch all organizations from Convex (for business data)
-  const convexOrgs = useConvexQuery(api.organizations.list, { limit: 100 })
+  const convexOrgs = useConvexQuery(api.organizations.list, { limit: 100 });
 
   // Fetch organization categories
-  const categories = useConvexQuery(api.organizationCategories.listFlat, {})
+  const categories = useConvexQuery(api.organizationCategories.listFlat, {});
 
   // Create a map of Convex orgs by clerkOrgId for quick lookup
   const convexOrgMap = React.useMemo(() => {
-    if (!convexOrgs) return new Map()
-    return new Map(convexOrgs.map((org) => [org.clerkOrgId, org]))
-  }, [convexOrgs])
+    if (!convexOrgs) return new Map();
+    return new Map(convexOrgs.map((org) => [org.clerkOrgId, org]));
+  }, [convexOrgs]);
 
   // Create a map of categories by ID
   const categoryMap = React.useMemo(() => {
-    if (!categories) return new Map()
-    return new Map(categories.map((cat) => [cat._id, cat]))
-  }, [categories])
+    if (!categories) return new Map();
+    return new Map(categories.map((cat) => [cat._id, cat]));
+  }, [categories]);
 
   const handleEdit = (clerkOrg: ClerkOrganization) => {
-    const convexOrg = convexOrgMap.get(clerkOrg.id)
+    const convexOrg = convexOrgMap.get(clerkOrg.id);
 
     const vendorData: VendorBusinessData = {
       clerkOrgId: clerkOrg.id,
@@ -103,42 +116,48 @@ export function AdminVendorsPage() {
       closingTime: convexOrg?.closingTime,
       timezone: convexOrg?.timezone,
       isBusy: convexOrg?.isBusy,
-    }
+    };
 
-    setSelectedVendor(vendorData)
-    setEditSheetOpen(true)
-  }
+    setSelectedVendor(vendorData);
+    setEditSheetOpen(true);
+  };
 
   const handleEditSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['organizations'] })
-  }
+    queryClient.invalidateQueries({ queryKey: ["organizations"] });
+  };
 
-  const getVendorStatus = (clerkOrgId: string): 'active' | 'busy' | 'incomplete' => {
-    const convexOrg = convexOrgMap.get(clerkOrgId)
-    if (!convexOrg) return 'incomplete'
-    if (convexOrg.isBusy) return 'busy'
-    return 'active'
-  }
+  const getVendorStatus = (
+    clerkOrgId: string
+  ): "active" | "busy" | "incomplete" => {
+    const convexOrg = convexOrgMap.get(clerkOrgId);
+    if (!convexOrg) return "incomplete";
+    if (convexOrg.isBusy) return "busy";
+    return "active";
+  };
 
   const getVendorLocation = (clerkOrgId: string): string => {
-    const convexOrg = convexOrgMap.get(clerkOrgId)
-    if (!convexOrg) return '—'
-    const parts = [convexOrg.town, convexOrg.cityOrDistrict, convexOrg.country].filter(Boolean)
-    return parts.length > 0 ? parts.join(', ') : '—'
-  }
+    const convexOrg = convexOrgMap.get(clerkOrgId);
+    if (!convexOrg) return "—";
+    const parts = [
+      convexOrg.town,
+      convexOrg.cityOrDistrict,
+      convexOrg.country,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : "—";
+  };
 
   const getVendorCategory = (clerkOrgId: string): string => {
-    const convexOrg = convexOrgMap.get(clerkOrgId)
-    if (!convexOrg?.categoryId) return '—'
-    const category = categoryMap.get(convexOrg.categoryId)
-    return category?.name ?? '—'
-  }
+    const convexOrg = convexOrgMap.get(clerkOrgId);
+    if (!convexOrg?.categoryId) return "—";
+    const category = categoryMap.get(convexOrg.categoryId);
+    return category?.name ?? "—";
+  };
 
   const getVendorHours = (clerkOrgId: string): string => {
-    const convexOrg = convexOrgMap.get(clerkOrgId)
-    if (!convexOrg?.openingTime || !convexOrg?.closingTime) return '—'
-    return `${convexOrg.openingTime} - ${convexOrg.closingTime}`
-  }
+    const convexOrg = convexOrgMap.get(clerkOrgId);
+    if (!(convexOrg?.openingTime && convexOrg?.closingTime)) return "—";
+    return `${convexOrg.openingTime} - ${convexOrg.closingTime}`;
+  };
 
   if (clerkError) {
     return (
@@ -148,20 +167,20 @@ export function AdminVendorsPage() {
             <p className="text-center text-destructive">
               {clerkError instanceof Error
                 ? clerkError.message
-                : 'Failed to load vendors'}
+                : "Failed to load vendors"}
             </p>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Vendors</h1>
+          <h1 className="font-bold text-2xl">Vendors</h1>
           <p className="text-muted-foreground">
             Manage vendor organizations and their business settings
           </p>
@@ -172,50 +191,50 @@ export function AdminVendorsPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Vendors</CardTitle>
+            <CardTitle className="font-medium text-sm">Total Vendors</CardTitle>
             <Store className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {clerkData?.totalCount ?? 0}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CardTitle className="font-medium text-sm">Active</CardTitle>
             <div className="size-2 rounded-full bg-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {clerkData?.organizations.filter(
-                (org) => getVendorStatus(org.id) === 'active'
+                (org) => getVendorStatus(org.id) === "active"
               ).length ?? 0}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Paused</CardTitle>
+            <CardTitle className="font-medium text-sm">Paused</CardTitle>
             <div className="size-2 rounded-full bg-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {clerkData?.organizations.filter(
-                (org) => getVendorStatus(org.id) === 'busy'
+                (org) => getVendorStatus(org.id) === "busy"
               ).length ?? 0}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Incomplete</CardTitle>
+            <CardTitle className="font-medium text-sm">Incomplete</CardTitle>
             <div className="size-2 rounded-full bg-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-bold text-2xl">
               {clerkData?.organizations.filter(
-                (org) => getVendorStatus(org.id) === 'incomplete'
+                (org) => getVendorStatus(org.id) === "incomplete"
               ).length ?? 0}
             </div>
           </CardContent>
@@ -247,26 +266,26 @@ export function AdminVendorsPage() {
                   <TableHead>Hours</TableHead>
                   <TableHead>Members</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="w-[50px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clerkData?.organizations.map((org) => {
-                  const status = getVendorStatus(org.id)
+                  const status = getVendorStatus(org.id);
 
                   return (
                     <TableRow key={org.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="size-9">
-                            <AvatarImage src={org.imageUrl} alt={org.name} />
+                            <AvatarImage alt={org.name} src={org.imageUrl} />
                             <AvatarFallback>
                               {org.name.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="font-medium">{org.name}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-muted-foreground text-sm">
                               {org.slug}
                             </div>
                           </div>
@@ -294,32 +313,32 @@ export function AdminVendorsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={
-                            status === 'active'
-                              ? 'default'
-                              : status === 'busy'
-                                ? 'secondary'
-                                : 'outline'
-                          }
                           className={
-                            status === 'active'
-                              ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                              : status === 'busy'
-                                ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
-                                : ''
+                            status === "active"
+                              ? "bg-green-100 text-green-800 hover:bg-green-100"
+                              : status === "busy"
+                                ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                                : ""
+                          }
+                          variant={
+                            status === "active"
+                              ? "default"
+                              : status === "busy"
+                                ? "secondary"
+                                : "outline"
                           }
                         >
-                          {status === 'active'
-                            ? 'Active'
-                            : status === 'busy'
-                              ? 'Paused'
-                              : 'Incomplete'}
+                          {status === "active"
+                            ? "Active"
+                            : status === "busy"
+                              ? "Paused"
+                              : "Incomplete"}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button size="icon" variant="ghost">
                               <MoreHorizontal className="size-4" />
                               <span className="sr-only">Actions</span>
                             </Button>
@@ -339,11 +358,11 @@ export function AdminVendorsPage() {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
                 {clerkData?.organizations.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell className="py-8 text-center" colSpan={7}>
                       <p className="text-muted-foreground">
                         No vendors found. Create an organization to get started.
                       </p>
@@ -358,11 +377,11 @@ export function AdminVendorsPage() {
 
       {/* Vendor Edit Sheet */}
       <VendorFormSheet
-        open={editSheetOpen}
         onOpenChange={setEditSheetOpen}
-        vendor={selectedVendor}
         onSuccess={handleEditSuccess}
+        open={editSheetOpen}
+        vendor={selectedVendor}
       />
     </div>
-  )
+  );
 }

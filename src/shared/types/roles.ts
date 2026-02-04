@@ -5,13 +5,13 @@
  * - rider: Delivery riders - can belong to rider organizations (rider dashboard)
  * - (undefined/customer): Default - vendor access via Clerk org membership
  */
-export type PlatformRole = 'admin' | 'rider'
+export type PlatformRole = "admin" | "rider";
 
 /**
  * Type for Clerk publicMetadata
  */
 export interface PublicMetadata {
-  platformRole?: PlatformRole
+  platformRole?: PlatformRole;
   // Add other metadata fields as needed
 }
 
@@ -19,14 +19,14 @@ export interface PublicMetadata {
  * Check if user has admin role (BoxKuBox staff)
  */
 export function isAdmin(metadata: PublicMetadata | undefined): boolean {
-  return metadata?.platformRole === 'admin'
+  return metadata?.platformRole === "admin";
 }
 
 /**
  * Check if user has rider role
  */
 export function isRider(metadata: PublicMetadata | undefined): boolean {
-  return metadata?.platformRole === 'rider'
+  return metadata?.platformRole === "rider";
 }
 
 /**
@@ -34,7 +34,7 @@ export function isRider(metadata: PublicMetadata | undefined): boolean {
  * Vendor access is determined by Clerk org membership, not platformRole
  */
 export function isRegularUser(metadata: PublicMetadata | undefined): boolean {
-  return !metadata?.platformRole
+  return !metadata?.platformRole;
 }
 
 /**
@@ -46,12 +46,12 @@ export function getDashboardPath(
   hasOrgMembership: boolean
 ): string {
   switch (metadata?.platformRole) {
-    case 'admin':
-      return '/admin'
-    case 'rider':
-      return '/rider'
+    case "admin":
+      return "/admin";
+    case "rider":
+      return "/rider";
     default:
       // Regular users go to vendor if they're in an org
-      return hasOrgMembership ? '/vendor' : '/'
+      return hasOrgMembership ? "/vendor" : "/";
   }
 }

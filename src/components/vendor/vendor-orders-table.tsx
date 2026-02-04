@@ -1,6 +1,5 @@
-"use client"
+"use client";
 
-import * as React from "react"
 import {
   IconChevronDown,
   IconChevronLeft,
@@ -15,8 +14,10 @@ import {
   IconPackage,
   IconTruck,
   IconX,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 import {
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -24,16 +25,15 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
   type SortingState,
+  useReactTable,
   type VisibilityState,
-} from "@tanstack/react-table"
-import { z } from "zod"
+} from "@tanstack/react-table";
+import * as React from "react";
+import { z } from "zod";
 
-import { Badge } from "~/components/ui/badge"
-import { Button } from "~/components/ui/button"
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -41,16 +41,16 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
-import { Input } from "~/components/ui/input"
-import { Label } from "~/components/ui/label"
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select"
+} from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -58,7 +58,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table"
+} from "~/components/ui/table";
 
 export const orderSchema = z.object({
   id: z.string(),
@@ -67,34 +67,67 @@ export const orderSchema = z.object({
     name: z.string(),
     phone: z.string().optional(),
   }),
-  status: z.enum(["pending", "confirmed", "processing", "out_for_delivery", "delivered", "cancelled"]),
+  status: z.enum([
+    "pending",
+    "confirmed",
+    "processing",
+    "out_for_delivery",
+    "delivered",
+    "cancelled",
+  ]),
   total: z.number(),
   items: z.number(),
   createdAt: z.string(),
   rider: z.string().optional(),
-})
+});
 
-export type Order = z.infer<typeof orderSchema>
+export type Order = z.infer<typeof orderSchema>;
 
 function getStatusBadge(status: Order["status"]) {
   const statusConfig = {
-    pending: { icon: IconLoader, label: "Pending", variant: "outline" as const },
-    confirmed: { icon: IconCircleCheckFilled, label: "Confirmed", variant: "secondary" as const },
-    processing: { icon: IconPackage, label: "Processing", variant: "secondary" as const },
-    out_for_delivery: { icon: IconTruck, label: "Out for Delivery", variant: "default" as const },
-    delivered: { icon: IconCircleCheckFilled, label: "Delivered", variant: "default" as const },
-    cancelled: { icon: IconX, label: "Cancelled", variant: "destructive" as const },
-  }
+    pending: {
+      icon: IconLoader,
+      label: "Pending",
+      variant: "outline" as const,
+    },
+    confirmed: {
+      icon: IconCircleCheckFilled,
+      label: "Confirmed",
+      variant: "secondary" as const,
+    },
+    processing: {
+      icon: IconPackage,
+      label: "Processing",
+      variant: "secondary" as const,
+    },
+    out_for_delivery: {
+      icon: IconTruck,
+      label: "Out for Delivery",
+      variant: "default" as const,
+    },
+    delivered: {
+      icon: IconCircleCheckFilled,
+      label: "Delivered",
+      variant: "default" as const,
+    },
+    cancelled: {
+      icon: IconX,
+      label: "Cancelled",
+      variant: "destructive" as const,
+    },
+  };
 
-  const config = statusConfig[status]
-  const Icon = config.icon
+  const config = statusConfig[status];
+  const Icon = config.icon;
 
   return (
-    <Badge variant={config.variant} className="gap-1 px-1.5">
-      <Icon className={`size-3.5 ${status === "delivered" ? "fill-green-500 dark:fill-green-400" : ""}`} />
+    <Badge className="gap-1 px-1.5" variant={config.variant}>
+      <Icon
+        className={`size-3.5 ${status === "delivered" ? "fill-green-500 dark:fill-green-400" : ""}`}
+      />
       {config.label}
     </Badge>
-  )
+  );
 }
 
 function formatCurrency(amount: number) {
@@ -102,7 +135,7 @@ function formatCurrency(amount: number) {
     style: "currency",
     currency: "UGX",
     minimumFractionDigits: 0,
-  }).format(amount)
+  }).format(amount);
 }
 
 function formatDate(dateString: string) {
@@ -111,7 +144,7 @@ function formatDate(dateString: string) {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  })
+  });
 }
 
 const columns: ColumnDef<Order>[] = [
@@ -119,7 +152,9 @@ const columns: ColumnDef<Order>[] = [
     accessorKey: "orderNumber",
     header: "Order #",
     cell: ({ row }) => (
-      <span className="font-medium text-primary">{row.original.orderNumber}</span>
+      <span className="font-medium text-primary">
+        {row.original.orderNumber}
+      </span>
     ),
     enableHiding: false,
   },
@@ -130,7 +165,9 @@ const columns: ColumnDef<Order>[] = [
       <div className="flex flex-col">
         <span className="font-medium">{row.original.customer.name}</span>
         {row.original.customer.phone && (
-          <span className="text-xs text-muted-foreground">{row.original.customer.phone}</span>
+          <span className="text-muted-foreground text-xs">
+            {row.original.customer.phone}
+          </span>
         )}
       </div>
     ),
@@ -140,7 +177,7 @@ const columns: ColumnDef<Order>[] = [
     header: "Status",
     cell: ({ row }) => getStatusBadge(row.original.status),
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
+      return value.includes(row.getValue(id));
     },
   },
   {
@@ -174,7 +211,9 @@ const columns: ColumnDef<Order>[] = [
     accessorKey: "createdAt",
     header: "Date",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{formatDate(row.original.createdAt)}</span>
+      <span className="text-muted-foreground">
+        {formatDate(row.original.createdAt)}
+      </span>
     ),
   },
   {
@@ -183,9 +222,9 @@ const columns: ColumnDef<Order>[] = [
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+            className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
             size="icon"
+            variant="ghost"
           >
             <IconDotsVertical />
             <span className="sr-only">Open menu</span>
@@ -202,24 +241,26 @@ const columns: ColumnDef<Order>[] = [
               Confirm Order
             </DropdownMenuItem>
           )}
-          {(row.original.status === "confirmed" || row.original.status === "processing") && (
+          {(row.original.status === "confirmed" ||
+            row.original.status === "processing") && (
             <DropdownMenuItem>
               <IconTruck className="size-4" />
               Assign Rider
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          {row.original.status !== "delivered" && row.original.status !== "cancelled" && (
-            <DropdownMenuItem variant="destructive">
-              <IconX className="size-4" />
-              Cancel Order
-            </DropdownMenuItem>
-          )}
+          {row.original.status !== "delivered" &&
+            row.original.status !== "cancelled" && (
+              <DropdownMenuItem variant="destructive">
+                <IconX className="size-4" />
+                Cancel Order
+              </DropdownMenuItem>
+            )}
         </DropdownMenuContent>
       </DropdownMenu>
     ),
   },
-]
+];
 
 // Demo data
 const demoOrders: Order[] = [
@@ -228,7 +269,7 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-001",
     customer: { name: "John Doe", phone: "+256 701 234 567" },
     status: "pending",
-    total: 125000,
+    total: 125_000,
     items: 3,
     createdAt: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
     rider: undefined,
@@ -238,7 +279,7 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-002",
     customer: { name: "Jane Smith", phone: "+256 702 345 678" },
     status: "confirmed",
-    total: 89000,
+    total: 89_000,
     items: 2,
     createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
     rider: undefined,
@@ -248,7 +289,7 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-003",
     customer: { name: "Mike Johnson", phone: "+256 703 456 789" },
     status: "delivered",
-    total: 245000,
+    total: 245_000,
     items: 5,
     createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
     rider: "Samuel K.",
@@ -258,7 +299,7 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-004",
     customer: { name: "Sarah Wilson", phone: "+256 704 567 890" },
     status: "processing",
-    total: 67500,
+    total: 67_500,
     items: 1,
     createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
     rider: undefined,
@@ -268,7 +309,7 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-005",
     customer: { name: "Peter Ochieng" },
     status: "out_for_delivery",
-    total: 183000,
+    total: 183_000,
     items: 4,
     createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
     rider: "Moses T.",
@@ -278,7 +319,7 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-006",
     customer: { name: "Grace Nakato", phone: "+256 706 789 012" },
     status: "cancelled",
-    total: 52000,
+    total: 52_000,
     items: 2,
     createdAt: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
     rider: undefined,
@@ -288,7 +329,7 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-007",
     customer: { name: "David Ssempa", phone: "+256 707 890 123" },
     status: "delivered",
-    total: 312000,
+    total: 312_000,
     items: 6,
     createdAt: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
     rider: "James M.",
@@ -298,27 +339,32 @@ const demoOrders: Order[] = [
     orderNumber: "ORD-008",
     customer: { name: "Alice Nambi" },
     status: "pending",
-    total: 95000,
+    total: 95_000,
     items: 3,
     createdAt: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
     rider: undefined,
   },
-]
+];
 
 interface VendorOrdersTableProps {
-  data?: Order[]
+  data?: Order[];
 }
 
-export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrdersTableProps) {
-  const [data] = React.useState(() => initialData)
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = React.useState("")
+export function VendorOrdersTable({
+  data: initialData = demoOrders,
+}: VendorOrdersTableProps) {
+  const [data] = React.useState(() => initialData);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = React.useState("");
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
-  })
+  });
 
   const table = useReactTable({
     data,
@@ -341,27 +387,31 @@ export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrde
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  })
+  });
 
   return (
     <div className="flex flex-col gap-4 px-4 lg:px-6">
       {/* Filters Row */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2">
-          <Label htmlFor="search-orders" className="sr-only">
+          <Label className="sr-only" htmlFor="search-orders">
             Search orders
           </Label>
           <Input
+            className="max-w-sm"
             id="search-orders"
+            onChange={(event) => setGlobalFilter(event.target.value)}
             placeholder="Search orders..."
             value={globalFilter ?? ""}
-            onChange={(event) => setGlobalFilter(event.target.value)}
-            className="max-w-sm"
           />
           <Select
-            value={(table.getColumn("status")?.getFilterValue() as string) ?? "all"}
             onValueChange={(value) =>
-              table.getColumn("status")?.setFilterValue(value === "all" ? undefined : value)
+              table
+                .getColumn("status")
+                ?.setFilterValue(value === "all" ? undefined : value)
+            }
+            value={
+              (table.getColumn("status")?.getFilterValue() as string) ?? "all"
             }
           >
             <SelectTrigger className="w-[150px]">
@@ -380,7 +430,7 @@ export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrde
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button size="sm" variant="outline">
               <IconLayoutColumns />
               <span className="hidden lg:inline">Columns</span>
               <IconChevronDown />
@@ -391,19 +441,22 @@ export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrde
               .getAllColumns()
               .filter(
                 (column) =>
-                  typeof column.accessorFn !== "undefined" && column.getCanHide()
+                  typeof column.accessorFn !== "undefined" &&
+                  column.getCanHide()
               )
               .map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    className="capitalize"
+                    key={column.id}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -416,10 +469,13 @@ export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrde
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} colSpan={header.colSpan}>
+                  <TableHead colSpan={header.colSpan} key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -428,17 +484,26 @@ export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrde
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   No orders found.
                 </TableCell>
               </TableRow>
@@ -449,54 +514,60 @@ export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrde
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <div className="text-muted-foreground hidden text-sm lg:block">
-          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
+        <div className="hidden text-muted-foreground text-sm lg:block">
+          Showing{" "}
+          {table.getState().pagination.pageIndex *
+            table.getState().pagination.pageSize +
+            1}{" "}
+          to{" "}
           {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+            (table.getState().pagination.pageIndex + 1) *
+              table.getState().pagination.pageSize,
             table.getFilteredRowModel().rows.length
           )}{" "}
           of {table.getFilteredRowModel().rows.length} orders
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
             className="hidden size-8 lg:flex"
-            size="icon"
-            onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
+            onClick={() => table.setPageIndex(0)}
+            size="icon"
+            variant="outline"
           >
             <span className="sr-only">Go to first page</span>
             <IconChevronsLeft />
           </Button>
           <Button
-            variant="outline"
             className="size-8"
-            size="icon"
-            onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            size="icon"
+            variant="outline"
           >
             <span className="sr-only">Go to previous page</span>
             <IconChevronLeft />
           </Button>
-          <span className="text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          <span className="font-medium text-sm">
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
           </span>
           <Button
-            variant="outline"
             className="size-8"
-            size="icon"
-            onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+            size="icon"
+            variant="outline"
           >
             <span className="sr-only">Go to next page</span>
             <IconChevronRight />
           </Button>
           <Button
-            variant="outline"
             className="hidden size-8 lg:flex"
-            size="icon"
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            size="icon"
+            variant="outline"
           >
             <span className="sr-only">Go to last page</span>
             <IconChevronsRight />
@@ -504,5 +575,5 @@ export function VendorOrdersTable({ data: initialData = demoOrders }: VendorOrde
         </div>
       </div>
     </div>
-  )
+  );
 }

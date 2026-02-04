@@ -1,34 +1,34 @@
-'use client'
+"use client";
 
-import { type ReactNode } from 'react'
-import { useAbility } from '~/shared/stores/ability-store'
-import type { AppAction, AppSubjects } from '~/shared/lib/ability'
+import type { ReactNode } from "react";
+import type { AppAction, AppSubjects } from "~/shared/lib/ability";
+import { useAbility } from "~/shared/stores/ability-store";
 
 export interface CanProps {
   /**
    * The action to check (e.g., "create", "read", "update", "delete", "manage")
    */
-  I: AppAction
+  I: AppAction;
   /**
    * The subject to check against (e.g., "Product", "Order", or a subject instance)
    */
-  a: AppSubjects
+  a: AppSubjects;
   /**
    * Optional field for field-level permission checks
    */
-  field?: string
+  field?: string;
   /**
    * If true, inverts the permission check (renders children when NOT allowed)
    */
-  not?: boolean
+  not?: boolean;
   /**
    * Content to render when permission check fails
    */
-  otherwise?: ReactNode
+  otherwise?: ReactNode;
   /**
    * Content to render when permission check passes
    */
-  children?: ReactNode
+  children?: ReactNode;
 }
 
 /**
@@ -87,19 +87,19 @@ export function Can({
   children,
   otherwise,
 }: CanProps): ReactNode {
-  const ability = useAbility()
+  const ability = useAbility();
 
   const allowed = field
     ? ability.can(action, subject, field)
-    : ability.can(action, subject)
+    : ability.can(action, subject);
 
-  const shouldShow = not ? !allowed : allowed
+  const shouldShow = not ? !allowed : allowed;
 
   if (shouldShow) {
-    return children ?? null
+    return children ?? null;
   }
 
-  return otherwise ?? null
+  return otherwise ?? null;
 }
 
 /**
@@ -121,12 +121,12 @@ export function useCanCheck(
   subject: AppSubjects,
   field?: string
 ): boolean {
-  const ability = useAbility()
+  const ability = useAbility();
 
   if (field) {
-    return ability.can(action, subject, field)
+    return ability.can(action, subject, field);
   }
-  return ability.can(action, subject)
+  return ability.can(action, subject);
 }
 
-export default Can
+export default Can;

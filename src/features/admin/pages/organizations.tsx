@@ -1,15 +1,8 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
-
-import { deleteOrganization, listOrganizations } from '../api/organizations'
-import { CreateOrganizationForm } from '../components/create-organization-form'
-import { OrganizationDetailsDialog } from '../components/organization-details-dialog'
-import { OrganizationsTable } from '../components/organizations-table'
-import type { Organization } from '../components/organizations-table'
-
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
+import * as React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,54 +12,61 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '~/components/ui/alert-dialog'
-import { Button } from '~/components/ui/button'
-import { Card, CardContent, CardHeader } from '~/components/ui/card'
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { deleteOrganization, listOrganizations } from "../api/organizations";
+import { CreateOrganizationForm } from "../components/create-organization-form";
+import { OrganizationDetailsDialog } from "../components/organization-details-dialog";
+import type { Organization } from "../components/organizations-table";
+import { OrganizationsTable } from "../components/organizations-table";
 
 // =============================================================================
 // Main Page Component
 // =============================================================================
 
 export function AdminOrganizationsPage() {
-  const queryClient = useQueryClient()
-  const [createOpen, setCreateOpen] = React.useState(false)
-  const [selectedOrg, setSelectedOrg] = React.useState<Organization | null>(null)
-  const [detailsOpen, setDetailsOpen] = React.useState(false)
-  const [deleteOrg, setDeleteOrg] = React.useState<Organization | null>(null)
+  const queryClient = useQueryClient();
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [selectedOrg, setSelectedOrg] = React.useState<Organization | null>(
+    null
+  );
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
+  const [deleteOrg, setDeleteOrg] = React.useState<Organization | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['organizations'],
+    queryKey: ["organizations"],
     queryFn: () => listOrganizations({ data: { limit: 100, offset: 0 } }),
-  })
+  });
 
   const handleViewMembers = (org: Organization) => {
-    setSelectedOrg(org)
-    setDetailsOpen(true)
-  }
+    setSelectedOrg(org);
+    setDetailsOpen(true);
+  };
 
   const handleEdit = (org: Organization) => {
     // TODO: Implement edit organization dialog
-    console.log('Edit organization:', org)
-  }
+    console.log("Edit organization:", org);
+  };
 
   const handleDeleteClick = (org: Organization) => {
-    setDeleteOrg(org)
-  }
+    setDeleteOrg(org);
+  };
 
   const handleDeleteConfirm = async () => {
-    if (!deleteOrg) return
+    if (!deleteOrg) return;
     try {
-      await deleteOrganization({ data: { organizationId: deleteOrg.id } })
-      queryClient.invalidateQueries({ queryKey: ['organizations'] })
+      await deleteOrganization({ data: { organizationId: deleteOrg.id } });
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
     } catch (err) {
-      console.error('Failed to delete organization:', err)
+      console.error("Failed to delete organization:", err);
     }
-    setDeleteOrg(null)
-  }
+    setDeleteOrg(null);
+  };
 
   const handleCreateSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ['organizations'] })
-  }
+    queryClient.invalidateQueries({ queryKey: ["organizations"] });
+  };
 
   if (error) {
     return (
@@ -76,20 +76,20 @@ export function AdminOrganizationsPage() {
             <p className="text-center text-destructive">
               {error instanceof Error
                 ? error.message
-                : 'Failed to load organizations'}
+                : "Failed to load organizations"}
             </p>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Organizations</h1>
+          <h1 className="font-bold text-2xl">Organizations</h1>
           <p className="text-muted-foreground">
             Manage all vendor organizations on the platform
           </p>
@@ -103,7 +103,7 @@ export function AdminOrganizationsPage() {
       {/* Organizations Table */}
       <Card>
         <CardHeader>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             {data?.totalCount ?? 0} total organizations
           </div>
         </CardHeader>
@@ -111,29 +111,29 @@ export function AdminOrganizationsPage() {
           <OrganizationsTable
             data={data?.organizations ?? []}
             isLoading={isLoading}
-            onViewMembers={handleViewMembers}
-            onEdit={handleEdit}
             onDelete={handleDeleteClick}
+            onEdit={handleEdit}
+            onViewMembers={handleViewMembers}
           />
         </CardContent>
       </Card>
 
       {/* Create Organization Dialog */}
       <CreateOrganizationForm
-        open={createOpen}
         onOpenChange={setCreateOpen}
         onSuccess={handleCreateSuccess}
+        open={createOpen}
       />
 
       {/* Organization Details Dialog */}
       <OrganizationDetailsDialog
-        organizationId={selectedOrg?.id ?? null}
-        open={detailsOpen}
         onOpenChange={setDetailsOpen}
+        open={detailsOpen}
+        organizationId={selectedOrg?.id ?? null}
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteOrg} onOpenChange={() => setDeleteOrg(null)}>
+      <AlertDialog onOpenChange={() => setDeleteOrg(null)} open={!!deleteOrg}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Organization</AlertDialogTitle>
@@ -155,5 +155,5 @@ export function AdminOrganizationsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

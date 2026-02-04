@@ -1,31 +1,14 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from '@tanstack/react-table'
-import { Building2, Trash2, UserPlus } from 'lucide-react'
-
-import {
-  getOrganization,
-  removeOrganizationMember,
-  updateMemberRole,
-} from '../api/organizations'
-import { AddMemberForm } from './add-member-form'
-
-import type { ColumnDef } from '@tanstack/react-table'
-
-import { Button } from '~/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '~/components/ui/dialog'
+} from "@tanstack/react-table";
+import { Building2, Trash2, UserPlus } from "lucide-react";
+import * as React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +18,23 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '~/components/ui/alert-dialog'
+} from "~/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -43,35 +42,33 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '~/components/ui/table'
+} from "~/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '~/components/ui/select'
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
-import { Badge } from '~/components/ui/badge'
+  getOrganization,
+  removeOrganizationMember,
+  updateMemberRole,
+} from "../api/organizations";
+import { AddMemberForm } from "./add-member-form";
 
 // =============================================================================
 // Types
 // =============================================================================
 
 interface OrganizationMember {
-  id: string
-  role: string
-  userId: string | undefined
-  email: string
-  firstName: string | null | undefined
-  lastName: string | null | undefined
-  imageUrl: string | undefined
-  createdAt: number
+  id: string;
+  role: string;
+  userId: string | undefined;
+  email: string;
+  firstName: string | null | undefined;
+  lastName: string | null | undefined;
+  imageUrl: string | undefined;
+  createdAt: number;
 }
 
 interface OrganizationDetailsDialogProps {
-  organizationId: string | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  organizationId: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 // =============================================================================
@@ -80,17 +77,17 @@ interface OrganizationDetailsDialogProps {
 
 function getRoleBadgeVariant(role: string) {
   switch (role) {
-    case 'org:owner':
-      return 'default'
-    case 'org:admin':
-      return 'secondary'
+    case "org:owner":
+      return "default";
+    case "org:admin":
+      return "secondary";
     default:
-      return 'outline'
+      return "outline";
   }
 }
 
 function formatRoleLabel(role: string) {
-  return role.replace('org:', '')
+  return role.replace("org:", "");
 }
 
 // =============================================================================
@@ -98,23 +95,19 @@ function formatRoleLabel(role: string) {
 // =============================================================================
 
 interface MembersTableProps {
-  members: Array<OrganizationMember>
-  organizationId: string
-  onRoleChange: (userId: string, role: string) => Promise<void>
-  onRemove: (userId: string) => void
+  members: Array<OrganizationMember>;
+  organizationId: string;
+  onRoleChange: (userId: string, role: string) => Promise<void>;
+  onRemove: (userId: string) => void;
 }
 
-function MembersTable({
-  members,
-  onRoleChange,
-  onRemove,
-}: MembersTableProps) {
+function MembersTable({ members, onRoleChange, onRemove }: MembersTableProps) {
   const columns: Array<ColumnDef<OrganizationMember>> = [
     {
-      id: 'user',
-      header: 'User',
+      id: "user",
+      header: "User",
       cell: ({ row }) => {
-        const member = row.original
+        const member = row.original;
         return (
           <div className="flex items-center gap-2">
             <Avatar className="size-8">
@@ -125,26 +118,26 @@ function MembersTable({
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium">
+              <p className="font-medium text-sm">
                 {member.firstName} {member.lastName}
               </p>
-              <p className="text-xs text-muted-foreground">{member.email}</p>
+              <p className="text-muted-foreground text-xs">{member.email}</p>
             </div>
           </div>
-        )
+        );
       },
     },
     {
-      id: 'role',
-      header: 'Role',
+      id: "role",
+      header: "Role",
       cell: ({ row }) => {
-        const member = row.original
+        const member = row.original;
         return (
           <Select
-            value={member.role}
             onValueChange={(value) =>
               member.userId ? onRoleChange(member.userId, value) : undefined
             }
+            value={member.role}
           >
             <SelectTrigger className="w-32">
               <Badge variant={getRoleBadgeVariant(member.role)}>
@@ -157,34 +150,34 @@ function MembersTable({
               <SelectItem value="org:member">Member</SelectItem>
             </SelectContent>
           </Select>
-        )
+        );
       },
     },
     {
-      id: 'actions',
+      id: "actions",
       header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
-        const member = row.original
+        const member = row.original;
         return (
           <Button
-            variant="ghost"
-            size="icon"
             className="text-destructive hover:text-destructive"
             onClick={() => member.userId && onRemove(member.userId)}
+            size="icon"
+            variant="ghost"
           >
             <Trash2 className="size-4" />
             <span className="sr-only">Remove member</span>
           </Button>
-        )
+        );
       },
     },
-  ]
+  ];
 
   const table = useReactTable({
     data: members,
     columns,
     getCoreRowModel: getCoreRowModel(),
-  })
+  });
 
   return (
     <div className="rounded-md border">
@@ -218,7 +211,7 @@ function MembersTable({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell className="h-24 text-center" colSpan={columns.length}>
                 No members yet
               </TableCell>
             </TableRow>
@@ -226,7 +219,7 @@ function MembersTable({
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
 
 // =============================================================================
@@ -238,70 +231,70 @@ export function OrganizationDetailsDialog({
   open,
   onOpenChange,
 }: OrganizationDetailsDialogProps) {
-  const queryClient = useQueryClient()
-  const [addMemberOpen, setAddMemberOpen] = React.useState(false)
-  const [removingMember, setRemovingMember] = React.useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const [addMemberOpen, setAddMemberOpen] = React.useState(false);
+  const [removingMember, setRemovingMember] = React.useState<string | null>(
+    null
+  );
 
   const { data: org, isLoading } = useQuery({
-    queryKey: ['organization', organizationId],
+    queryKey: ["organization", organizationId],
     queryFn: () =>
       getOrganization({ data: { organizationId: organizationId! } }),
     enabled: !!organizationId && open,
-  })
+  });
 
   const invalidateOrg = () => {
     queryClient.invalidateQueries({
-      queryKey: ['organization', organizationId],
-    })
-    queryClient.invalidateQueries({ queryKey: ['organizations'] })
-  }
+      queryKey: ["organization", organizationId],
+    });
+    queryClient.invalidateQueries({ queryKey: ["organizations"] });
+  };
 
   const handleRemoveMember = async (userId: string) => {
-    if (!organizationId) return
+    if (!organizationId) return;
     try {
       await removeOrganizationMember({
         data: { organizationId, userId },
-      })
-      invalidateOrg()
+      });
+      invalidateOrg();
     } catch (err) {
-      console.error('Failed to remove member:', err)
+      console.error("Failed to remove member:", err);
     }
-    setRemovingMember(null)
-  }
+    setRemovingMember(null);
+  };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    if (!organizationId) return
+    if (!organizationId) return;
     try {
       await updateMemberRole({
         data: {
           organizationId,
           userId,
-          role: newRole as 'org:owner' | 'org:admin' | 'org:member',
+          role: newRole as "org:owner" | "org:admin" | "org:member",
         },
-      })
-      invalidateOrg()
+      });
+      invalidateOrg();
     } catch (err) {
-      console.error('Failed to update role:', err)
+      console.error("Failed to update role:", err);
     }
-  }
+  };
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog onOpenChange={onOpenChange} open={open}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {org?.imageUrl ? (
                 <Avatar className="size-8">
                   <AvatarImage src={org.imageUrl} />
-                  <AvatarFallback>
-                    {org.name[0].toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback>{org.name[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
               ) : (
                 <Building2 className="size-5" />
               )}
-              {org?.name ?? 'Organization Details'}
+              {org?.name ?? "Organization Details"}
             </DialogTitle>
             <DialogDescription>
               {org?.slug && `Slug: ${org.slug}`}
@@ -315,13 +308,13 @@ export function OrganizationDetailsDialog({
           ) : org ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">
+                <h4 className="font-medium text-sm">
                   Members ({org.members.length})
                 </h4>
                 <Button
+                  onClick={() => setAddMemberOpen(true)}
                   size="sm"
                   variant="outline"
-                  onClick={() => setAddMemberOpen(true)}
                 >
                   <UserPlus className="mr-2 size-4" />
                   Add Member
@@ -330,9 +323,9 @@ export function OrganizationDetailsDialog({
 
               <MembersTable
                 members={org.members}
-                organizationId={organizationId!}
-                onRoleChange={handleRoleChange}
                 onRemove={setRemovingMember}
+                onRoleChange={handleRoleChange}
+                organizationId={organizationId!}
               />
             </div>
           ) : null}
@@ -341,16 +334,16 @@ export function OrganizationDetailsDialog({
 
       {organizationId && (
         <AddMemberForm
-          organizationId={organizationId}
-          open={addMemberOpen}
           onOpenChange={setAddMemberOpen}
           onSuccess={invalidateOrg}
+          open={addMemberOpen}
+          organizationId={organizationId}
         />
       )}
 
       <AlertDialog
-        open={!!removingMember}
         onOpenChange={() => setRemovingMember(null)}
+        open={!!removingMember}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -364,7 +357,9 @@ export function OrganizationDetailsDialog({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => removingMember && handleRemoveMember(removingMember)}
+              onClick={() =>
+                removingMember && handleRemoveMember(removingMember)
+              }
             >
               Remove
             </AlertDialogAction>
@@ -372,5 +367,5 @@ export function OrganizationDetailsDialog({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

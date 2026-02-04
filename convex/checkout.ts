@@ -11,8 +11,8 @@
  */
 
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { mutation, query } from "./_generated/server";
 import { rateLimiter } from "./components";
 import { calculateFare, estimateDeliveryTime } from "./lib/fare";
 
@@ -104,7 +104,9 @@ export const validate = query({
     if (!org) {
       errors.push("Store not found");
     } else if (org.isBusy) {
-      errors.push("Store is currently not accepting orders. Please try again later.");
+      errors.push(
+        "Store is currently not accepting orders. Please try again later."
+      );
     }
 
     // 4. Validate delivery address for delivery orders
@@ -112,17 +114,17 @@ export const validate = query({
     let deliveryInfo = null;
 
     if (args.fulfillmentType === "delivery") {
-      if (!args.deliveryAddressId) {
-        errors.push("Delivery address is required for delivery orders");
-      } else {
+      if (args.deliveryAddressId) {
         deliveryAddress = await ctx.db.get(args.deliveryAddressId);
 
         if (!deliveryAddress) {
           errors.push("Delivery address not found");
         } else if (deliveryAddress.clerkId !== args.customerClerkId) {
           errors.push("Delivery address does not belong to this customer");
-        } else if (!deliveryAddress.lat || !deliveryAddress.lng) {
-          errors.push("Delivery address is missing location coordinates. Please update the address.");
+        } else if (!(deliveryAddress.lat && deliveryAddress.lng)) {
+          errors.push(
+            "Delivery address is missing location coordinates. Please update the address."
+          );
         } else if (org && org.lat && org.lng) {
           // Calculate distance and validate delivery zone
           const distanceKm = calculateDistance(
@@ -143,9 +145,11 @@ export const validate = query({
               available: true,
             };
           }
-        } else if (!org?.lat || !org?.lng) {
+        } else if (!(org?.lat && org?.lng)) {
           warnings.push("Store location not set. Delivery fee may vary.");
         }
+      } else {
+        errors.push("Delivery address is required for delivery orders");
       }
     }
 
@@ -166,24 +170,24 @@ export const validate = query({
       const variant = await ctx.db.get(cartItem.variantId);
 
       if (!variant) {
-        errors.push(`A product in your cart no longer exists`);
+        errors.push("A product in your cart no longer exists");
         continue;
       }
 
       if (!variant.isAvailable) {
-        errors.push(`Product is no longer available`);
+        errors.push("Product is no longer available");
         continue;
       }
 
       if (variant.organizationId !== cart.organizationId) {
-        errors.push(`Invalid product in cart`);
+        errors.push("Invalid product in cart");
         continue;
       }
 
       // Get product for title
       const product = await ctx.db.get(variant.productId);
       if (!product) {
-        errors.push(`Product not found`);
+        errors.push("Product not found");
         continue;
       }
 
@@ -252,7 +256,12 @@ export const validate = query({
     let deliveryTotal = 0;
     let deliveryEstimate = null;
 
-    if (args.fulfillmentType === "delivery" && deliveryInfo?.available && org?.lat && org?.lng) {
+    if (
+      args.fulfillmentType === "delivery" &&
+      deliveryInfo?.available &&
+      org?.lat &&
+      org?.lng
+    ) {
       const fareBreakdown = calculateFare({
         distanceKm: deliveryInfo.distanceKm,
         orderSubtotal: subtotal,
@@ -295,7 +304,9 @@ export const validate = query({
       } else if (promo.endsAt && promo.endsAt < Date.now()) {
         warnings.push(`Promo code "${args.promoCode}" has expired`);
       } else if (promo.usageLimit && promo.usageCount >= promo.usageLimit) {
-        warnings.push(`Promo code "${args.promoCode}" has reached its usage limit`);
+        warnings.push(
+          `Promo code "${args.promoCode}" has reached its usage limit`
+        );
       } else {
         // Promo is valid - calculate discount
         // This is a simplified calculation; real implementation would
@@ -343,7 +354,11 @@ export const validate = query({
             _id: deliveryAddress._id,
             name: deliveryAddress.name,
             phone: deliveryAddress.phone,
-            address: [deliveryAddress.street, deliveryAddress.town, deliveryAddress.city]
+            address: [
+              deliveryAddress.street,
+              deliveryAddress.town,
+              deliveryAddress.city,
+            ]
               .filter(Boolean)
               .join(", "),
           }
@@ -455,7 +470,9 @@ export const complete = mutation({
         );
 
         if (distanceKm > 15) {
-          throw new Error(`Delivery address is too far (${distanceKm.toFixed(1)}km)`);
+          throw new Error(
+            `Delivery address is too far (${distanceKm.toFixed(1)}km)`
+          );
         }
       }
     }
@@ -475,7 +492,7 @@ export const complete = mutation({
 
     for (const cartItem of cartItems) {
       const variant = await ctx.db.get(cartItem.variantId);
-      if (!variant || !variant.isAvailable) {
+      if (!(variant && variant.isAvailable)) {
         throw new Error("A product in your cart is no longer available");
       }
 
@@ -693,14 +710,18 @@ export const complete = mutation({
     await ctx.db.delete(args.cartId);
 
     // Send notification to vendor
-    await ctx.scheduler.runAfter(0, internal.notifications.sendNewOrderNotification, {
-      vendorClerkId: org.clerkOrgId, // This would need to be mapped to actual vendor user IDs
-      orderId,
-      orderDisplayId: String(displayId),
-      orderTotal: total,
-      currency: cart.currencyCode ?? "UGX",
-      itemCount: orderItemsToInsert.length,
-    });
+    await ctx.scheduler.runAfter(
+      0,
+      internal.notifications.sendNewOrderNotification,
+      {
+        vendorClerkId: org.clerkOrgId, // This would need to be mapped to actual vendor user IDs
+        orderId,
+        orderDisplayId: String(displayId),
+        orderTotal: total,
+        currency: cart.currencyCode ?? "UGX",
+        itemCount: orderItemsToInsert.length,
+      }
+    );
 
     return {
       success: true,
@@ -766,7 +787,8 @@ export const initiateMobileMoneyPayment = mutation({
       phoneNumber: args.phoneNumber,
       amount: args.amount,
       status: "pending",
-      message: "Payment request sent. Please check your phone to complete the payment.",
+      message:
+        "Payment request sent. Please check your phone to complete the payment.",
     };
   },
 });
@@ -810,13 +832,12 @@ async function getNextDisplayId(ctx: any): Promise<number> {
     const nextValue = counter.value + 1;
     await ctx.db.patch(counter._id, { value: nextValue });
     return nextValue;
-  } else {
-    await ctx.db.insert("counters", {
-      name: "order_display_id",
-      value: 1001,
-    });
-    return 1000;
   }
+  await ctx.db.insert("counters", {
+    name: "order_display_id",
+    value: 1001,
+  });
+  return 1000;
 }
 
 /**

@@ -1,4 +1,19 @@
 // Dashboard components
-export { StatCard, StatsCards, type StatCardProps, type StatsCardsProps } from './stats-cards'
-export { RecentOrders, type RecentOrder, type RecentOrdersProps } from './recent-orders'
-export { SalesChart, generateDemoSalesData, type SalesDataPoint, type SalesChartProps } from './sales-chart'
+
+export {
+  type RecentOrder,
+  RecentOrders,
+  type RecentOrdersProps,
+} from "./recent-orders";
+export {
+  generateDemoSalesData,
+  SalesChart,
+  type SalesChartProps,
+  type SalesDataPoint,
+} from "./sales-chart";
+export {
+  StatCard,
+  type StatCardProps,
+  StatsCards,
+  type StatsCardsProps,
+} from "./stats-cards";

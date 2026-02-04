@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { VariantsBrowser } from '../components/variants-browser'
+import { VariantsBrowser } from "../components/variants-browser";
 
 // =============================================================================
 // VendorVariantsPage Component
 // =============================================================================
 
 export function VendorVariantsPage() {
-  return <VariantsBrowser />
+  return <VariantsBrowser />;
 }
 
-export default VendorVariantsPage
+export default VendorVariantsPage;

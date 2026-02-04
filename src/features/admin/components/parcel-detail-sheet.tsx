@@ -5,146 +5,138 @@
  * Used in admin parcels page for viewing and managing individual parcels.
  */
 
-import * as React from 'react'
 import {
-  Package,
-  MapPin,
-  Phone,
-  User,
+  AlertTriangle,
   Clock,
-  Truck,
+  Copy,
   CreditCard,
   FileText,
-  Copy,
-  AlertTriangle,
+  MapPin,
   Navigation,
+  Package,
+  Phone,
   Scale,
   Shield,
-} from 'lucide-react'
-import { toast } from 'sonner'
-
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '~/components/ui/sheet'
-import { Button } from '~/components/ui/button'
-import { Badge } from '~/components/ui/badge'
-import { Separator } from '~/components/ui/separator'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card'
+  Truck,
+  User,
+} from "lucide-react";
+import * as React from "react";
+import { toast } from "sonner";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '~/components/ui/select'
-import { Textarea } from '~/components/ui/textarea'
-import { Label } from '~/components/ui/label'
-import { cn } from '~/lib/utils'
-
+} from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
 import {
-  ParcelStatusBadge,
-  ParcelPaymentBadge,
-  ParcelSizeBadge,
-  type ParcelStatus,
-  type ParcelPaymentStatus,
-  type ParcelSizeCategory,
-} from './parcel-status-badge'
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "~/components/ui/sheet";
+import { Textarea } from "~/components/ui/textarea";
+import { cn } from "~/lib/utils";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import {
-  useAssignRiderToParcel,
-  useCancelParcel,
-  useUpdateParcelStatus,
-  useAddParcelNote,
-  useRegenerateParcelCodes,
+  canCancelParcel,
   formatCurrency,
   formatDistance,
   formatRelativeTime,
   getNextParcelStatuses,
-  canCancelParcel,
-} from '../hooks/use-parcels'
-
-import type { Id } from '../../../../convex/_generated/dataModel'
+  useAddParcelNote,
+  useAssignRiderToParcel,
+  useCancelParcel,
+  useRegenerateParcelCodes,
+  useUpdateParcelStatus,
+} from "../hooks/use-parcels";
+import {
+  ParcelPaymentBadge,
+  type ParcelPaymentStatus,
+  ParcelSizeBadge,
+  type ParcelSizeCategory,
+  type ParcelStatus,
+  ParcelStatusBadge,
+} from "./parcel-status-badge";
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 export interface ParcelDetailData {
-  _id: Id<'parcels'>
-  _creationTime: number
-  displayId: number
-  senderClerkId: string
+  _id: Id<"parcels">;
+  _creationTime: number;
+  displayId: number;
+  senderClerkId: string;
   // Pickup
-  pickupName: string
-  pickupPhone: string
-  pickupAddress: string
-  pickupLat?: number
-  pickupLng?: number
-  pickupNotes?: string
+  pickupName: string;
+  pickupPhone: string;
+  pickupAddress: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  pickupNotes?: string;
   // Dropoff
-  recipientName: string
-  recipientPhone: string
-  dropoffAddress: string
-  dropoffLat?: number
-  dropoffLng?: number
-  dropoffNotes?: string
+  recipientName: string;
+  recipientPhone: string;
+  dropoffAddress: string;
+  dropoffLat?: number;
+  dropoffLng?: number;
+  dropoffNotes?: string;
   // Package
-  description: string
-  weight?: number
-  sizeCategory: ParcelSizeCategory
-  fragile: boolean
-  valueAmount?: number
-  valueCurrency: string
+  description: string;
+  weight?: number;
+  sizeCategory: ParcelSizeCategory;
+  fragile: boolean;
+  valueAmount?: number;
+  valueCurrency: string;
   // Status
-  status: ParcelStatus
-  paymentStatus: ParcelPaymentStatus
+  status: ParcelStatus;
+  paymentStatus: ParcelPaymentStatus;
   // Rider
-  externalRiderId?: string
-  externalRiderName?: string
-  externalRiderPhone?: string
-  riderAssignedAt?: number
+  externalRiderId?: string;
+  externalRiderName?: string;
+  externalRiderPhone?: string;
+  riderAssignedAt?: number;
   // Pricing
-  estimatedDistance?: number
-  priceAmount?: number
-  priceCurrency: string
+  estimatedDistance?: number;
+  priceAmount?: number;
+  priceCurrency: string;
   // Codes
-  pickupCode?: string
-  deliveryCode?: string
+  pickupCode?: string;
+  deliveryCode?: string;
   // Timestamps
-  pickedUpAt?: number
-  deliveredAt?: number
-  canceledAt?: number
-  cancelReason?: string
+  pickedUpAt?: number;
+  deliveredAt?: number;
+  canceledAt?: number;
+  cancelReason?: string;
   // Timeline
   timeline?: Array<{
-    eventType: string
-    status?: string
-    description?: string
-    timestamp: number
-  }>
+    eventType: string;
+    status?: string;
+    description?: string;
+    timestamp: number;
+  }>;
 }
 
 export interface OnlineRider {
-  clerkId: string
-  name: string
-  phone: string
-  distance?: number
+  clerkId: string;
+  name: string;
+  phone: string;
+  distance?: number;
 }
 
 export interface ParcelDetailSheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  parcel: ParcelDetailData | null | undefined
-  actorClerkId: string
-  onlineRiders?: OnlineRider[]
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  parcel: ParcelDetailData | null | undefined;
+  actorClerkId: string;
+  onlineRiders?: OnlineRider[];
 }
 
 // =============================================================================
@@ -159,44 +151,44 @@ export function ParcelDetailSheet({
   onlineRiders = [],
 }: ParcelDetailSheetProps) {
   // State
-  const [selectedRiderId, setSelectedRiderId] = React.useState<string>('')
-  const [cancelReason, setCancelReason] = React.useState('')
-  const [showCancelForm, setShowCancelForm] = React.useState(false)
-  const [noteText, setNoteText] = React.useState('')
+  const [selectedRiderId, setSelectedRiderId] = React.useState<string>("");
+  const [cancelReason, setCancelReason] = React.useState("");
+  const [showCancelForm, setShowCancelForm] = React.useState(false);
+  const [noteText, setNoteText] = React.useState("");
 
   // Mutations
-  const assignRider = useAssignRiderToParcel()
-  const cancelParcel = useCancelParcel()
-  const updateStatus = useUpdateParcelStatus()
-  const addNote = useAddParcelNote()
-  const regenerateCodes = useRegenerateParcelCodes()
+  const assignRider = useAssignRiderToParcel();
+  const cancelParcel = useCancelParcel();
+  const updateStatus = useUpdateParcelStatus();
+  const addNote = useAddParcelNote();
+  const regenerateCodes = useRegenerateParcelCodes();
 
   // Reset state when parcel changes
   React.useEffect(() => {
-    setSelectedRiderId('')
-    setCancelReason('')
-    setShowCancelForm(false)
-    setNoteText('')
-  }, [parcel?._id])
+    setSelectedRiderId("");
+    setCancelReason("");
+    setShowCancelForm(false);
+    setNoteText("");
+  }, [parcel?._id]);
 
   if (!parcel) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+      <Sheet onOpenChange={onOpenChange} open={open}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
           <SheetHeader>
             <SheetTitle>Loading...</SheetTitle>
           </SheetHeader>
         </SheetContent>
       </Sheet>
-    )
+    );
   }
 
   // Handlers
   const handleAssignRider = async () => {
-    if (!selectedRiderId) return
+    if (!selectedRiderId) return;
 
-    const rider = onlineRiders.find((r) => r.clerkId === selectedRiderId)
-    if (!rider) return
+    const rider = onlineRiders.find((r) => r.clerkId === selectedRiderId);
+    if (!rider) return;
 
     try {
       await assignRider({
@@ -205,18 +197,18 @@ export function ParcelDetailSheet({
         riderName: rider.name,
         riderPhone: rider.phone,
         actorClerkId,
-      })
-      toast.success(`Rider ${rider.name} assigned`)
-      setSelectedRiderId('')
+      });
+      toast.success(`Rider ${rider.name} assigned`);
+      setSelectedRiderId("");
     } catch (error) {
-      toast.error('Failed to assign rider')
+      toast.error("Failed to assign rider");
     }
-  }
+  };
 
   const handleCancel = async () => {
     if (!cancelReason.trim()) {
-      toast.error('Please provide a reason for cancellation')
-      return
+      toast.error("Please provide a reason for cancellation");
+      return;
     }
 
     try {
@@ -225,14 +217,14 @@ export function ParcelDetailSheet({
         reason: cancelReason,
         actorClerkId,
         isCustomer: false,
-      })
-      toast.success('Parcel cancelled')
-      setShowCancelForm(false)
-      setCancelReason('')
+      });
+      toast.success("Parcel cancelled");
+      setShowCancelForm(false);
+      setCancelReason("");
     } catch (error) {
-      toast.error('Failed to cancel parcel')
+      toast.error("Failed to cancel parcel");
     }
-  }
+  };
 
   const handleStatusUpdate = async (newStatus: ParcelStatus) => {
     try {
@@ -240,51 +232,51 @@ export function ParcelDetailSheet({
         parcelId: parcel._id,
         status: newStatus,
         actorClerkId,
-      })
-      toast.success(`Status updated to ${newStatus}`)
+      });
+      toast.success(`Status updated to ${newStatus}`);
     } catch (error) {
-      toast.error('Failed to update status')
+      toast.error("Failed to update status");
     }
-  }
+  };
 
   const handleAddNote = async () => {
-    if (!noteText.trim()) return
+    if (!noteText.trim()) return;
 
     try {
       await addNote({
         parcelId: parcel._id,
         note: noteText,
         clerkId: actorClerkId,
-      })
-      toast.success('Note added')
-      setNoteText('')
+      });
+      toast.success("Note added");
+      setNoteText("");
     } catch (error) {
-      toast.error('Failed to add note')
+      toast.error("Failed to add note");
     }
-  }
+  };
 
   const handleRegenerateCodes = async () => {
     try {
       await regenerateCodes({
         parcelId: parcel._id,
         actorClerkId,
-      })
-      toast.success('Verification codes regenerated')
+      });
+      toast.success("Verification codes regenerated");
     } catch (error) {
-      toast.error('Failed to regenerate codes')
+      toast.error("Failed to regenerate codes");
     }
-  }
+  };
 
   const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success(`${label} copied to clipboard`)
-  }
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard`);
+  };
 
-  const nextStatuses = getNextParcelStatuses(parcel.status)
+  const nextStatuses = getNextParcelStatuses(parcel.status);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+    <Sheet onOpenChange={onOpenChange} open={open}>
+      <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Package className="size-5" />
@@ -298,11 +290,11 @@ export function ParcelDetailSheet({
         <div className="mt-6 space-y-6">
           {/* Status Overview */}
           <div className="flex flex-wrap gap-2">
-            <ParcelStatusBadge status={parcel.status} size="lg" />
-            <ParcelPaymentBadge status={parcel.paymentStatus} size="lg" />
+            <ParcelStatusBadge size="lg" status={parcel.status} />
+            <ParcelPaymentBadge size="lg" status={parcel.paymentStatus} />
             <ParcelSizeBadge size={parcel.sizeCategory} />
             {parcel.fragile && (
-              <Badge variant="destructive" className="gap-1">
+              <Badge className="gap-1" variant="destructive">
                 <AlertTriangle className="size-3" />
                 Fragile
               </Badge>
@@ -313,18 +305,18 @@ export function ParcelDetailSheet({
           {parcel.priceAmount && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <CreditCard className="size-4" />
                   Delivery Fare
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold">
+                  <span className="font-bold text-2xl">
                     {formatCurrency(parcel.priceAmount, parcel.priceCurrency)}
                   </span>
                   {parcel.estimatedDistance && (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       • {formatDistance(parcel.estimatedDistance)}
                     </span>
                   )}
@@ -336,7 +328,7 @@ export function ParcelDetailSheet({
           {/* Pickup Details */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <MapPin className="size-4 text-blue-500" />
                 Pickup
               </CardTitle>
@@ -349,19 +341,19 @@ export function ParcelDetailSheet({
               <div className="flex items-center gap-2">
                 <Phone className="size-4 text-muted-foreground" />
                 <a
-                  href={`tel:${parcel.pickupPhone}`}
                   className="text-primary hover:underline"
+                  href={`tel:${parcel.pickupPhone}`}
                 >
                   {parcel.pickupPhone}
                 </a>
               </div>
               <div className="flex items-start gap-2">
-                <Navigation className="size-4 text-muted-foreground mt-0.5" />
+                <Navigation className="mt-0.5 size-4 text-muted-foreground" />
                 <span className="text-sm">{parcel.pickupAddress}</span>
               </div>
               {parcel.pickupNotes && (
                 <div className="flex items-start gap-2 text-muted-foreground">
-                  <FileText className="size-4 mt-0.5" />
+                  <FileText className="mt-0.5 size-4" />
                   <span className="text-sm italic">{parcel.pickupNotes}</span>
                 </div>
               )}
@@ -371,7 +363,7 @@ export function ParcelDetailSheet({
           {/* Dropoff Details */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <MapPin className="size-4 text-green-500" />
                 Dropoff
               </CardTitle>
@@ -384,19 +376,19 @@ export function ParcelDetailSheet({
               <div className="flex items-center gap-2">
                 <Phone className="size-4 text-muted-foreground" />
                 <a
-                  href={`tel:${parcel.recipientPhone}`}
                   className="text-primary hover:underline"
+                  href={`tel:${parcel.recipientPhone}`}
                 >
                   {parcel.recipientPhone}
                 </a>
               </div>
               <div className="flex items-start gap-2">
-                <Navigation className="size-4 text-muted-foreground mt-0.5" />
+                <Navigation className="mt-0.5 size-4 text-muted-foreground" />
                 <span className="text-sm">{parcel.dropoffAddress}</span>
               </div>
               {parcel.dropoffNotes && (
                 <div className="flex items-start gap-2 text-muted-foreground">
-                  <FileText className="size-4 mt-0.5" />
+                  <FileText className="mt-0.5 size-4" />
                   <span className="text-sm italic">{parcel.dropoffNotes}</span>
                 </div>
               )}
@@ -406,14 +398,14 @@ export function ParcelDetailSheet({
           {/* Package Details */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <Package className="size-4" />
                 Package Details
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm">{parcel.description}</p>
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-wrap gap-4 text-muted-foreground text-sm">
                 {parcel.weight && (
                   <div className="flex items-center gap-1">
                     <Scale className="size-4" />
@@ -423,7 +415,8 @@ export function ParcelDetailSheet({
                 {parcel.valueAmount && (
                   <div className="flex items-center gap-1">
                     <Shield className="size-4" />
-                    Value: {formatCurrency(parcel.valueAmount, parcel.valueCurrency)}
+                    Value:{" "}
+                    {formatCurrency(parcel.valueAmount, parcel.valueCurrency)}
                   </div>
                 )}
               </div>
@@ -434,16 +427,18 @@ export function ParcelDetailSheet({
           {(parcel.pickupCode || parcel.deliveryCode) && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between text-base">
                   <span className="flex items-center gap-2">
                     <Shield className="size-4" />
                     Verification Codes
                   </span>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    disabled={["delivered", "cancelled"].includes(
+                      parcel.status
+                    )}
                     onClick={handleRegenerateCodes}
-                    disabled={['delivered', 'cancelled'].includes(parcel.status)}
+                    size="sm"
+                    variant="ghost"
                   >
                     Regenerate
                   </Button>
@@ -453,20 +448,20 @@ export function ParcelDetailSheet({
                 <div className="grid grid-cols-2 gap-4">
                   {parcel.pickupCode && (
                     <div>
-                      <Label className="text-xs text-muted-foreground">
+                      <Label className="text-muted-foreground text-xs">
                         Pickup Code
                       </Label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <code className="text-lg font-mono font-bold">
+                      <div className="mt-1 flex items-center gap-2">
+                        <code className="font-bold font-mono text-lg">
                           {parcel.pickupCode}
                         </code>
                         <Button
-                          variant="ghost"
-                          size="icon"
                           className="size-6"
                           onClick={() =>
-                            copyToClipboard(parcel.pickupCode!, 'Pickup code')
+                            copyToClipboard(parcel.pickupCode!, "Pickup code")
                           }
+                          size="icon"
+                          variant="ghost"
                         >
                           <Copy className="size-3" />
                         </Button>
@@ -475,20 +470,23 @@ export function ParcelDetailSheet({
                   )}
                   {parcel.deliveryCode && (
                     <div>
-                      <Label className="text-xs text-muted-foreground">
+                      <Label className="text-muted-foreground text-xs">
                         Delivery Code
                       </Label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <code className="text-lg font-mono font-bold">
+                      <div className="mt-1 flex items-center gap-2">
+                        <code className="font-bold font-mono text-lg">
                           {parcel.deliveryCode}
                         </code>
                         <Button
-                          variant="ghost"
-                          size="icon"
                           className="size-6"
                           onClick={() =>
-                            copyToClipboard(parcel.deliveryCode!, 'Delivery code')
+                            copyToClipboard(
+                              parcel.deliveryCode!,
+                              "Delivery code"
+                            )
                           }
+                          size="icon"
+                          variant="ghost"
                         >
                           <Copy className="size-3" />
                         </Button>
@@ -504,7 +502,7 @@ export function ParcelDetailSheet({
           {parcel.externalRiderName && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Truck className="size-4" />
                   Assigned Rider
                 </CardTitle>
@@ -512,21 +510,23 @@ export function ParcelDetailSheet({
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2">
                   <User className="size-4 text-muted-foreground" />
-                  <span className="font-medium">{parcel.externalRiderName}</span>
+                  <span className="font-medium">
+                    {parcel.externalRiderName}
+                  </span>
                 </div>
                 {parcel.externalRiderPhone && (
                   <div className="flex items-center gap-2">
                     <Phone className="size-4 text-muted-foreground" />
                     <a
-                      href={`tel:${parcel.externalRiderPhone}`}
                       className="text-primary hover:underline"
+                      href={`tel:${parcel.externalRiderPhone}`}
                     >
                       {parcel.externalRiderPhone}
                     </a>
                   </div>
                 )}
                 {parcel.riderAssignedAt && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Assigned {formatRelativeTime(parcel.riderAssignedAt)}
                   </p>
                 )}
@@ -538,7 +538,7 @@ export function ParcelDetailSheet({
           {parcel.timeline && parcel.timeline.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Clock className="size-4" />
                   Timeline
                 </CardTitle>
@@ -546,30 +546,30 @@ export function ParcelDetailSheet({
               <CardContent>
                 <div className="space-y-3">
                   {parcel.timeline.map((event, index) => (
-                    <div key={index} className="flex gap-3">
+                    <div className="flex gap-3" key={index}>
                       <div className="flex flex-col items-center">
                         <div
                           className={cn(
-                            'size-2 rounded-full',
+                            "size-2 rounded-full",
                             index === parcel.timeline!.length - 1
-                              ? 'bg-primary'
-                              : 'bg-muted-foreground/30'
+                              ? "bg-primary"
+                              : "bg-muted-foreground/30"
                           )}
                         />
                         {index < parcel.timeline!.length - 1 && (
-                          <div className="w-px h-full bg-muted-foreground/20" />
+                          <div className="h-full w-px bg-muted-foreground/20" />
                         )}
                       </div>
                       <div className="flex-1 pb-3">
-                        <p className="text-sm font-medium capitalize">
-                          {event.eventType.replace(/_/g, ' ')}
+                        <p className="font-medium text-sm capitalize">
+                          {event.eventType.replace(/_/g, " ")}
                         </p>
                         {event.description && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-muted-foreground text-xs">
                             {event.description}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-muted-foreground text-xs">
                           {formatRelativeTime(event.timestamp)}
                         </p>
                       </div>
@@ -587,35 +587,36 @@ export function ParcelDetailSheet({
             <h3 className="font-semibold">Actions</h3>
 
             {/* Assign Rider */}
-            {(parcel.status === 'draft' || parcel.status === 'pending') && (
+            {(parcel.status === "draft" || parcel.status === "pending") && (
               <div className="space-y-2">
                 <Label>Assign Rider</Label>
                 <div className="flex gap-2">
                   <Select
-                    value={selectedRiderId}
                     onValueChange={setSelectedRiderId}
+                    value={selectedRiderId}
                   >
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Select a rider" />
                     </SelectTrigger>
                     <SelectContent>
                       {onlineRiders.length === 0 ? (
-                        <SelectItem value="_none" disabled>
+                        <SelectItem disabled value="_none">
                           No riders available
                         </SelectItem>
                       ) : (
                         onlineRiders.map((rider) => (
                           <SelectItem key={rider.clerkId} value={rider.clerkId}>
                             {rider.name}
-                            {rider.distance && ` (${formatDistance(rider.distance)})`}
+                            {rider.distance &&
+                              ` (${formatDistance(rider.distance)})`}
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
                   <Button
-                    onClick={handleAssignRider}
                     disabled={!selectedRiderId}
+                    onClick={handleAssignRider}
                   >
                     Assign
                   </Button>
@@ -625,20 +626,20 @@ export function ParcelDetailSheet({
 
             {/* Quick Status Updates */}
             {nextStatuses.length > 0 &&
-              !['canceled', 'failed', 'delivered'].includes(parcel.status) && (
+              !["canceled", "failed", "delivered"].includes(parcel.status) && (
                 <div className="space-y-2">
                   <Label>Update Status</Label>
                   <div className="flex flex-wrap gap-2">
                     {nextStatuses
-                        .filter((s) => s !== 'canceled' && s !== 'failed')
-                        .map((status) => (
+                      .filter((s) => s !== "canceled" && s !== "failed")
+                      .map((status) => (
                         <Button
                           key={status}
-                          variant="outline"
-                          size="sm"
                           onClick={() => handleStatusUpdate(status)}
+                          size="sm"
+                          variant="outline"
                         >
-                          {status.replace(/_/g, ' ')}
+                          {status.replace(/_/g, " ")}
                         </Button>
                       ))}
                   </div>
@@ -650,17 +651,17 @@ export function ParcelDetailSheet({
               <Label>Add Note</Label>
               <div className="flex gap-2">
                 <Textarea
-                  value={noteText}
+                  className="min-h-[60px]"
                   onChange={(e) => setNoteText(e.target.value)}
                   placeholder="Add a note..."
-                  className="min-h-[60px]"
+                  value={noteText}
                 />
               </div>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={handleAddNote}
                 disabled={!noteText.trim()}
+                onClick={handleAddNote}
+                size="sm"
+                variant="outline"
               >
                 Add Note
               </Button>
@@ -673,25 +674,25 @@ export function ParcelDetailSheet({
                   <>
                     <Label>Cancellation Reason</Label>
                     <Textarea
-                      value={cancelReason}
+                      className="min-h-[80px]"
                       onChange={(e) => setCancelReason(e.target.value)}
                       placeholder="Provide a reason for cancellation..."
-                      className="min-h-[80px]"
+                      value={cancelReason}
                     />
                     <div className="flex gap-2">
                       <Button
-                        variant="destructive"
-                        onClick={handleCancel}
                         disabled={!cancelReason.trim()}
+                        onClick={handleCancel}
+                        variant="destructive"
                       >
                         Confirm Cancel
                       </Button>
                       <Button
-                        variant="outline"
                         onClick={() => {
-                          setShowCancelForm(false)
-                          setCancelReason('')
+                          setShowCancelForm(false);
+                          setCancelReason("");
                         }}
+                        variant="outline"
                       >
                         Back
                       </Button>
@@ -699,9 +700,9 @@ export function ParcelDetailSheet({
                   </>
                 ) : (
                   <Button
-                    variant="destructive"
                     className="w-full"
                     onClick={() => setShowCancelForm(true)}
+                    variant="destructive"
                   >
                     Cancel Parcel
                   </Button>
@@ -712,5 +713,5 @@ export function ParcelDetailSheet({
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

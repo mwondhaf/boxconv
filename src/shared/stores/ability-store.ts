@@ -1,36 +1,40 @@
-'use client'
+"use client";
 
-import { create } from 'zustand'
+import { create } from "zustand";
 import {
-  buildAbilityFor,
   type AppAbility,
+  buildAbilityFor,
   type OrgRole,
   type PlatformRole,
-} from '~/shared/lib/ability'
+} from "~/shared/lib/ability";
 
 interface AbilityState {
   // Context
-  platformRole: PlatformRole
-  orgRole: OrgRole
-  orgId: string | undefined
-  userId: string | undefined
+  platformRole: PlatformRole;
+  orgRole: OrgRole;
+  orgId: string | undefined;
+  userId: string | undefined;
 
   // Computed ability
-  ability: AppAbility
+  ability: AppAbility;
 
   // Actions
-  setRoles: (platformRole: PlatformRole, orgRole: OrgRole, orgId?: string) => void
-  setFullContext: (context: {
-    platformRole: PlatformRole
-    orgRole: OrgRole
+  setRoles: (
+    platformRole: PlatformRole,
+    orgRole: OrgRole,
     orgId?: string
-    userId?: string
-  }) => void
-  setPlatformRole: (role: PlatformRole) => void
-  setOrgRole: (role: OrgRole) => void
-  setOrgId: (orgId: string | undefined) => void
-  setUserId: (userId: string | undefined) => void
-  reset: () => void
+  ) => void;
+  setFullContext: (context: {
+    platformRole: PlatformRole;
+    orgRole: OrgRole;
+    orgId?: string;
+    userId?: string;
+  }) => void;
+  setPlatformRole: (role: PlatformRole) => void;
+  setOrgRole: (role: OrgRole) => void;
+  setOrgId: (orgId: string | undefined) => void;
+  setUserId: (userId: string | undefined) => void;
+  reset: () => void;
 }
 
 const initialState = {
@@ -38,7 +42,7 @@ const initialState = {
   orgRole: null as OrgRole,
   orgId: undefined as string | undefined,
   userId: undefined as string | undefined,
-}
+};
 
 /**
  * Default ability with no permissions (used during SSR and initial state)
@@ -48,13 +52,13 @@ const defaultAbility = buildAbilityFor({
   orgRole: null,
   orgId: undefined,
   userId: undefined,
-})
+});
 
 /**
  * Lazy store initialization to avoid SSR issues
  * The store is only created when first accessed on the client
  */
-let store: ReturnType<typeof createAbilityStore> | null = null
+let store: ReturnType<typeof createAbilityStore> | null = null;
 
 function createAbilityStore() {
   return create<AbilityState>((set) => ({
@@ -137,7 +141,7 @@ function createAbilityStore() {
         ...initialState,
         ability: defaultAbility,
       }),
-  }))
+  }));
 }
 
 /**
@@ -145,13 +149,13 @@ function createAbilityStore() {
  * Returns null during SSR
  */
 function getStore() {
-  if (typeof window === 'undefined') {
-    return null
+  if (typeof window === "undefined") {
+    return null;
   }
   if (!store) {
-    store = createAbilityStore()
+    store = createAbilityStore();
   }
-  return store
+  return store;
 }
 
 /**
@@ -159,7 +163,7 @@ function getStore() {
  * SSR-safe: returns a no-op store selector during SSR
  */
 export function useAbilityStore<T>(selector: (state: AbilityState) => T): T {
-  const storeInstance = getStore()
+  const storeInstance = getStore();
 
   if (!storeInstance) {
     // Return default state during SSR
@@ -173,17 +177,17 @@ export function useAbilityStore<T>(selector: (state: AbilityState) => T): T {
       setOrgId: () => {},
       setUserId: () => {},
       reset: () => {},
-    }
-    return selector(defaultState)
+    };
+    return selector(defaultState);
   }
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  return storeInstance(selector)
+  return storeInstance(selector);
 }
 
 // Also expose getState and subscribe for non-hook access
 useAbilityStore.getState = (): AbilityState => {
-  const storeInstance = getStore()
+  const storeInstance = getStore();
   if (!storeInstance) {
     return {
       ...initialState,
@@ -195,25 +199,27 @@ useAbilityStore.getState = (): AbilityState => {
       setOrgId: () => {},
       setUserId: () => {},
       reset: () => {},
-    }
+    };
   }
-  return storeInstance.getState()
-}
+  return storeInstance.getState();
+};
 
-useAbilityStore.subscribe = (listener: (state: AbilityState) => void): (() => void) => {
-  const storeInstance = getStore()
+useAbilityStore.subscribe = (
+  listener: (state: AbilityState) => void
+): (() => void) => {
+  const storeInstance = getStore();
   if (!storeInstance) {
-    return () => {}
+    return () => {};
   }
-  return storeInstance.subscribe(listener)
-}
+  return storeInstance.subscribe(listener);
+};
 
 /**
  * SSR-safe hook to get current ability
  * Returns the default (empty permissions) ability during SSR
  */
 export function useAbility(): AppAbility {
-  return useAbilityStore((state) => state.ability)
+  return useAbilityStore((state) => state.ability);
 }
 
 /**
@@ -226,7 +232,7 @@ export function useAbilityContext() {
     orgRole: state.orgRole,
     orgId: state.orgId,
     userId: state.userId,
-  }))
+  }));
 }
 
 /**
@@ -234,15 +240,15 @@ export function useAbilityContext() {
  * Returns false during SSR (safe default - hide protected content)
  */
 export function useCan(
-  action: Parameters<AppAbility['can']>[0],
-  subject: Parameters<AppAbility['can']>[1],
+  action: Parameters<AppAbility["can"]>[0],
+  subject: Parameters<AppAbility["can"]>[1],
   field?: string
 ): boolean {
-  const ability = useAbility()
+  const ability = useAbility();
   if (field) {
-    return ability.can(action, subject, field)
+    return ability.can(action, subject, field);
   }
-  return ability.can(action, subject)
+  return ability.can(action, subject);
 }
 
 /**
@@ -250,15 +256,15 @@ export function useCan(
  * Returns true during SSR (safe default - assume no permission)
  */
 export function useCannot(
-  action: Parameters<AppAbility['cannot']>[0],
-  subject: Parameters<AppAbility['cannot']>[1],
+  action: Parameters<AppAbility["cannot"]>[0],
+  subject: Parameters<AppAbility["cannot"]>[1],
   field?: string
 ): boolean {
-  const ability = useAbility()
+  const ability = useAbility();
   if (field) {
-    return ability.cannot(action, subject, field)
+    return ability.cannot(action, subject, field);
   }
-  return ability.cannot(action, subject)
+  return ability.cannot(action, subject);
 }
 
 /**
@@ -266,5 +272,5 @@ export function useCannot(
  * Safe to use on server but will return default state
  */
 export function getAbilityStore() {
-  return useAbilityStore.getState()
+  return useAbilityStore.getState();
 }

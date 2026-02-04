@@ -12,12 +12,8 @@
  */
 
 import { v } from "convex/values";
-import {
-  mutation,
-  query,
-  internalMutation,
-} from "./_generated/server";
 import { internal } from "./_generated/api";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { rateLimiter } from "./components";
 import { calculateFare, estimateDeliveryTime } from "./lib/fare";
 
@@ -63,14 +59,13 @@ export const getNextDisplayId = internalMutation({
       const nextValue = counter.value + 1;
       await ctx.db.patch(counter._id, { value: nextValue });
       return nextValue;
-    } else {
-      // Initialize counter starting at 1000
-      await ctx.db.insert("counters", {
-        name: "order_display_id",
-        value: 1001,
-      });
-      return 1000;
     }
+    // Initialize counter starting at 1000
+    await ctx.db.insert("counters", {
+      name: "order_display_id",
+      value: 1001,
+    });
+    return 1000;
   },
 });
 
@@ -92,7 +87,7 @@ export const getDeliveryQuote = query({
   handler: async (ctx, args) => {
     // Get store location
     const org = await ctx.db.get(args.organizationId);
-    if (!org || !org.lat || !org.lng) {
+    if (!(org && org.lat && org.lng)) {
       return {
         available: false,
         reason: "Store location not available",
@@ -101,7 +96,7 @@ export const getDeliveryQuote = query({
 
     // Get delivery address
     const address = await ctx.db.get(args.deliveryAddressId);
-    if (!address || !address.lat || !address.lng) {
+    if (!(address && address.lat && address.lng)) {
       return {
         available: false,
         reason: "Delivery address coordinates not available",
@@ -283,22 +278,22 @@ export const createFromCart = mutation({
     for (const cartItem of cartItems) {
       const variant = await ctx.db.get(cartItem.variantId);
       if (!variant) {
-        throw new Error(`Product variant no longer exists`);
+        throw new Error("Product variant no longer exists");
       }
 
       if (!variant.isAvailable) {
-        throw new Error(`Product is no longer available`);
+        throw new Error("Product is no longer available");
       }
 
       // Verify variant belongs to same organization
       if (variant.organizationId !== cart.organizationId) {
-        throw new Error(`Invalid product in cart`);
+        throw new Error("Invalid product in cart");
       }
 
       // Get product for title
       const product = await ctx.db.get(variant.productId);
       if (!product) {
-        throw new Error(`Product not found`);
+        throw new Error("Product not found");
       }
 
       // Get current price
@@ -479,13 +474,12 @@ async function getNextDisplayIdInternal(ctx: any): Promise<number> {
     const nextValue = counter.value + 1;
     await ctx.db.patch(counter._id, { value: nextValue });
     return nextValue;
-  } else {
-    await ctx.db.insert("counters", {
-      name: "order_display_id",
-      value: 1001,
-    });
-    return 1000;
   }
+  await ctx.db.insert("counters", {
+    name: "order_display_id",
+    value: 1001,
+  });
+  return 1000;
 }
 
 // =============================================================================
@@ -790,7 +784,9 @@ export const getTrackingInfo = query({
         deliveryAddress = {
           lat: addr.lat,
           lng: addr.lng,
-          address: [addr.street, addr.town, addr.city].filter(Boolean).join(", "),
+          address: [addr.street, addr.town, addr.city]
+            .filter(Boolean)
+            .join(", "),
         };
       }
     }
@@ -1000,7 +996,12 @@ export const updateStatus = mutation({
       pending: ["confirmed", "cancelled", "canceled"],
       confirmed: ["preparing", "cancelled", "canceled"],
       preparing: ["ready_for_pickup", "cancelled", "canceled"],
-      ready_for_pickup: ["out_for_delivery", "delivered", "cancelled", "canceled"],
+      ready_for_pickup: [
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+        "canceled",
+      ],
       out_for_delivery: ["delivered", "cancelled", "canceled"],
       delivered: ["completed", "refunded"],
       completed: ["refunded"],
@@ -1170,7 +1171,9 @@ export const markReady = mutation({
     }
 
     if (order.status !== "preparing") {
-      throw new Error(`Cannot mark as ready order with status: ${order.status}`);
+      throw new Error(
+        `Cannot mark as ready order with status: ${order.status}`
+      );
     }
 
     await ctx.db.patch(args.orderId, { status: "ready_for_pickup" });
@@ -1270,7 +1273,9 @@ export const assignRiderAndDispatch = mutation({
         orderId: args.orderId,
         orderDisplayId: String(order.displayId),
         pickupAddress: org
-          ? [org.street, org.town, org.cityOrDistrict].filter(Boolean).join(", ")
+          ? [org.street, org.town, org.cityOrDistrict]
+              .filter(Boolean)
+              .join(", ")
           : "Store",
         deliveryAddress: deliveryAddress
           ? [deliveryAddress.street, deliveryAddress.town, deliveryAddress.city]
@@ -1449,20 +1454,12 @@ export const reorder = mutation({
       .withIndex("by_clerkId", (q) => q.eq("clerkId", args.customerClerkId))
       .collect();
 
-    let cart = existingCarts.find(
+    const cart = existingCarts.find(
       (c) => c.organizationId === order.organizationId
     );
 
     let cartId: any;
-    if (!cart) {
-      // Create new cart
-      cartId = await ctx.db.insert("carts", {
-        clerkId: args.customerClerkId,
-        organizationId: order.organizationId,
-        currencyCode: order.currencyCode,
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-      });
-    } else {
+    if (cart) {
       cartId = cart._id;
       // Clear existing items
       const existingItems = await ctx.db
@@ -1478,16 +1475,24 @@ export const reorder = mutation({
       await ctx.db.patch(cartId, {
         expiresAt: Date.now() + 24 * 60 * 60 * 1000,
       });
+    } else {
+      // Create new cart
+      cartId = await ctx.db.insert("carts", {
+        clerkId: args.customerClerkId,
+        organizationId: order.organizationId,
+        currencyCode: order.currencyCode,
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+      });
     }
 
     // Add items to cart (if still available)
     let addedCount = 0;
-    let unavailableItems: string[] = [];
+    const unavailableItems: string[] = [];
 
     for (const orderItem of orderItems) {
       const variant = await ctx.db.get(orderItem.variantId);
 
-      if (!variant || !variant.isAvailable) {
+      if (!(variant && variant.isAvailable)) {
         unavailableItems.push(orderItem.title);
         continue;
       }

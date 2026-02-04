@@ -1,28 +1,28 @@
 // Sidebar components
-export { AppSidebar, type AppSidebarProps } from './app-sidebar'
-export { NavMain, type NavMainItem } from './nav-main'
-export { NavUser } from './nav-user'
-export { OrgSwitcher, type OrgSwitcherProps } from './org-switcher'
 
 // Re-export UI sidebar components for convenience
 export {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-  SidebarTrigger,
-  SidebarInset,
-  SidebarProvider,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarRail,
   SidebarSeparator,
+  SidebarTrigger,
   useSidebar,
-} from '~/components/ui/sidebar'
+} from "~/components/ui/sidebar";
+export { AppSidebar, type AppSidebarProps } from "./app-sidebar";
+export { NavMain, type NavMainItem } from "./nav-main";
+export { NavUser } from "./nav-user";
+export { OrgSwitcher, type OrgSwitcherProps } from "./org-switcher";

@@ -1,17 +1,10 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { FolderTree, Plus } from 'lucide-react'
-import { useMutation, useQuery } from 'convex/react'
-import { toast } from 'sonner'
-
-import { api } from 'convex/_generated/api'
-import { CategoriesTable } from '../components/categories-table'
-import { CategoryFormSheet } from '../components/category-form-sheet'
-
-import type { Category } from '../components/categories-table'
-import type { CategoryData } from '../components/category-form-sheet'
-import { Button } from '~/components/ui/button'
+import { api } from "convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
+import { FolderTree, Plus } from "lucide-react";
+import * as React from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,15 +14,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '~/components/ui/alert-dialog'
+} from "~/components/ui/alert-dialog";
+import { Button } from "~/components/ui/button";
+
+import type { Category } from "../components/categories-table";
+import { CategoriesTable } from "../components/categories-table";
+import type { CategoryData } from "../components/category-form-sheet";
+import { CategoryFormSheet } from "../components/category-form-sheet";
 
 // =============================================================================
 // Types
 // =============================================================================
 
 interface DeleteConfirmState {
-  open: boolean
-  category: Category | null
+  open: boolean;
+  category: Category | null;
 }
 
 // =============================================================================
@@ -39,47 +38,47 @@ interface DeleteConfirmState {
 export function AdminCategoriesPage() {
   // State
   const [formSheet, setFormSheet] = React.useState<{
-    open: boolean
-    category: CategoryData | null
-  }>({ open: false, category: null })
+    open: boolean;
+    category: CategoryData | null;
+  }>({ open: false, category: null });
   const [deleteConfirm, setDeleteConfirm] = React.useState<DeleteConfirmState>({
     open: false,
     category: null,
-  })
+  });
 
   // Fetch categories from Convex
-  const categoriesResult = useQuery(api.categories.list, {})
-  const allCategories = categoriesResult ?? []
+  const categoriesResult = useQuery(api.categories.list, {});
+  const allCategories = categoriesResult ?? [];
 
   // Enrich categories with parent names and children counts
   const categories = React.useMemo(() => {
-    const categoryMap = new Map(allCategories.map((cat) => [cat._id, cat]))
+    const categoryMap = new Map(allCategories.map((cat) => [cat._id, cat]));
 
     return allCategories.map((cat) => {
-      const parent = cat.parentId ? categoryMap.get(cat.parentId) : undefined
+      const parent = cat.parentId ? categoryMap.get(cat.parentId) : undefined;
       const childrenCount = allCategories.filter(
         (c) => c.parentId === cat._id
-      ).length
+      ).length;
 
       return {
         ...cat,
         parentName: parent?.name,
         childrenCount,
         productCount: 0, // TODO: Add product count enrichment
-      }
-    })
-  }, [allCategories])
+      };
+    });
+  }, [allCategories]);
 
-  const isLoading = categoriesResult === undefined
+  const isLoading = categoriesResult === undefined;
 
   // Mutations
-  const toggleActive = useMutation(api.categories.toggleActive)
-  const deleteCategory = useMutation(api.categories.remove)
+  const toggleActive = useMutation(api.categories.toggleActive);
+  const deleteCategory = useMutation(api.categories.remove);
 
   // Handlers
   const handleAddCategory = () => {
-    setFormSheet({ open: true, category: null })
-  }
+    setFormSheet({ open: true, category: null });
+  };
 
   const handleEditCategory = (category: Category) => {
     setFormSheet({
@@ -94,58 +93,56 @@ export function AdminCategoriesPage() {
         bannerUrl: category.bannerUrl,
         isActive: category.isActive,
       },
-    })
-  }
+    });
+  };
 
   const handleToggleActive = async (category: Category) => {
     try {
-      const result = await toggleActive({ id: category._id })
+      const result = await toggleActive({ id: category._id });
       toast.success(
         result.isActive
           ? `"${category.name}" is now active`
           : `"${category.name}" is now inactive`
-      )
+      );
     } catch (error) {
-      console.error('Failed to toggle category status:', error)
-      toast.error('Failed to update category status')
+      console.error("Failed to toggle category status:", error);
+      toast.error("Failed to update category status");
     }
-  }
+  };
 
   const handleDeleteClick = (category: Category) => {
-    setDeleteConfirm({ open: true, category })
-  }
+    setDeleteConfirm({ open: true, category });
+  };
 
   const handleConfirmDelete = async () => {
-    if (!deleteConfirm.category) return
+    if (!deleteConfirm.category) return;
 
     try {
-      await deleteCategory({ id: deleteConfirm.category._id })
-      toast.success(`"${deleteConfirm.category.name}" has been deleted`)
-      setDeleteConfirm({ open: false, category: null })
+      await deleteCategory({ id: deleteConfirm.category._id });
+      toast.success(`"${deleteConfirm.category.name}" has been deleted`);
+      setDeleteConfirm({ open: false, category: null });
     } catch (error) {
-      console.error('Failed to delete category:', error)
+      console.error("Failed to delete category:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Failed to delete category'
-      )
+        error instanceof Error ? error.message : "Failed to delete category"
+      );
     }
-  }
+  };
 
   const handleFormSuccess = () => {
     toast.success(
       formSheet.category
-        ? 'Category updated successfully'
-        : 'Category created successfully'
-    )
-  }
+        ? "Category updated successfully"
+        : "Category created successfully"
+    );
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <h1 className="flex items-center gap-2 font-bold text-2xl text-foreground">
             <FolderTree className="size-6" />
             Categories
           </h1>
@@ -154,7 +151,7 @@ export function AdminCategoriesPage() {
           </p>
         </div>
         <Button onClick={handleAddCategory}>
-          <Plus className="size-4 mr-1.5" />
+          <Plus className="mr-1.5 size-4" />
           Add Category
         </Button>
       </div>
@@ -163,23 +160,23 @@ export function AdminCategoriesPage() {
       <CategoriesTable
         data={categories}
         isLoading={isLoading}
-        onEdit={handleEditCategory}
         onDelete={handleDeleteClick}
+        onEdit={handleEditCategory}
         onToggleActive={handleToggleActive}
       />
 
       {/* Category Form Sheet */}
       <CategoryFormSheet
-        open={formSheet.open}
-        onOpenChange={(open) => setFormSheet((prev) => ({ ...prev, open }))}
         category={formSheet.category}
+        onOpenChange={(open) => setFormSheet((prev) => ({ ...prev, open }))}
         onSuccess={handleFormSuccess}
+        open={formSheet.open}
       />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
-        open={deleteConfirm.open}
         onOpenChange={(open) => setDeleteConfirm((prev) => ({ ...prev, open }))}
+        open={deleteConfirm.open}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -189,9 +186,10 @@ export function AdminCategoriesPage() {
               This action cannot be undone.
               {deleteConfirm.category?.childrenCount &&
                 deleteConfirm.category.childrenCount > 0 && (
-                  <span className="block mt-2 text-destructive font-medium">
-                    Warning: This category has {deleteConfirm.category.childrenCount}{' '}
-                    subcategories. You must delete or move them first.
+                  <span className="mt-2 block font-medium text-destructive">
+                    Warning: This category has{" "}
+                    {deleteConfirm.category.childrenCount} subcategories. You
+                    must delete or move them first.
                   </span>
                 )}
             </AlertDialogDescription>
@@ -199,8 +197,8 @@ export function AdminCategoriesPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDelete}
             >
               Delete
             </AlertDialogAction>
@@ -208,7 +206,7 @@ export function AdminCategoriesPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }
 
-export default AdminCategoriesPage
+export default AdminCategoriesPage;

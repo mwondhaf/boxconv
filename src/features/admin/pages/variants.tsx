@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { VariantsBrowser } from '../components/variants-browser'
+import { VariantsBrowser } from "../components/variants-browser";
 
 // =============================================================================
 // AdminVariantsPage Component
 // =============================================================================
 
 export function AdminVariantsPage() {
-  return <VariantsBrowser />
+  return <VariantsBrowser />;
 }
 
-export default AdminVariantsPage
+export default AdminVariantsPage;

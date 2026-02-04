@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { useRouteContext } from '@tanstack/react-router'
-import { useAbilityStore } from '~/shared/stores/ability-store'
-import type { PlatformRole, OrgRole } from '~/shared/lib/ability'
+import { useRouteContext } from "@tanstack/react-router";
+import { useEffect } from "react";
+import type { OrgRole, PlatformRole } from "~/shared/lib/ability";
+import { useAbilityStore } from "~/shared/stores/ability-store";
 
 /**
  * Hook to sync the ability store with Clerk auth context from routes
@@ -24,26 +24,32 @@ import type { PlatformRole, OrgRole } from '~/shared/lib/ability'
  * ```
  */
 export function useSyncAbility() {
-  const context = useRouteContext({ from: '__root__' })
-  const setFullContext = useAbilityStore((state) => state.setFullContext)
+  const context = useRouteContext({ from: "__root__" });
+  const setFullContext = useAbilityStore((state) => state.setFullContext);
 
   useEffect(() => {
     // Only run on client side (useEffect doesn't run on server)
     const publicMetadata = context.publicMetadata as
       | { platformRole?: PlatformRole }
-      | undefined
-    const platformRole = publicMetadata?.platformRole
-    const orgRole = (context.orgRole as OrgRole) ?? null
-    const orgId = context.orgId as string | undefined
-    const userId = context.userId as string | undefined
+      | undefined;
+    const platformRole = publicMetadata?.platformRole;
+    const orgRole = (context.orgRole as OrgRole) ?? null;
+    const orgId = context.orgId as string | undefined;
+    const userId = context.userId as string | undefined;
 
     setFullContext({
       platformRole,
       orgRole,
       orgId,
       userId,
-    })
-  }, [context.publicMetadata, context.orgRole, context.orgId, context.userId, setFullContext])
+    });
+  }, [
+    context.publicMetadata,
+    context.orgRole,
+    context.orgId,
+    context.userId,
+    setFullContext,
+  ]);
 }
 
 /**
@@ -52,11 +58,11 @@ export function useSyncAbility() {
  * This hook is SSR-safe as it only reads from route context
  */
 export function useAuthContext() {
-  const context = useRouteContext({ from: '__root__' })
+  const context = useRouteContext({ from: "__root__" });
 
   const publicMetadata = context.publicMetadata as
     | { platformRole?: PlatformRole }
-    | undefined
+    | undefined;
 
   return {
     userId: context.userId as string | undefined,
@@ -66,7 +72,7 @@ export function useAuthContext() {
     orgMemberships: context.orgMemberships as string[] | undefined,
     hasOrgMembership: context.hasOrgMembership as boolean,
     isAuthenticated: !!context.userId,
-    isAdmin: publicMetadata?.platformRole === 'admin',
-    isRider: publicMetadata?.platformRole === 'rider',
-  }
+    isAdmin: publicMetadata?.platformRole === "admin",
+    isRider: publicMetadata?.platformRole === "rider",
+  };
 }

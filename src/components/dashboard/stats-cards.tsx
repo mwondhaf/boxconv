@@ -1,24 +1,24 @@
-import { TrendingDown, TrendingUp } from 'lucide-react'
+import { TrendingDown, TrendingUp } from "lucide-react";
 
-import { Badge } from '~/components/ui/badge'
+import { Badge } from "~/components/ui/badge";
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card'
+} from "~/components/ui/card";
 
 export interface StatCardProps {
-  title: string
-  value: string | number
-  description?: string
+  title: string;
+  value: string | number;
+  description?: string;
   trend?: {
-    value: number
-    isPositive: boolean
-  }
-  icon?: React.ReactNode
-  footer?: string
+    value: number;
+    isPositive: boolean;
+  };
+  icon?: React.ReactNode;
+  footer?: string;
 }
 
 export function StatCard({
@@ -37,36 +37,36 @@ export function StatCard({
           {icon && <div className="text-muted-foreground">{icon}</div>}
         </div>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          <CardTitle className="font-semibold @[250px]/card:text-3xl text-2xl tabular-nums">
             {value}
           </CardTitle>
           {trend && (
-            <Badge variant={trend.isPositive ? 'default' : 'secondary'}>
+            <Badge variant={trend.isPositive ? "default" : "secondary"}>
               {trend.isPositive ? (
                 <TrendingUp className="mr-1 h-3 w-3" />
               ) : (
                 <TrendingDown className="mr-1 h-3 w-3" />
               )}
-              {trend.isPositive ? '+' : ''}
+              {trend.isPositive ? "+" : ""}
               {trend.value}%
             </Badge>
           )}
         </div>
         {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground text-xs">{description}</p>
         )}
       </CardHeader>
       {footer && (
-        <CardFooter className="text-xs text-muted-foreground">
+        <CardFooter className="text-muted-foreground text-xs">
           {footer}
         </CardFooter>
       )}
     </Card>
-  )
+  );
 }
 
 export interface StatsCardsProps {
-  stats: Array<StatCardProps>
+  stats: Array<StatCardProps>;
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
@@ -76,5 +76,5 @@ export function StatsCards({ stats }: StatsCardsProps) {
         <StatCard key={index} {...stat} />
       ))}
     </div>
-  )
+  );
 }

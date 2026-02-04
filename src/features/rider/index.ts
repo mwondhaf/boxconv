@@ -1,5 +1,5 @@
 // Components
-export { RiderLayout } from './components/layout'
+export { RiderLayout } from "./components/layout";
 
 // Pages
 // export { RiderDashboardPage } from './pages/dashboard'

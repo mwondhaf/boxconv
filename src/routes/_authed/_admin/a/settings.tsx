@@ -1,9 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_authed/_admin/a/settings')({
+export const Route = createFileRoute("/_authed/_admin/a/settings")({
   component: AdminSettingsPage,
-})
+});
 
 function AdminSettingsPage() {
-  return <div>Admin Settings</div>
+  return <div>Admin Settings</div>;
 }

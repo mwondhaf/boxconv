@@ -2,74 +2,77 @@
 // Shared Module Exports
 // =============================================================================
 
+export {
+  AbilityContext,
+  AbilityProvider,
+  Can as ContextualCan,
+  useAbilityContext as useAbilityFromContext,
+} from "./components/ability-provider";
+// Components
+export { Can, type CanProps, useCanCheck } from "./components/can";
+// Data Table
+export {
+  type ColumnDef,
+  type ColumnFiltersState,
+  DataTable,
+  type DataTableProps,
+  type Row,
+  SortableHeader,
+  type SortableHeaderProps,
+  type SortingState,
+} from "./components/data-table";
+// Hooks
+export { useAuthContext, useSyncAbility } from "./hooks/use-sync-ability";
 // Ability / Authorization
 export {
+  type AppAbility,
   // Types
   type AppAction,
-  type AppSubjects,
-  type AppAbility,
   type AppRawRule,
+  type AppSubjects,
+  asCustomer,
+  asMember,
+  asOrder,
+  asOrganization,
+  asProduct,
+  asSettings,
+  assertAbility,
+  assertFieldAbility,
+  // Builder
+  buildAbilityFor,
+  type Customer,
+  // Helpers
+  checkAbility,
+  checkFieldAbility,
+  filterPermittedUpdates,
+  getPermittedFields,
+  type Member,
+  type Order,
+  type Organization,
   type OrgRole,
   type PlatformRole,
   // Subject types
   type Product,
-  type Order,
-  type Customer,
   type Settings,
-  type Member,
-  type Organization,
-  // Builder
-  buildAbilityFor,
-  // Helpers
-  checkAbility,
-  checkFieldAbility,
-  assertAbility,
-  assertFieldAbility,
-  getPermittedFields,
-  filterPermittedUpdates,
   // Subject creators
   subject,
-  asProduct,
-  asOrder,
-  asCustomer,
-  asSettings,
-  asMember,
-  asOrganization,
-} from './lib/ability'
-
+} from "./lib/ability";
 // Stores
 export {
-  useAbilityStore,
   useAbility,
   useAbilityContext,
+  useAbilityStore,
   useCan,
   useCannot,
-} from './stores/ability-store'
-
-// Hooks
-export { useSyncAbility, useAuthContext } from './hooks/use-sync-ability'
-
-// Components
-export { Can, useCanCheck, type CanProps } from './components/can'
-export {
-  AbilityProvider,
-  AbilityContext,
-  Can as ContextualCan,
-  useAbilityContext as useAbilityFromContext,
-} from './components/ability-provider'
-
+} from "./stores/ability-store";
 // Types
-export type { PlatformRole as TPlatformRole, PublicMetadata } from './types/roles'
-export { isAdmin, isRider, isRegularUser, getDashboardPath } from './types/roles'
-
-// Data Table
+export type {
+  PlatformRole as TPlatformRole,
+  PublicMetadata,
+} from "./types/roles";
 export {
-  DataTable,
-  SortableHeader,
-  type DataTableProps,
-  type SortableHeaderProps,
-  type ColumnDef,
-  type Row,
-  type SortingState,
-  type ColumnFiltersState,
-} from './components/data-table'
+  getDashboardPath,
+  isAdmin,
+  isRegularUser,
+  isRider,
+} from "./types/roles";

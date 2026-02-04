@@ -235,7 +235,9 @@ export const list = query({
     return {
       products: enrichedProducts,
       hasMore,
-      cursor: hasMore ? resultProducts[resultProducts.length - 1]._id : undefined,
+      cursor: hasMore
+        ? resultProducts[resultProducts.length - 1]._id
+        : undefined,
     };
   },
 });

@@ -98,8 +98,16 @@ export const checkStaleOrders = internalMutation({
       .take(50);
 
     const staleOrderIds = [
-      ...pendingOrders.map((o) => ({ id: o._id, status: o.status, displayId: o.displayId })),
-      ...preparingOrders.map((o) => ({ id: o._id, status: o.status, displayId: o.displayId })),
+      ...pendingOrders.map((o) => ({
+        id: o._id,
+        status: o.status,
+        displayId: o.displayId,
+      })),
+      ...preparingOrders.map((o) => ({
+        id: o._id,
+        status: o.status,
+        displayId: o.displayId,
+      })),
     ];
 
     if (staleOrderIds.length > 0) {
@@ -188,10 +196,7 @@ export const activateScheduledPromotions = internalMutation({
         q.and(
           q.eq(q.field("status"), "draft"),
           q.lte(q.field("startsAt"), now),
-          q.or(
-            q.eq(q.field("endsAt"), undefined),
-            q.gt(q.field("endsAt"), now)
-          )
+          q.or(q.eq(q.field("endsAt"), undefined), q.gt(q.field("endsAt"), now))
         )
       )
       .take(50);

@@ -14,11 +14,8 @@
  */
 
 import { v } from "convex/values";
-import {
-  mutation,
-  query,
-} from "./_generated/server";
 import { internal } from "./_generated/api";
+import { mutation, query } from "./_generated/server";
 
 // =============================================================================
 // TYPES
@@ -264,7 +261,12 @@ export const listAvailableDeliveries = query({
 
         // Calculate delivery distance
         let deliveryDistance: number | undefined;
-        if (org?.lat && org?.lng && deliveryAddress?.lat && deliveryAddress?.lng) {
+        if (
+          org?.lat &&
+          org?.lng &&
+          deliveryAddress?.lat &&
+          deliveryAddress?.lng
+        ) {
           deliveryDistance = calculateDistance(
             org.lat,
             org.lng,
@@ -311,7 +313,10 @@ export const listAvailableDeliveries = query({
 
     // Sort by distance from rider if available, otherwise by creation time
     const sorted = enrichedOrders.sort((a, b) => {
-      if (a.distanceFromRider !== undefined && b.distanceFromRider !== undefined) {
+      if (
+        a.distanceFromRider !== undefined &&
+        b.distanceFromRider !== undefined
+      ) {
         return a.distanceFromRider - b.distanceFromRider;
       }
       return a.createdAt - b.createdAt;
@@ -340,7 +345,9 @@ export const getDeliveryDetails = query({
           _id: addr._id,
           name: addr.name,
           phone: addr.phone,
-          address: [addr.street, addr.town, addr.city].filter(Boolean).join(", "),
+          address: [addr.street, addr.town, addr.city]
+            .filter(Boolean)
+            .join(", "),
           lat: addr.lat,
           lng: addr.lng,
           directions: addr.directions,
@@ -495,7 +502,9 @@ export const markPickedUp = mutation({
 
     // Verify order is in correct status
     if (order.status !== "out_for_delivery") {
-      throw new Error(`Cannot mark as picked up. Order status: ${order.status}`);
+      throw new Error(
+        `Cannot mark as picked up. Order status: ${order.status}`
+      );
     }
 
     // Log event (status remains out_for_delivery)
@@ -519,7 +528,7 @@ export const markPickedUp = mutation({
         orderId: args.orderId,
         orderDisplayId: String(order.displayId),
         status: "out_for_delivery",
-        message: `Your order has been picked up and is on the way!`,
+        message: "Your order has been picked up and is on the way!",
       }
     );
 
@@ -586,7 +595,9 @@ export const markDelivered = mutation({
 
     // Verify order is out for delivery
     if (order.status !== "out_for_delivery") {
-      throw new Error(`Cannot mark as delivered. Order status: ${order.status}`);
+      throw new Error(
+        `Cannot mark as delivered. Order status: ${order.status}`
+      );
     }
 
     // Update order status
@@ -710,7 +721,9 @@ export const getCurrentDelivery = query({
         deliveryAddress = {
           name: addr.name,
           phone: addr.phone,
-          address: [addr.street, addr.town, addr.city].filter(Boolean).join(", "),
+          address: [addr.street, addr.town, addr.city]
+            .filter(Boolean)
+            .join(", "),
           lat: addr.lat,
           lng: addr.lng,
           directions: addr.directions,
@@ -774,7 +787,7 @@ export const getDeliveryHistory = query({
   handler: async (ctx, args) => {
     const limit = args.limit ?? 50;
 
-    let query = ctx.db
+    const query = ctx.db
       .query("orders")
       .filter((q) =>
         q.and(
@@ -967,7 +980,9 @@ export const assignToOrder = mutation({
         orderId: args.orderId,
         orderDisplayId: String(order.displayId),
         pickupAddress: org
-          ? [org.street, org.town, org.cityOrDistrict].filter(Boolean).join(", ")
+          ? [org.street, org.town, org.cityOrDistrict]
+              .filter(Boolean)
+              .join(", ")
           : "Store",
         deliveryAddress: deliveryAddress
           ? [deliveryAddress.street, deliveryAddress.town, deliveryAddress.city]

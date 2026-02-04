@@ -5,35 +5,35 @@
  * Used in parcel tables, detail views, and tracking UI.
  */
 
-import { Badge } from '~/components/ui/badge'
-import { cn } from '~/lib/utils'
 import {
-  Package,
-  PackageCheck,
-  Truck,
-  PackageOpen,
-  XCircle,
   Clock,
   CreditCard,
+  Package,
+  PackageCheck,
+  PackageOpen,
   RefreshCw,
-} from 'lucide-react'
+  Truck,
+  XCircle,
+} from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import { cn } from "~/lib/utils";
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 export type ParcelStatus =
-  | 'draft'
-  | 'pending'
-  | 'picked_up'
-  | 'in_transit'
-  | 'delivered'
-  | 'canceled'
-  | 'failed'
+  | "draft"
+  | "pending"
+  | "picked_up"
+  | "in_transit"
+  | "delivered"
+  | "canceled"
+  | "failed";
 
-export type ParcelPaymentStatus = 'pending' | 'paid' | 'refunded'
+export type ParcelPaymentStatus = "pending" | "paid" | "refunded";
 
-export type ParcelSizeCategory = 'small' | 'medium' | 'large' | 'extra_large'
+export type ParcelSizeCategory = "small" | "medium" | "large" | "extra_large";
 
 // =============================================================================
 // CONFIGURATION
@@ -42,253 +42,253 @@ export type ParcelSizeCategory = 'small' | 'medium' | 'large' | 'extra_large'
 const STATUS_CONFIG: Record<
   ParcelStatus,
   {
-    label: string
-    bgColor: string
-    textColor: string
-    borderColor: string
-    icon: typeof Package
+    label: string;
+    bgColor: string;
+    textColor: string;
+    borderColor: string;
+    icon: typeof Package;
   }
 > = {
   draft: {
-    label: 'Draft',
-    bgColor: 'bg-gray-50',
-    textColor: 'text-gray-700',
-    borderColor: 'border-gray-200',
+    label: "Draft",
+    bgColor: "bg-gray-50",
+    textColor: "text-gray-700",
+    borderColor: "border-gray-200",
     icon: Package,
   },
   pending: {
-    label: 'Pending',
-    bgColor: 'bg-yellow-50',
-    textColor: 'text-yellow-700',
-    borderColor: 'border-yellow-200',
+    label: "Pending",
+    bgColor: "bg-yellow-50",
+    textColor: "text-yellow-700",
+    borderColor: "border-yellow-200",
     icon: Clock,
   },
   picked_up: {
-    label: 'Picked Up',
-    bgColor: 'bg-indigo-50',
-    textColor: 'text-indigo-700',
-    borderColor: 'border-indigo-200',
+    label: "Picked Up",
+    bgColor: "bg-indigo-50",
+    textColor: "text-indigo-700",
+    borderColor: "border-indigo-200",
     icon: PackageCheck,
   },
   in_transit: {
-    label: 'In Transit',
-    bgColor: 'bg-cyan-50',
-    textColor: 'text-cyan-700',
-    borderColor: 'border-cyan-200',
+    label: "In Transit",
+    bgColor: "bg-cyan-50",
+    textColor: "text-cyan-700",
+    borderColor: "border-cyan-200",
     icon: Truck,
   },
   delivered: {
-    label: 'Delivered',
-    bgColor: 'bg-green-50',
-    textColor: 'text-green-700',
-    borderColor: 'border-green-200',
+    label: "Delivered",
+    bgColor: "bg-green-50",
+    textColor: "text-green-700",
+    borderColor: "border-green-200",
     icon: PackageOpen,
   },
   canceled: {
-    label: 'Cancelled',
-    bgColor: 'bg-red-50',
-    textColor: 'text-red-700',
-    borderColor: 'border-red-200',
+    label: "Cancelled",
+    bgColor: "bg-red-50",
+    textColor: "text-red-700",
+    borderColor: "border-red-200",
     icon: XCircle,
   },
   failed: {
-    label: 'Failed',
-    bgColor: 'bg-orange-50',
-    textColor: 'text-orange-700',
-    borderColor: 'border-orange-200',
+    label: "Failed",
+    bgColor: "bg-orange-50",
+    textColor: "text-orange-700",
+    borderColor: "border-orange-200",
     icon: XCircle,
   },
-}
+};
 
 const PAYMENT_CONFIG: Record<
   ParcelPaymentStatus,
   {
-    label: string
-    bgColor: string
-    textColor: string
-    borderColor: string
-    icon: typeof CreditCard
+    label: string;
+    bgColor: string;
+    textColor: string;
+    borderColor: string;
+    icon: typeof CreditCard;
   }
 > = {
   pending: {
-    label: 'Unpaid',
-    bgColor: 'bg-yellow-50',
-    textColor: 'text-yellow-700',
-    borderColor: 'border-yellow-200',
+    label: "Unpaid",
+    bgColor: "bg-yellow-50",
+    textColor: "text-yellow-700",
+    borderColor: "border-yellow-200",
     icon: Clock,
   },
   paid: {
-    label: 'Paid',
-    bgColor: 'bg-green-50',
-    textColor: 'text-green-700',
-    borderColor: 'border-green-200',
+    label: "Paid",
+    bgColor: "bg-green-50",
+    textColor: "text-green-700",
+    borderColor: "border-green-200",
     icon: CreditCard,
   },
   refunded: {
-    label: 'Refunded',
-    bgColor: 'bg-gray-50',
-    textColor: 'text-gray-700',
-    borderColor: 'border-gray-200',
+    label: "Refunded",
+    bgColor: "bg-gray-50",
+    textColor: "text-gray-700",
+    borderColor: "border-gray-200",
     icon: RefreshCw,
   },
-}
+};
 
 const SIZE_CONFIG: Record<
   ParcelSizeCategory,
   {
-    label: string
-    shortLabel: string
-    description: string
+    label: string;
+    shortLabel: string;
+    description: string;
   }
 > = {
   small: {
-    label: 'Small',
-    shortLabel: 'S',
-    description: 'Documents, small items',
+    label: "Small",
+    shortLabel: "S",
+    description: "Documents, small items",
   },
   medium: {
-    label: 'Medium',
-    shortLabel: 'M',
-    description: 'Up to 5kg',
+    label: "Medium",
+    shortLabel: "M",
+    description: "Up to 5kg",
   },
   large: {
-    label: 'Large',
-    shortLabel: 'L',
-    description: 'Up to 15kg',
+    label: "Large",
+    shortLabel: "L",
+    description: "Up to 15kg",
   },
   extra_large: {
-    label: 'Extra Large',
-    shortLabel: 'XL',
-    description: '15kg+',
+    label: "Extra Large",
+    shortLabel: "XL",
+    description: "15kg+",
   },
-}
+};
 
 // =============================================================================
 // COMPONENTS
 // =============================================================================
 
 interface ParcelStatusBadgeProps {
-  status: ParcelStatus
-  showIcon?: boolean
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
+  status: ParcelStatus;
+  showIcon?: boolean;
+  size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 export function ParcelStatusBadge({
   status,
   showIcon = true,
-  size = 'md',
+  size = "md",
   className,
 }: ParcelStatusBadgeProps) {
-  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
-  const Icon = config.icon
+  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  const Icon = config.icon;
 
   const sizeClasses = {
-    sm: 'text-xs px-1.5 py-0.5',
-    md: 'text-sm px-2 py-1',
-    lg: 'text-base px-3 py-1.5',
-  }
+    sm: "text-xs px-1.5 py-0.5",
+    md: "text-sm px-2 py-1",
+    lg: "text-base px-3 py-1.5",
+  };
 
   const iconSizes = {
-    sm: 'size-3',
-    md: 'size-3.5',
-    lg: 'size-4',
-  }
+    sm: "size-3",
+    md: "size-3.5",
+    lg: "size-4",
+  };
 
   return (
     <Badge
-      variant="outline"
       className={cn(
         config.bgColor,
         config.textColor,
         config.borderColor,
         sizeClasses[size],
-        'font-medium inline-flex items-center gap-1',
+        "inline-flex items-center gap-1 font-medium",
         className
       )}
+      variant="outline"
     >
       {showIcon && <Icon className={iconSizes[size]} />}
       {config.label}
     </Badge>
-  )
+  );
 }
 
 interface ParcelPaymentBadgeProps {
-  status: ParcelPaymentStatus
-  showIcon?: boolean
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
+  status: ParcelPaymentStatus;
+  showIcon?: boolean;
+  size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 export function ParcelPaymentBadge({
   status,
   showIcon = true,
-  size = 'md',
+  size = "md",
   className,
 }: ParcelPaymentBadgeProps) {
-  const config = PAYMENT_CONFIG[status] ?? PAYMENT_CONFIG.pending
-  const Icon = config.icon
+  const config = PAYMENT_CONFIG[status] ?? PAYMENT_CONFIG.pending;
+  const Icon = config.icon;
 
   const sizeClasses = {
-    sm: 'text-xs px-1.5 py-0.5',
-    md: 'text-sm px-2 py-1',
-    lg: 'text-base px-3 py-1.5',
-  }
+    sm: "text-xs px-1.5 py-0.5",
+    md: "text-sm px-2 py-1",
+    lg: "text-base px-3 py-1.5",
+  };
 
   const iconSizes = {
-    sm: 'size-3',
-    md: 'size-3.5',
-    lg: 'size-4',
-  }
+    sm: "size-3",
+    md: "size-3.5",
+    lg: "size-4",
+  };
 
   return (
     <Badge
-      variant="outline"
       className={cn(
         config.bgColor,
         config.textColor,
         config.borderColor,
         sizeClasses[size],
-        'font-medium inline-flex items-center gap-1',
+        "inline-flex items-center gap-1 font-medium",
         className
       )}
+      variant="outline"
     >
       {showIcon && <Icon className={iconSizes[size]} />}
       {config.label}
     </Badge>
-  )
+  );
 }
 
 interface ParcelSizeBadgeProps {
-  size: ParcelSizeCategory
-  variant?: 'full' | 'short'
-  showDescription?: boolean
-  className?: string
+  size: ParcelSizeCategory;
+  variant?: "full" | "short";
+  showDescription?: boolean;
+  className?: string;
 }
 
 export function ParcelSizeBadge({
   size,
-  variant = 'full',
+  variant = "full",
   showDescription = false,
   className,
 }: ParcelSizeBadgeProps) {
-  const config = SIZE_CONFIG[size] ?? SIZE_CONFIG.small
+  const config = SIZE_CONFIG[size] ?? SIZE_CONFIG.small;
 
   return (
     <Badge
-      variant="secondary"
-      className={cn('font-medium', className)}
+      className={cn("font-medium", className)}
       title={config.description}
+      variant="secondary"
     >
-      <Package className="size-3 mr-1" />
-      {variant === 'full' ? config.label : config.shortLabel}
+      <Package className="mr-1 size-3" />
+      {variant === "full" ? config.label : config.shortLabel}
       {showDescription && (
-        <span className="ml-1 text-muted-foreground font-normal">
+        <span className="ml-1 font-normal text-muted-foreground">
           ({config.description})
         </span>
       )}
     </Badge>
-  )
+  );
 }
 
 // =============================================================================
@@ -296,13 +296,13 @@ export function ParcelSizeBadge({
 // =============================================================================
 
 export const getStatusLabel = (status: ParcelStatus): string =>
-  STATUS_CONFIG[status]?.label ?? status
+  STATUS_CONFIG[status]?.label ?? status;
 
 export const getPaymentLabel = (status: ParcelPaymentStatus): string =>
-  PAYMENT_CONFIG[status]?.label ?? status
+  PAYMENT_CONFIG[status]?.label ?? status;
 
 export const getSizeLabel = (size: ParcelSizeCategory): string =>
-  SIZE_CONFIG[size]?.label ?? size
+  SIZE_CONFIG[size]?.label ?? size;
 
 export const getSizeDescription = (size: ParcelSizeCategory): string =>
-  SIZE_CONFIG[size]?.description ?? ''
+  SIZE_CONFIG[size]?.description ?? "";

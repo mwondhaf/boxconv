@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Sidebar,
@@ -6,40 +6,40 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from '~/components/ui/sidebar'
-import { NavMain, type NavMainItem } from './nav-main'
-import { NavUser } from './nav-user'
-import { OrgSwitcher } from './org-switcher'
+} from "~/components/ui/sidebar";
+import { NavMain, type NavMainItem } from "./nav-main";
+import { NavUser } from "./nav-user";
+import { OrgSwitcher } from "./org-switcher";
 
 export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   /**
    * Navigation items to display in the sidebar
    */
-  navItems: NavMainItem[]
+  navItems: NavMainItem[];
   /**
    * Label for the navigation section
    */
-  navLabel?: string
+  navLabel?: string;
   /**
    * Whether to show the organization switcher (for vendor layout)
    */
-  showOrgSwitcher?: boolean
+  showOrgSwitcher?: boolean;
   /**
    * Whether to hide the "Create organization" option in the org switcher
    */
-  hideCreateOrg?: boolean
+  hideCreateOrg?: boolean;
   /**
    * Custom header content (overrides org switcher)
    */
-  headerContent?: React.ReactNode
+  headerContent?: React.ReactNode;
   /**
    * Custom footer content (overrides user nav)
    */
-  footerContent?: React.ReactNode
+  footerContent?: React.ReactNode;
   /**
    * Additional content to render in the sidebar
    */
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 /**
@@ -68,7 +68,7 @@ export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
  */
 export function AppSidebar({
   navItems,
-  navLabel = 'Navigation',
+  navLabel = "Navigation",
   showOrgSwitcher = false,
   hideCreateOrg = false,
   headerContent,
@@ -79,16 +79,17 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        {headerContent ?? (showOrgSwitcher ? <OrgSwitcher hideCreateOrg={hideCreateOrg} /> : null)}
+        {headerContent ??
+          (showOrgSwitcher ? (
+            <OrgSwitcher hideCreateOrg={hideCreateOrg} />
+          ) : null)}
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navItems} label={navLabel} />
         {children}
       </SidebarContent>
-      <SidebarFooter>
-        {footerContent ?? <NavUser />}
-      </SidebarFooter>
+      <SidebarFooter>{footerContent ?? <NavUser />}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

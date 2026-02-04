@@ -1,9 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/_authed/_rider/r/history')({
+export const Route = createFileRoute("/_authed/_rider/r/history")({
   component: RiderHistoryPage,
-})
+});
 
 function RiderHistoryPage() {
-  return <div>History</div>
+  return <div>History</div>;
 }

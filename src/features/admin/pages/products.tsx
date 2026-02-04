@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { ProductsBrowser } from '../components/products-browser'
+import { ProductsBrowser } from "../components/products-browser";
 
 // =============================================================================
 // AdminProductsPage Component
 // =============================================================================
 
 export function AdminProductsPage() {
-  return <ProductsBrowser />
+  return <ProductsBrowser />;
 }
 
-export default AdminProductsPage
+export default AdminProductsPage;

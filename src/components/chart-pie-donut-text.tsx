@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { TrendingUp } from "lucide-react"
-import { Label, Pie, PieChart } from "recharts"
+import { TrendingUp } from "lucide-react";
+import * as React from "react";
+import { Label, Pie, PieChart } from "recharts";
 
 import {
   Card,
@@ -11,15 +11,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card"
+} from "~/components/ui/card";
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
-} from "~/components/ui/chart"
+} from "~/components/ui/chart";
 
-export const description = "A donut chart with text"
+export const description = "A donut chart with text";
 
 const chartData = [
   { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
@@ -27,7 +27,7 @@ const chartData = [
   { browser: "firefox", visitors: 287, fill: "var(--color-firefox)" },
   { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
   { browser: "other", visitors: 190, fill: "var(--color-other)" },
-]
+];
 
 const chartConfig = {
   visitors: {
@@ -53,12 +53,12 @@ const chartConfig = {
     label: "Other",
     color: "var(--chart-5)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export function ChartPieDonutText() {
   const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
-  }, [])
+    return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
+  }, []);
 
   return (
     <Card className="flex flex-col">
@@ -68,19 +68,19 @@ export function ChartPieDonutText() {
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
-          config={chartConfig}
           className="mx-auto aspect-square max-h-[250px]"
+          config={chartConfig}
         >
           <PieChart>
             <ChartTooltip
-              cursor={false}
               content={<ChartTooltipContent hideLabel />}
+              cursor={false}
             />
             <Pie
               data={chartData}
               dataKey="visitors"
-              nameKey="browser"
               innerRadius={60}
+              nameKey="browser"
               strokeWidth={5}
             >
               <Label
@@ -88,27 +88,27 @@ export function ChartPieDonutText() {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                     return (
                       <text
+                        dominantBaseline="middle"
+                        textAnchor="middle"
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
                       >
                         <tspan
+                          className="fill-foreground font-bold text-3xl"
                           x={viewBox.cx}
                           y={viewBox.cy}
-                          className="fill-foreground text-3xl font-bold"
                         >
                           {totalVisitors.toLocaleString()}
                         </tspan>
                         <tspan
+                          className="fill-muted-foreground"
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
                         >
                           Visitors
                         </tspan>
                       </text>
-                    )
+                    );
                   }
                 }}
               />
@@ -117,7 +117,7 @@ export function ChartPieDonutText() {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium">
+        <div className="flex items-center gap-2 font-medium leading-none">
           Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground leading-none">
@@ -125,5 +125,5 @@ export function ChartPieDonutText() {
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }
