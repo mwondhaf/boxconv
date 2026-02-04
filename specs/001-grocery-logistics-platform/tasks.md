@@ -167,7 +167,7 @@ description: 'Task list for Grocery & Logistics Platform (BoxKuBox)'
 - [ ] T051 [PH5] [P] Create customer addresses page `src/app/routes/_authed/_customer/addresses/index.tsx`
 - [ ] T052 [PH5] [P] Create address form sheet `src/components/customer/address-form-sheet.tsx`
 
-### Store Browsing
+### Store Browsing/
 
 - [ ] T053 [PH5] Implement store queries in `convex/organizations.ts` - listActive with open/closed status
 - [ ] T054 [PH5] Implement `convex/productVariants.ts` - listByOrgWithPrices (join variant + priceSet + moneyAmount)
