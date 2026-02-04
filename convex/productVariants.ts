@@ -731,3 +731,225 @@ export const remove = mutation({
     return { success: true };
   },
 });
+
+// =============================================================================
+// CUSTOMER BROWSING QUERIES
+// =============================================================================
+
+/**
+ * List variants for customer store browsing.
+ * Only returns approved and available variants with full pricing info.
+ * Used by mobile app for browsing a store's products.
+ */
+export const listForCustomerBrowsing = query({
+  args: {
+    organizationId: v.id("organizations"),
+    categoryId: v.optional(v.id("categories")),
+    search: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 50;
+
+    // Get only available and approved variants
+    const variants = await ctx.db
+      .query("productVariants")
+      .withIndex("by_available", (q) =>
+        q.eq("organizationId", args.organizationId).eq("isAvailable", true)
+      )
+      .filter((q) => q.eq(q.field("isApproved"), true))
+      .take(limit);
+
+    // Enrich with product and pricing info
+    const enrichedVariants = await Promise.all(
+      variants.map(async (variant) => {
+        const product = await ctx.db.get(variant.productId);
+        if (!product || !product.isActive) return null;
+
+        // Filter by category if provided
+        if (args.categoryId && product.categoryId !== args.categoryId) {
+          return null;
+        }
+
+        // Filter by search if provided
+        if (args.search && args.search.trim().length > 0) {
+          const searchLower = args.search.toLowerCase();
+          const nameMatch = product.name.toLowerCase().includes(searchLower);
+          const skuMatch = variant.sku.toLowerCase().includes(searchLower);
+          if (!nameMatch && !skuMatch) return null;
+        }
+
+        const priceSet = await ctx.db
+          .query("priceSets")
+          .withIndex("by_variant", (q) => q.eq("variantId", variant._id))
+          .first();
+
+        let price = 0;
+        let salePrice: number | undefined;
+        let currency = "UGX";
+        let priceAmounts: Array<{
+          amount: number;
+          saleAmount?: number;
+          currency: string;
+          minQuantity?: number;
+          maxQuantity?: number;
+        }> = [];
+
+        if (priceSet) {
+          const moneyAmounts = await ctx.db
+            .query("moneyAmounts")
+            .withIndex("by_priceSet", (q) => q.eq("priceSetId", priceSet._id))
+            .collect();
+
+          priceAmounts = moneyAmounts.map((ma) => ({
+            amount: ma.amount,
+            saleAmount: ma.saleAmount ?? undefined,
+            currency: ma.currency,
+            minQuantity: ma.minQuantity ?? undefined,
+            maxQuantity: ma.maxQuantity ?? undefined,
+          }));
+
+          // Sort by minQuantity for tiered pricing display
+          priceAmounts.sort((a, b) => (a.minQuantity ?? 0) - (b.minQuantity ?? 0));
+
+          // Get base price (lowest tier)
+          if (moneyAmounts.length > 0) {
+            const basePrice = priceAmounts[0];
+            price = basePrice.amount;
+            salePrice = basePrice.saleAmount;
+            currency = basePrice.currency;
+          }
+        }
+
+        // Get primary image
+        const primaryImage = await ctx.db
+          .query("productImages")
+          .withIndex("by_primary", (q) =>
+            q.eq("productId", product._id).eq("isPrimary", true)
+          )
+          .first();
+
+        // Calculate effective price for display
+        const effectivePrice = salePrice && salePrice < price ? salePrice : price;
+
+        return {
+          _id: variant._id,
+          sku: variant.sku,
+          unit: variant.unit,
+          stockQuantity: variant.stockQuantity,
+          product: {
+            _id: product._id,
+            name: product.name,
+            slug: product.slug,
+            description: product.description,
+            imageUrl: getImageUrl(primaryImage?.r2Key),
+          },
+          price,
+          salePrice,
+          effectivePrice,
+          currency,
+          priceAmounts,
+          hasDiscount: salePrice !== undefined && salePrice < price,
+        };
+      })
+    );
+
+    // Filter out nulls and return
+    return enrichedVariants.filter((v) => v !== null);
+  },
+});
+
+/**
+ * Get variant details for customer viewing.
+ * Returns full product info, all images, and pricing tiers.
+ */
+export const getForCustomer = query({
+  args: {
+    id: v.id("productVariants"),
+  },
+  handler: async (ctx, args) => {
+    const variant = await ctx.db.get(args.id);
+    if (!variant) return null;
+
+    // Only return if available and approved
+    if (!variant.isAvailable || !variant.isApproved) return null;
+
+    const product = await ctx.db.get(variant.productId);
+    if (!product || !product.isActive) return null;
+
+    // Get organization
+    const organization = await ctx.db.get(variant.organizationId);
+
+    // Get all product images
+    const images = await ctx.db
+      .query("productImages")
+      .withIndex("by_product", (q) => q.eq("productId", product._id))
+      .collect();
+
+    // Get pricing
+    const priceSet = await ctx.db
+      .query("priceSets")
+      .withIndex("by_variant", (q) => q.eq("variantId", variant._id))
+      .first();
+
+    let priceAmounts: Array<{
+      amount: number;
+      saleAmount?: number;
+      currency: string;
+      minQuantity?: number;
+      maxQuantity?: number;
+    }> = [];
+
+    if (priceSet) {
+      const moneyAmounts = await ctx.db
+        .query("moneyAmounts")
+        .withIndex("by_priceSet", (q) => q.eq("priceSetId", priceSet._id))
+        .collect();
+
+      priceAmounts = moneyAmounts
+        .map((ma) => ({
+          amount: ma.amount,
+          saleAmount: ma.saleAmount ?? undefined,
+          currency: ma.currency,
+          minQuantity: ma.minQuantity ?? undefined,
+          maxQuantity: ma.maxQuantity ?? undefined,
+        }))
+        .sort((a, b) => (a.minQuantity ?? 0) - (b.minQuantity ?? 0));
+    }
+
+    // Get category and brand info
+    const category = product.categoryId ? await ctx.db.get(product.categoryId) : null;
+    const brand = product.brandId ? await ctx.db.get(product.brandId) : null;
+
+    return {
+      _id: variant._id,
+      sku: variant.sku,
+      unit: variant.unit,
+      stockQuantity: variant.stockQuantity,
+      weightGrams: variant.weightGrams,
+      barcode: variant.barcode,
+      product: {
+        _id: product._id,
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        images: images.map((img) => ({
+          url: getImageUrl(img.r2Key),
+          alt: img.alt,
+          isPrimary: img.isPrimary,
+        })),
+        category: category ? { _id: category._id, name: category.name } : null,
+        brand: brand ? { _id: brand._id, name: brand.name } : null,
+      },
+      organization: organization
+        ? {
+            _id: organization._id,
+            name: organization.name,
+            slug: organization.slug,
+          }
+        : null,
+      priceAmounts,
+      inStock: variant.stockQuantity > 0,
+    };
+  },
+});

@@ -399,3 +399,185 @@ export const listActive = query({
     return orgs.filter((org) => !org.isBusy)
   },
 })
+
+/**
+ * Helper function to determine if a store is currently open
+ */
+function isStoreOpen(
+  openingTime: string | undefined,
+  closingTime: string | undefined,
+  timezone: string | undefined
+): { isOpen: boolean; opensAt?: string; closesAt?: string } {
+  if (!openingTime || !closingTime) {
+    return { isOpen: true } // Assume open if no hours set
+  }
+
+  // Get current time in store's timezone (default to Africa/Kampala for Uganda)
+  const tz = timezone || 'Africa/Kampala'
+  const now = new Date()
+
+  // Parse time strings (expected format: "HH:MM" in 24-hour format)
+  const [openHour, openMin] = openingTime.split(':').map(Number)
+  const [closeHour, closeMin] = closingTime.split(':').map(Number)
+
+  // Get current hour and minute
+  // Note: In production, use proper timezone library like date-fns-tz
+  const currentHour = now.getUTCHours() + 3 // UTC+3 for East Africa
+  const currentMin = now.getUTCMinutes()
+
+  const currentMins = currentHour * 60 + currentMin
+  const openMins = openHour * 60 + openMin
+  const closeMins = closeHour * 60 + closeMin
+
+  // Handle overnight hours (e.g., 22:00 - 06:00)
+  let isOpen: boolean
+  if (closeMins < openMins) {
+    // Overnight: open if after opening OR before closing
+    isOpen = currentMins >= openMins || currentMins < closeMins
+  } else {
+    // Same day: open if between opening and closing
+    isOpen = currentMins >= openMins && currentMins < closeMins
+  }
+
+  return {
+    isOpen,
+    opensAt: openingTime,
+    closesAt: closingTime,
+  }
+}
+
+/**
+ * List active stores with open/closed status for customer browsing.
+ * Includes store hours and current availability.
+ */
+export const listActiveWithStatus = query({
+  args: {
+    limit: v.optional(v.number()),
+    categoryId: v.optional(v.id('organizationCategories')),
+    nearGeohash: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 50
+
+    let orgs
+    if (args.categoryId) {
+      orgs = await ctx.db
+        .query('organizations')
+        .withIndex('by_category', (q) => q.eq('categoryId', args.categoryId))
+        .take(limit)
+    } else {
+      orgs = await ctx.db.query('organizations').take(limit)
+    }
+
+    // Filter and enrich organizations
+    const enrichedOrgs = orgs
+      .filter((org) => !org.isBusy)
+      .map((org) => {
+        const storeStatus = isStoreOpen(org.openingTime, org.closingTime, org.timezone)
+
+        return {
+          _id: org._id,
+          _creationTime: org._creationTime,
+          name: org.name,
+          slug: org.slug,
+          logo: org.logo,
+          // Location
+          country: org.country,
+          cityOrDistrict: org.cityOrDistrict,
+          town: org.town,
+          street: org.street,
+          lat: org.lat,
+          lng: org.lng,
+          geohash: org.geohash,
+          // Category
+          categoryId: org.categoryId,
+          // Store status
+          isOpen: storeStatus.isOpen,
+          isBusy: org.isBusy ?? false,
+          openingTime: org.openingTime,
+          closingTime: org.closingTime,
+          // Contact (for display)
+          phone: org.phone,
+        }
+      })
+
+    // Sort: open stores first, then by name
+    enrichedOrgs.sort((a, b) => {
+      if (a.isOpen && !b.isOpen) return -1
+      if (!a.isOpen && b.isOpen) return 1
+      return a.name.localeCompare(b.name)
+    })
+
+    return enrichedOrgs
+  },
+})
+
+/**
+ * Get a store's details with current open/closed status.
+ * For customer viewing a specific store.
+ */
+export const getStoreDetails = query({
+  args: {
+    id: v.id('organizations'),
+  },
+  handler: async (ctx, args) => {
+    const org = await ctx.db.get(args.id)
+    if (!org) return null
+
+    const storeStatus = isStoreOpen(org.openingTime, org.closingTime, org.timezone)
+
+    // Get category info if available
+    let category = null
+    if (org.categoryId) {
+      category = await ctx.db.get(org.categoryId)
+    }
+
+    return {
+      ...org,
+      isOpen: storeStatus.isOpen,
+      category: category ? { _id: category._id, name: category.name, slug: category.slug } : null,
+    }
+  },
+})
+
+/**
+ * Search stores by name.
+ * Public query for customer search.
+ */
+export const searchStores = query({
+  args: {
+    query: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 20
+    const searchQuery = args.query.toLowerCase().trim()
+
+    if (searchQuery.length < 2) {
+      return []
+    }
+
+    const allOrgs = await ctx.db.query('organizations').take(100)
+
+    // Filter by name match and not busy
+    const matchingOrgs = allOrgs
+      .filter((org) =>
+        !org.isBusy &&
+        org.name.toLowerCase().includes(searchQuery)
+      )
+      .slice(0, limit)
+      .map((org) => {
+        const storeStatus = isStoreOpen(org.openingTime, org.closingTime, org.timezone)
+        return {
+          _id: org._id,
+          name: org.name,
+          slug: org.slug,
+          logo: org.logo,
+          cityOrDistrict: org.cityOrDistrict,
+          isOpen: storeStatus.isOpen,
+        }
+      })
+
+    return matchingOrgs
+  },
+})
