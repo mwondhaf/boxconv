@@ -303,7 +303,12 @@ export function AddMemberForm({
             Cancel
           </Button>
           <form.Subscribe
-            children={([canSubmit, isSubmitting]) => (
+            selector={(state) => ({
+              canSubmit: state.canSubmit,
+              isSubmitting: state.isSubmitting,
+            })}
+          >
+            {({ canSubmit, isSubmitting }) => (
               <Button
                 disabled={!(selectedUser && canSubmit) || isSubmitting}
                 form="add-member-form"
@@ -312,8 +317,7 @@ export function AddMemberForm({
                 {isSubmitting ? "Adding..." : "Add Member"}
               </Button>
             )}
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-          />
+          </form.Subscribe>
         </DialogFooter>
       </DialogContent>
     </Dialog>

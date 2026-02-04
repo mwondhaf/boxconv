@@ -425,7 +425,12 @@ export function ProductFormSheet({
                 Cancel
               </Button>
               <form.Subscribe
-                children={([canSubmit, isSubmitting]) => (
+                selector={(state) => ({
+                  canSubmit: state.canSubmit,
+                  isSubmitting: state.isSubmitting,
+                })}
+              >
+                {({ canSubmit, isSubmitting }) => (
                   <Button disabled={!canSubmit || isSubmitting} type="submit">
                     {isSubmitting ? (
                       <>
@@ -439,8 +444,7 @@ export function ProductFormSheet({
                     )}
                   </Button>
                 )}
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-              />
+              </form.Subscribe>
             </div>
           </SheetFooter>
         </form>

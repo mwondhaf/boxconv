@@ -195,7 +195,12 @@ export function CreateOrganizationForm({
             Cancel
           </Button>
           <form.Subscribe
-            children={([canSubmit, isSubmitting]) => (
+            selector={(state) => ({
+              canSubmit: state.canSubmit,
+              isSubmitting: state.isSubmitting,
+            })}
+          >
+            {({ canSubmit, isSubmitting }) => (
               <Button
                 disabled={!canSubmit || isSubmitting}
                 form="create-organization-form"
@@ -204,8 +209,7 @@ export function CreateOrganizationForm({
                 {isSubmitting ? "Creating..." : "Create Organization"}
               </Button>
             )}
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-          />
+          </form.Subscribe>
         </DialogFooter>
       </DialogContent>
     </Dialog>

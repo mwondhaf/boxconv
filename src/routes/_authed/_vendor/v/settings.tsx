@@ -595,7 +595,12 @@ function VendorSettingsPage() {
           </p>
         </div>
         <form.Subscribe
-          children={([canSubmit, isSubmitting]) => (
+          selector={(state) => ({
+            canSubmit: state.canSubmit,
+            isSubmitting: state.isSubmitting,
+          })}
+        >
+          {({ canSubmit, isSubmitting }) => (
             <Button
               disabled={!canSubmit || isSubmitting || saveStatus === "saving"}
               onClick={() => form.handleSubmit()}
@@ -610,8 +615,7 @@ function VendorSettingsPage() {
                     : "Save Changes"}
             </Button>
           )}
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-        />
+        </form.Subscribe>
       </div>
 
       <form
