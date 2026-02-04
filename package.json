@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
+    "@casl/ability": "^6.8.0",
+    "@casl/react": "^5.0.1",
     "@clerk/tanstack-react-start": "^0.28.1",
     "@convex-dev/r2": "^0.9.0",
     "@convex-dev/react-query": "0.1.0",
