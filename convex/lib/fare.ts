@@ -341,7 +341,7 @@ export function calculateParcelFare(
  * @param geohashPrefix - Geohash prefix for the delivery area
  * @returns Zone-specific fare adjustments
  */
-export function getZoneFareAdjustment(geohashPrefix: string): {
+export function getZoneFareAdjustment(_geohashPrefix: string): {
   name: string;
   multiplier: number;
   additionalFee: number;

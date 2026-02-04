@@ -32,6 +32,7 @@ import { Route as AuthedAdminAVariantsRouteImport } from './routes/_authed/_admi
 import { Route as AuthedAdminASettingsRouteImport } from './routes/_authed/_admin/a/settings'
 import { Route as AuthedAdminARidersRouteImport } from './routes/_authed/_admin/a/riders'
 import { Route as AuthedAdminAProductsRouteImport } from './routes/_authed/_admin/a/products'
+import { Route as AuthedAdminAParcelsRouteImport } from './routes/_authed/_admin/a/parcels'
 import { Route as AuthedAdminAOrganizationsRouteImport } from './routes/_authed/_admin/a/organizations'
 import { Route as AuthedAdminAOrdersRouteImport } from './routes/_authed/_admin/a/orders'
 import { Route as AuthedAdminACategoriesRouteImport } from './routes/_authed/_admin/a/categories'
@@ -148,6 +149,11 @@ const AuthedAdminAProductsRoute = AuthedAdminAProductsRouteImport.update({
   path: '/a/products',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
+const AuthedAdminAParcelsRoute = AuthedAdminAParcelsRouteImport.update({
+  id: '/a/parcels',
+  path: '/a/parcels',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
 const AuthedAdminAOrganizationsRoute =
   AuthedAdminAOrganizationsRouteImport.update({
     id: '/a/organizations',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/a/categories': typeof AuthedAdminACategoriesRoute
   '/a/orders': typeof AuthedAdminAOrdersRoute
   '/a/organizations': typeof AuthedAdminAOrganizationsRoute
+  '/a/parcels': typeof AuthedAdminAParcelsRoute
   '/a/products': typeof AuthedAdminAProductsRoute
   '/a/riders': typeof AuthedAdminARidersRoute
   '/a/settings': typeof AuthedAdminASettingsRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/a/categories': typeof AuthedAdminACategoriesRoute
   '/a/orders': typeof AuthedAdminAOrdersRoute
   '/a/organizations': typeof AuthedAdminAOrganizationsRoute
+  '/a/parcels': typeof AuthedAdminAParcelsRoute
   '/a/products': typeof AuthedAdminAProductsRoute
   '/a/riders': typeof AuthedAdminARidersRoute
   '/a/settings': typeof AuthedAdminASettingsRoute
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/_authed/_admin/a/categories': typeof AuthedAdminACategoriesRoute
   '/_authed/_admin/a/orders': typeof AuthedAdminAOrdersRoute
   '/_authed/_admin/a/organizations': typeof AuthedAdminAOrganizationsRoute
+  '/_authed/_admin/a/parcels': typeof AuthedAdminAParcelsRoute
   '/_authed/_admin/a/products': typeof AuthedAdminAProductsRoute
   '/_authed/_admin/a/riders': typeof AuthedAdminARidersRoute
   '/_authed/_admin/a/settings': typeof AuthedAdminASettingsRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/a/categories'
     | '/a/orders'
     | '/a/organizations'
+    | '/a/parcels'
     | '/a/products'
     | '/a/riders'
     | '/a/settings'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/a/categories'
     | '/a/orders'
     | '/a/organizations'
+    | '/a/parcels'
     | '/a/products'
     | '/a/riders'
     | '/a/settings'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/_authed/_admin/a/categories'
     | '/_authed/_admin/a/orders'
     | '/_authed/_admin/a/organizations'
+    | '/_authed/_admin/a/parcels'
     | '/_authed/_admin/a/products'
     | '/_authed/_admin/a/riders'
     | '/_authed/_admin/a/settings'
@@ -500,6 +512,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminAProductsRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
+    '/_authed/_admin/a/parcels': {
+      id: '/_authed/_admin/a/parcels'
+      path: '/a/parcels'
+      fullPath: '/a/parcels'
+      preLoaderRoute: typeof AuthedAdminAParcelsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
     '/_authed/_admin/a/organizations': {
       id: '/_authed/_admin/a/organizations'
       path: '/a/organizations'
@@ -536,6 +555,7 @@ interface AuthedAdminRouteChildren {
   AuthedAdminACategoriesRoute: typeof AuthedAdminACategoriesRoute
   AuthedAdminAOrdersRoute: typeof AuthedAdminAOrdersRoute
   AuthedAdminAOrganizationsRoute: typeof AuthedAdminAOrganizationsRoute
+  AuthedAdminAParcelsRoute: typeof AuthedAdminAParcelsRoute
   AuthedAdminAProductsRoute: typeof AuthedAdminAProductsRoute
   AuthedAdminARidersRoute: typeof AuthedAdminARidersRoute
   AuthedAdminASettingsRoute: typeof AuthedAdminASettingsRoute
@@ -549,6 +569,7 @@ const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
   AuthedAdminACategoriesRoute: AuthedAdminACategoriesRoute,
   AuthedAdminAOrdersRoute: AuthedAdminAOrdersRoute,
   AuthedAdminAOrganizationsRoute: AuthedAdminAOrganizationsRoute,
+  AuthedAdminAParcelsRoute: AuthedAdminAParcelsRoute,
   AuthedAdminAProductsRoute: AuthedAdminAProductsRoute,
   AuthedAdminARidersRoute: AuthedAdminARidersRoute,
   AuthedAdminASettingsRoute: AuthedAdminASettingsRoute,

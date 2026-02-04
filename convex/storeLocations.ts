@@ -6,7 +6,7 @@
  */
 
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 import { storeLocations } from "./components";
 
 // =============================================================================

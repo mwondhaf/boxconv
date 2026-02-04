@@ -7,8 +7,6 @@
 
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { internal } from "./_generated/api";
-import { workflow } from "./components";
 
 // =============================================================================
 // WORKFLOW STEP MUTATIONS
@@ -293,7 +291,7 @@ export const findNearbyRiders = internalMutation({
     lng: v.number(),
     maxDistanceKm: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, _args) => {
     // In a real implementation, this would query rider locations
     // from a geospatial index. For now, return an empty array.
     // The rider tracking system would need to be implemented.

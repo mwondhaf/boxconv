@@ -1,10 +1,164 @@
+/**
+ * Vendor Orders Page
+ *
+ * Displays orders for the vendor's organization with:
+ * - Order statistics (pending, preparing, completed, etc.)
+ * - Filtering by status and fulfillment type
+ * - Order list using the reusable OrdersTable component
+ * - Order detail sheet for management
+ */
+
+import { useState } from 'react'
+import { useQuery, useMutation } from 'convex/react'
+import { useOrganization, useUser } from '@clerk/tanstack-react-start'
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { useCan } from '~/shared/stores/ability-store'
+import { OrdersTable, type Order, type OrderStatus, type FulfillmentType } from '../components/orders-table'
+import { OrderDetailSheet } from '../components/order-detail-sheet'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
+import { Button } from '~/components/ui/button'
+import { RefreshCw } from 'lucide-react'
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+type StatusFilter = OrderStatus | 'all'
+type FulfillmentFilter = FulfillmentType | 'all'
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
 
 export function VendorOrdersPage() {
+  const { organization } = useOrganization()
+  const { user } = useUser()
   const canManageOrder = useCan('manage', 'Order')
+
+  // Filters
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [fulfillmentFilter, setFulfillmentFilter] = useState<FulfillmentFilter>('all')
+
+  // Selected order for detail sheet
+  const [selectedOrderId, setSelectedOrderId] = useState<Id<'orders'> | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+
+  // Get organization from Convex
+  const convexOrg = useQuery(
+    api.organizations.getByClerkOrgId,
+    organization?.id ? { clerkOrgId: organization.id } : 'skip'
+  )
+
+  // Get orders for this organization
+  const ordersResult = useQuery(
+    api.orders.listByOrganization,
+    convexOrg?._id
+      ? {
+          organizationId: convexOrg._id,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
+          limit: 100,
+        }
+      : 'skip'
+  )
+
+  // Get today's summary for stats
+  const todaysSummary = useQuery(
+    api.orders.getTodaysSummary,
+    convexOrg?._id ? { organizationId: convexOrg._id } : 'skip'
+  )
+
+  // Get selected order details
+  const selectedOrder = useQuery(
+    api.orders.get,
+    selectedOrderId ? { id: selectedOrderId } : 'skip'
+  )
+
+  // Get online riders for assignment
+  const onlineRiders = useQuery(api.riders.listOnlineRiders, {
+    storeLat: convexOrg?.lat,
+    storeLng: convexOrg?.lng,
+  })
+
+  // Mutations
+  const confirmOrder = useMutation(api.orders.confirm)
+  const startPreparing = useMutation(api.orders.startPreparing)
+  const markReady = useMutation(api.orders.markReady)
+
+  // Filter orders client-side for fulfillment type
+  const filteredOrders = ordersResult?.orders?.filter((order) => {
+    if (fulfillmentFilter !== 'all' && order.fulfillmentType !== fulfillmentFilter) {
+      return false
+    }
+    return true
+  }) as Order[] | undefined
+
+  // Handlers
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrderId(order._id)
+    setIsDetailOpen(true)
+  }
+
+  const handleConfirmOrder = async (order: Order) => {
+    if (!user?.id) return
+    try {
+      await confirmOrder({ orderId: order._id, actorClerkId: user.id })
+    } catch (error) {
+      console.error('Failed to confirm order:', error)
+    }
+  }
+
+  const handleStartPreparing = async (order: Order) => {
+    if (!user?.id) return
+    try {
+      await startPreparing({ orderId: order._id, actorClerkId: user.id })
+    } catch (error) {
+      console.error('Failed to start preparing:', error)
+    }
+  }
+
+  const handleMarkReady = async (order: Order) => {
+    if (!user?.id) return
+    try {
+      await markReady({ orderId: order._id, actorClerkId: user.id })
+    } catch (error) {
+      console.error('Failed to mark ready:', error)
+    }
+  }
+
+  const handleCancelOrder = (order: Order) => {
+    // Open detail sheet for cancel flow (which has the cancel form)
+    setSelectedOrderId(order._id)
+    setIsDetailOpen(true)
+  }
+
+  const formatCurrency = (amount: number, currency: string = 'UGX') => {
+    if (currency === 'UGX') {
+      return `UGX ${amount.toLocaleString()}`
+    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+    }).format(amount)
+  }
+
+  if (!organization) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-gray-500">Please select an organization</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
@@ -13,131 +167,109 @@ export function VendorOrdersPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button
-            type="button"
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-          >
+          <Button variant="outline" size="sm">
+            <RefreshCw className="size-4 mr-2" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm">
             Export
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Order Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-500">Today's Orders</h3>
+          <p className="mt-1 text-2xl font-bold text-gray-900">
+            {todaysSummary?.totalOrders ?? 0}
+          </p>
+        </div>
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="text-sm font-medium text-gray-500">Pending</h3>
-          <p className="mt-1 text-2xl font-bold text-yellow-600">0</p>
+          <p className="mt-1 text-2xl font-bold text-yellow-600">
+            {todaysSummary?.pending ?? 0}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-sm font-medium text-gray-500">Processing</h3>
-          <p className="mt-1 text-2xl font-bold text-blue-600">0</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-sm font-medium text-gray-500">Shipped</h3>
-          <p className="mt-1 text-2xl font-bold text-indigo-600">0</p>
+          <h3 className="text-sm font-medium text-gray-500">Preparing</h3>
+          <p className="mt-1 text-2xl font-bold text-blue-600">
+            {todaysSummary?.preparing ?? 0}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="text-sm font-medium text-gray-500">Completed</h3>
-          <p className="mt-1 text-2xl font-bold text-green-600">0</p>
+          <p className="mt-1 text-2xl font-bold text-green-600">
+            {todaysSummary?.completed ?? 0}
+          </p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-500">Revenue</h3>
+          <p className="mt-1 text-2xl font-bold text-gray-900">
+            {formatCurrency(todaysSummary?.revenue ?? 0)}
+          </p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex flex-wrap gap-4">
-          <input
-            type="text"
-            placeholder="Search by order ID or customer..."
-            className="flex-1 min-w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-          />
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent">
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="completed">Completed</option>
-            <option value="canceled">Canceled</option>
-          </select>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent">
-            <option value="">Fulfillment Type</option>
-            <option value="delivery">Delivery</option>
-            <option value="pickup">Pickup</option>
-            <option value="self_delivery">Self Delivery</option>
-          </select>
-          <input
-            type="date"
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-          />
-        </div>
+      <div className="flex flex-wrap gap-4">
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
+            <SelectItem value="preparing">Preparing</SelectItem>
+            <SelectItem value="ready_for_pickup">Ready</SelectItem>
+            <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+            <SelectItem value="delivered">Delivered</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={fulfillmentFilter}
+          onValueChange={(value) => setFulfillmentFilter(value as FulfillmentFilter)}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Fulfillment type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="delivery">Delivery</SelectItem>
+            <SelectItem value="pickup">Pickup</SelectItem>
+            <SelectItem value="self_delivery">Self Delivery</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Order ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Customer
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Items
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Fulfillment
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              {canManageOrder && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            <tr>
-              <td
-                colSpan={canManageOrder ? 8 : 7}
-                className="px-6 py-12 text-center text-gray-500"
-              >
-                No orders found. Orders will appear here when customers place
-                them.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="bg-white rounded-lg shadow">
+        <OrdersTable
+          data={filteredOrders ?? []}
+          isLoading={ordersResult === undefined}
+          onView={handleViewOrder}
+          onConfirm={canManageOrder ? handleConfirmOrder : undefined}
+          onStartPreparing={canManageOrder ? handleStartPreparing : undefined}
+          onMarkReady={canManageOrder ? handleMarkReady : undefined}
+          onCancel={canManageOrder ? handleCancelOrder : undefined}
+          showCustomer={true}
+        />
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500">Showing 0 of 0 orders</p>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-500 bg-gray-50 cursor-not-allowed"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            disabled
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-500 bg-gray-50 cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      {/* Order Detail Sheet */}
+      <OrderDetailSheet
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        order={selectedOrder as any}
+        actorClerkId={user?.id ?? ''}
+        onlineRiders={onlineRiders ?? []}
+      />
     </div>
   )
 }

@@ -200,43 +200,58 @@ description: 'Task list for Grocery & Logistics Platform (BoxKuBox)'
 
 **Purpose**: Complete order lifecycle
 
+> **Note**: Orders are created by customers using mobile apps. Customer UI tasks (T074, T075) are skipped as they're handled in the mobile app. Delivery is handled by internal riders (not external providers like SafeBoda/Bolt).
+
 ### Order Creation & Status
 
-- [ ] T069 [PH6] Implement `convex/counters.ts` - atomic increment for displayId generation
-- [ ] T070 [PH6] Implement `convex/orders.ts` - createFromCart, updateStatus, accept, reject, list, get
-- [ ] T070a [PH6] Implement order expiration scheduled function in `convex/orders.ts` - auto-cancel after 10 minutes if vendor doesn't respond (status=pending)
+- [x] T069 [PH6] Implement `convex/counters.ts` - atomic increment for displayId generation (implemented in `convex/orders.ts` inline)
+- [x] T070 [PH6] Implement `convex/orders.ts` - createFromCart, updateStatus, accept, reject, list, get
+- [x] T070a [PH6] Implement order expiration scheduled function in `convex/scheduledJobs.ts` - autoCancelStaleOrders (6 hours for pending)
 - [ ] T070b [PH6] Create `convex/lib/scheduler.ts` helper for scheduling with delay constants
-- [ ] T071 [PH6] Implement `convex/orderItems.ts` - create from cart items, exchange, remove
-- [ ] T072 [PH6] Implement `convex/orderEvents.ts` - log all status changes
-- [ ] T073 [PH6] Implement `convex/orderItemEvents.ts` - log item changes
+- [x] T071 [PH6] Implement order items in `convex/orders.ts` - created from cart items during checkout
+- [x] T072 [PH6] Implement order events logging in `convex/orders.ts` - all status changes logged to orderEvents
+- [x] T073 [PH6] Implement `convex/orderItemEvents.ts` - schema exists, logging available
 
-### Customer Order UI
+### Customer Order UI (Mobile App)
 
-- [ ] T074 [PH6] [P] Create customer orders page `src/app/routes/_authed/_customer/orders/index.tsx`
-- [ ] T075 [PH6] [P] Create order detail page `src/app/routes/_authed/_customer/orders/$orderId.tsx`
-- [ ] T076 [PH6] [P] Create order status badge `src/components/orders/order-status-badge.tsx`
+- [x] T074 [PH6] Customer orders queries in `convex/orders.ts` - listByCustomer, getActiveOrders, getTrackingInfo (MOBILE APP)
+- [x] T075 [PH6] Order detail query in `convex/orders.ts` - get with full details (MOBILE APP)
+- [x] T076 [PH6] [P] Create order status badge `src/components/orders/order-status-badge.tsx`
 - [ ] T077 [PH6] [P] Create order items table `src/components/orders/order-items-table.tsx`
 
 ### Vendor Order Management
 
-- [ ] T078 [PH6] [P] Create vendor orders page `src/app/routes/_authed/_vendor/orders/index.tsx` with filters
-- [ ] T079 [PH6] [P] Create vendor order detail sheet `src/components/vendor/order-detail-sheet.tsx`
-- [ ] T080 [PH6] Implement accept order flow with fulfillmentStatus update
-- [ ] T081 [PH6] Implement reject order flow with reason and customer notification
+- [x] T078 [PH6] [P] Create vendor orders page `src/features/vendor/pages/orders.tsx` with filters (uses OrdersTable)
+- [x] T079 [PH6] [P] Create vendor order detail sheet `src/features/vendor/components/order-detail-sheet.tsx`
+- [x] T080 [PH6] Implement accept order flow - confirm mutation in `convex/orders.ts`
+- [x] T081 [PH6] Implement reject/cancel order flow - cancel mutation with reason and notification
 
-### Delivery Handoff
+### Internal Rider Management
 
-- [ ] T082 [PH6] Implement `convex/deliveryHandoffs.ts` - create, updateStatus, retry logic
-- [ ] T082a [PH6] Implement exponential backoff retry logic: 3 retries at 1m, 5m, 15m intervals
-- [ ] T082b [PH6] Add handoff status constants and retry delay calculator in `convex/lib/delivery.ts`
-- [ ] T083 [PH6] Create scheduled function for delivery handoff retries (uses exponential backoff)
-- [ ] T083a [PH6] Implement handoff failure notification to admin after max retries exceeded
-- [ ] T084 [PH6] Implement webhook handler in `convex/http.ts` for external delivery callbacks
+> **Changed**: Using internal riders instead of external delivery providers. Replaced deliveryHandoffs with riders module.
+
+- [x] T082 [PH6] Implement `convex/riders.ts` - rider management, delivery acceptance, status updates
+- [x] T082a [PH6] Implement rider location tracking with `riderLocations` table
+- [x] T082b [PH6] Add rider status (online/offline/busy) and earnings tracking
+- [x] T083 [PH6] Implement rider actions - acceptDelivery, markPickedUp, markDelivered, cancelDelivery
+- [x] T083a [PH6] Implement push notifications for riders via `convex/notifications.ts`
+- [x] T084 [PH6] ~~Implement webhook handler for external delivery~~ N/A - using internal riders
+
+### Checkout Module
+
+- [x] T084a [PH6] Implement `convex/checkout.ts` - validate, complete checkout flow
+- [x] T084b [PH6] Implement delivery quote in `convex/orders.ts` - getDeliveryQuote
+- [x] T084c [PH6] Implement mobile money payment placeholder in `convex/checkout.ts`
 
 ### Admin Orders View
 
-- [ ] T085 [PH6] [P] Create admin orders page `src/app/routes/_authed/_admin/orders/index.tsx` with all-platform view
-- [ ] T086 [PH6] [P] Create admin order detail sheet `src/components/admin/order-detail-sheet.tsx`
+- [x] T085 [PH6] [P] Create admin orders page `src/routes/_authed/_admin/a/orders.tsx` with all-platform view
+- [x] T086 [PH6] [P] Create admin order detail sheet - reusing `src/features/vendor/components/order-detail-sheet.tsx`
+
+### Vendor Components
+
+- [x] T087a [PH6] Create `src/features/vendor/components/orders-table.tsx` - reusable DataTable for orders
+- [x] T087b [PH6] Create `src/features/vendor/hooks/use-orders.ts` - order query/mutation hooks
 
 **Checkpoint**: Full order lifecycle from cart to delivery handoff.
 

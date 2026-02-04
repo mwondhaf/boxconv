@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Network,
   Package,
+  PackageSearch,
   Percent,
   Settings,
   Shield,
@@ -49,6 +50,11 @@ const adminNavItems: Array<NavMainItem> = [
     title: 'Orders',
     url: '/a/orders',
     icon: ShoppingCart,
+  },
+  {
+    title: 'Parcels',
+    url: '/a/parcels',
+    icon: PackageSearch,
   },
   {
     title: 'Riders',

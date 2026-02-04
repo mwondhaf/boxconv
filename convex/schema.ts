@@ -68,10 +68,10 @@ const parcelPaymentStatus = v.union(
   v.literal('refunded')
 )
 
-const deliveryHandoffStatus = v.union(
-  v.literal('queued'),
-  v.literal('acknowledged'),
-  v.literal('failed')
+const riderStatus = v.union(
+  v.literal('offline'),
+  v.literal('online'),
+  v.literal('busy') // Currently on a delivery
 )
 
 const promotionType = v.union(v.literal('standard'), v.literal('buyget'))
@@ -384,19 +384,20 @@ export default defineSchema({
     snapshotTaxTotal: v.number(),
   }).index('by_order', ['orderId']),
 
-  // Delivery Handoff (integration with external delivery system)
-  deliveryHandoffs: defineTable({
-    orderId: v.id('orders'),
-    externalId: v.optional(v.string()),
-    status: deliveryHandoffStatus,
-    attemptCount: v.number(),
-    lastAttemptAt: v.optional(v.number()),
-    signature: v.optional(v.string()),
-    payload: v.optional(v.any()), // JSON
+  // Rider Locations (for internal rider tracking)
+  riderLocations: defineTable({
+    clerkId: v.string(), // Rider's Clerk ID
+    lat: v.number(),
+    lng: v.number(),
+    geohash: v.optional(v.string()),
+    status: riderStatus,
+    lastUpdatedAt: v.number(),
+    // Current active order (if any)
+    activeOrderId: v.optional(v.id('orders')),
   })
-    .index('by_order', ['orderId'])
-    .index('by_externalId', ['externalId'])
-    .index('by_status', ['status']),
+    .index('by_clerkId', ['clerkId'])
+    .index('by_status', ['status'])
+    .index('by_geohash', ['geohash']),
 
   // ==========================================================================
   // PARCEL / P2P DELIVERY

@@ -9,9 +9,7 @@
  */
 
 import { v } from "convex/values";
-import { internalMutation, internalAction } from "./_generated/server";
-import { internal } from "./_generated/api";
-import { crons } from "./components";
+import { internalMutation } from "./_generated/server";
 
 // =============================================================================
 // CART CLEANUP

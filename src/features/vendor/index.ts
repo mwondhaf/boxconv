@@ -75,6 +75,21 @@ export {
 // Variants Browser
 export { VariantsBrowser } from './components/variants-browser'
 
+// Orders Table
+export {
+  OrdersTable,
+  type Order,
+  type OrderStatus,
+  type FulfillmentType,
+  type PaymentStatus,
+} from './components/orders-table'
+
+// Order Detail Sheet
+export {
+  OrderDetailSheet,
+  type OrderDetailSheetProps,
+} from './components/order-detail-sheet'
+
 // -----------------------------------------------------------------------------
 // Hooks
 // -----------------------------------------------------------------------------
@@ -135,6 +150,40 @@ export {
   useSetVariantApproval,
   useDeleteProductVariant,
 } from './hooks/use-products'
+
+// Order Hooks
+export {
+  // Order queries
+  useOrganizationOrders,
+  usePendingOrdersCount,
+  useTodaysSummary,
+  useOrder,
+  useOrderByDisplayId,
+  useOrderTracking,
+  useCustomerOrders,
+  useActiveOrders,
+  // Order mutations
+  useConfirmOrder,
+  useStartPreparing,
+  useMarkReady,
+  useMarkDelivered,
+  useCancelOrder,
+  useUpdateOrderStatus,
+  useAssignRiderAndDispatch,
+  // Rider queries
+  useOnlineRiders,
+  useAssignRider,
+  // Utilities
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_COLORS,
+  FULFILLMENT_TYPE_LABELS,
+  FULFILLMENT_TYPE_ICONS,
+  getNextOrderStatuses,
+  canCancelOrder,
+  isOrderActive,
+  formatCurrency,
+  formatRelativeTime,
+} from './hooks/use-orders'
 
 // -----------------------------------------------------------------------------
 // Pages

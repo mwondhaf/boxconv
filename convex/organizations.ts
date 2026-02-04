@@ -1,6 +1,25 @@
 import { v } from 'convex/values'
 import { internalMutation, mutation, query } from './_generated/server'
-import { requireOrgMembership } from './lib/ability'
+import { requireAuth } from './lib/ability'
+import { getPublicUrl } from './r2'
+
+/**
+ * Helper to resolve logo URL from R2 key or return as-is if already a URL.
+ */
+function resolveLogoUrl(logo: string | undefined): string | undefined {
+  if (!logo) return undefined
+  // If it's already a full URL (from Clerk or external), return as-is
+  if (logo.startsWith('http://') || logo.startsWith('https://')) {
+    return logo
+  }
+  // Otherwise, treat it as an R2 key and get the public URL
+  try {
+    return getPublicUrl(logo)
+  } catch {
+    // If R2 URL generation fails, return undefined
+    return undefined
+  }
+}
 
 /**
  * Internal mutation to create an organization record.
@@ -160,8 +179,8 @@ export const syncFromClerk = mutation({
     logo: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Require platform admin
-    const { abilityCtx } = await requireOrgMembership(ctx)
+    // Require platform admin - use requireAuth since admins may not have org membership
+    const { abilityCtx } = await requireAuth(ctx)
     if (abilityCtx.platformRole !== 'admin') {
       throw new Error('Forbidden: Only platform admins can sync organizations')
     }
@@ -198,10 +217,17 @@ export const getByClerkOrgId = query({
     clerkOrgId: v.string(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const org = await ctx.db
       .query('organizations')
       .withIndex('by_clerkOrgId', (q) => q.eq('clerkOrgId', args.clerkOrgId))
       .unique()
+
+    if (!org) return null
+
+    return {
+      ...org,
+      logoUrl: resolveLogoUrl(org.logo),
+    }
   },
 })
 
@@ -241,7 +267,13 @@ export const get = query({
     id: v.id('organizations'),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id)
+    const org = await ctx.db.get(args.id)
+    if (!org) return null
+
+    return {
+      ...org,
+      logoUrl: resolveLogoUrl(org.logo),
+    }
   },
 })
 
@@ -253,6 +285,8 @@ export const get = query({
 export const updateBusinessData = mutation({
   args: {
     clerkOrgId: v.string(),
+    // Branding
+    logo: v.optional(v.string()),
     // Contact info
     email: v.optional(v.string()),
     phone: v.optional(v.string()),
@@ -276,18 +310,20 @@ export const updateBusinessData = mutation({
     metadata: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    // Check auth - must be org owner or platform admin
-    const { abilityCtx } = await requireOrgMembership(ctx)
+    // Check auth - use requireAuth instead of requireOrgMembership
+    // because platform admins may not be members of the org they're updating
+    const { abilityCtx } = await requireAuth(ctx)
 
     // Platform admin can update any org
     const isPlatformAdmin = abilityCtx.platformRole === 'admin'
-    // Org owner can update their own org
-    const isOrgOwner =
-      abilityCtx.orgRole === 'org:owner' &&
+
+    // Org owner or admin can update their own org
+    const isOrgOwnerOrAdmin =
+      (abilityCtx.orgRole === 'org:owner' || abilityCtx.orgRole === 'org:admin') &&
       abilityCtx.orgId === args.clerkOrgId
 
-    if (!isPlatformAdmin && !isOrgOwner) {
-      throw new Error('Forbidden: Only org owner or platform admin can update organization')
+    if (!isPlatformAdmin && !isOrgOwnerOrAdmin) {
+      throw new Error('Forbidden: Only org owner, org admin, or platform admin can update organization')
     }
 
     const org = await ctx.db
@@ -302,6 +338,7 @@ export const updateBusinessData = mutation({
     // Build updates object
     const updates: Record<string, unknown> = {}
 
+    if (args.logo !== undefined) updates.logo = args.logo
     if (args.email !== undefined) updates.email = args.email
     if (args.phone !== undefined) updates.phone = args.phone
     if (args.country !== undefined) updates.country = args.country
@@ -339,7 +376,9 @@ export const toggleBusy = mutation({
     isBusy: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const { abilityCtx } = await requireOrgMembership(ctx)
+    // Check auth - use requireAuth instead of requireOrgMembership
+    // because platform admins may not be members of the org they're updating
+    const { abilityCtx } = await requireAuth(ctx)
 
     // Platform admin can update any org
     const isPlatformAdmin = abilityCtx.platformRole === 'admin'
@@ -406,14 +445,14 @@ export const listActive = query({
 function isStoreOpen(
   openingTime: string | undefined,
   closingTime: string | undefined,
-  timezone: string | undefined
+  _timezone: string | undefined
 ): { isOpen: boolean; opensAt?: string; closesAt?: string } {
   if (!openingTime || !closingTime) {
     return { isOpen: true } // Assume open if no hours set
   }
 
   // Get current time in store's timezone (default to Africa/Kampala for Uganda)
-  const tz = timezone || 'Africa/Kampala'
+  // Note: timezone parameter reserved for future timezone-aware calculations
   const now = new Date()
 
   // Parse time strings (expected format: "HH:MM" in 24-hour format)

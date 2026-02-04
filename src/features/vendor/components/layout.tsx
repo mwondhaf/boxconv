@@ -32,7 +32,6 @@ import { useCan } from '~/shared/stores/ability-store'
  * Build navigation items based on user permissions
  */
 function useVendorNavItems(): NavMainItem[] {
-  const canManageSettings = useCan('manage', 'Settings')
   const canManageMembers = useCan('manage', 'Member')
 
   const navItems: NavMainItem[] = [
@@ -72,14 +71,12 @@ function useVendorNavItems(): NavMainItem[] {
     })
   }
 
-  // Only show Settings if user can manage settings
-  if (canManageSettings) {
-    navItems.push({
-      title: 'Settings',
-      url: '/v/settings',
-      icon: Settings,
-    })
-  }
+  // Always show Settings in the sidebar for easy access
+  navItems.push({
+    title: 'Settings',
+    url: '/v/settings',
+    icon: Settings,
+  })
 
   return navItems
 }

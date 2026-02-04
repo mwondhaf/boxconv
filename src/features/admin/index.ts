@@ -17,6 +17,48 @@ export {
   useDeleteOrganizationCategory,
 } from './hooks/use-organizations'
 
+// Hooks - Parcels
+export {
+  useParcels,
+  useParcel,
+  useParcelByDisplayId,
+  useCustomerParcels,
+  useActiveParcels,
+  useParcelTracking,
+  useParcelStats,
+  useFareEstimate,
+  useParcelEvents,
+  useParcelTimeline,
+  useCreateParcel,
+  useUpdateParcelStatus,
+  useAssignRiderToParcel,
+  useMarkParcelPickedUp,
+  useMarkParcelInTransit,
+  useMarkParcelDelivered,
+  useCancelParcel,
+  useMarkParcelFailed,
+  useUpdateParcelPayment,
+  useRegenerateParcelCodes,
+  useAddParcelNote,
+  // Types
+  type ParcelStatus,
+  type ParcelSizeCategory,
+  type ParcelPaymentStatus,
+  // Utilities
+  PARCEL_STATUS_LABELS,
+  PARCEL_STATUS_COLORS,
+  PARCEL_SIZE_LABELS,
+  PARCEL_SIZE_ICONS,
+  PAYMENT_STATUS_LABELS,
+  PAYMENT_STATUS_COLORS,
+  getNextParcelStatuses,
+  canCancelParcel,
+  isParcelActive,
+  formatCurrency,
+  formatDistance,
+  formatRelativeTime,
+} from './hooks/use-parcels'
+
 // Hooks - Catalog (Categories & Brands)
 export {
   useCategory,
@@ -65,6 +107,19 @@ export { ProductsBrowser } from './components/products-browser'
 export { VariantCard, type VariantCardVariant, type VariantCardProps } from './components/variant-card'
 export { VariantsBrowser } from './components/variants-browser'
 export { VariantEditSheet, type VariantEditSheetProps } from './components/variant-edit-sheet'
+
+// Components - Parcels
+export {
+  ParcelStatusBadge,
+  ParcelPaymentBadge,
+  ParcelSizeBadge,
+  getStatusLabel,
+  getPaymentLabel,
+  getSizeLabel,
+  getSizeDescription,
+} from './components/parcel-status-badge'
+export { ParcelsTable, type Parcel } from './components/parcels-table'
+export { ParcelDetailSheet, type ParcelDetailData, type ParcelDetailSheetProps, type OnlineRider } from './components/parcel-detail-sheet'
 
 // Pages
 export { AdminOrganizationsPage } from './pages/organizations'
