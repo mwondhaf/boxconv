@@ -73,9 +73,9 @@ export const create = mutation({
     addressType: v.optional(
       v.union(
         v.literal("home"),
-        v.literal("work"),
+        v.literal("office"),
         v.literal("hotel"),
-        v.literal("other")
+        v.literal("apartment")
       )
     ),
     buildingName: v.optional(v.string()),
@@ -138,9 +138,9 @@ export const update = mutation({
     addressType: v.optional(
       v.union(
         v.literal("home"),
-        v.literal("work"),
+        v.literal("office"),
         v.literal("hotel"),
-        v.literal("other")
+        v.literal("apartment")
       )
     ),
     buildingName: v.optional(v.string()),

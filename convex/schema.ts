@@ -7,8 +7,15 @@ import { v } from 'convex/values'
 
 const orderStatus = v.union(
   v.literal('pending'),
+  v.literal('confirmed'),
+  v.literal('preparing'),
+  v.literal('ready_for_pickup'),
+  v.literal('out_for_delivery'),
+  v.literal('delivered'),
   v.literal('completed'),
-  v.literal('canceled')
+  v.literal('cancelled'),
+  v.literal('canceled'),
+  v.literal('refunded')
 )
 
 const fulfillmentStatus = v.union(
