@@ -59,6 +59,27 @@ export interface Organization {
   slug: string;
 }
 
+export interface DeliveryZone {
+  kind: "DeliveryZone";
+  id: string;
+  name: string;
+  city: string;
+  active: boolean;
+}
+
+export interface PricingRule {
+  kind: "PricingRule";
+  id: string;
+  zoneId?: string;
+  name: string;
+  status: string;
+}
+
+export interface DeliveryQuote {
+  kind: "DeliveryQuote";
+  id: string;
+}
+
 // Union of all subject types
 export type AppSubjects =
   | Product
@@ -67,12 +88,18 @@ export type AppSubjects =
   | Settings
   | Member
   | Organization
+  | DeliveryZone
+  | PricingRule
+  | DeliveryQuote
   | "Product"
   | "Order"
   | "Customer"
   | "Settings"
   | "Member"
   | "Organization"
+  | "DeliveryZone"
+  | "PricingRule"
+  | "DeliveryQuote"
   | "all";
 
 // =============================================================================
@@ -359,3 +386,12 @@ export const asMember = (obj: Omit<Member, "kind">): Member =>
 
 export const asOrganization = (obj: Omit<Organization, "kind">): Organization =>
   subject("Organization", obj);
+
+export const asDeliveryZone = (obj: Omit<DeliveryZone, "kind">): DeliveryZone =>
+  subject("DeliveryZone", obj);
+
+export const asPricingRule = (obj: Omit<PricingRule, "kind">): PricingRule =>
+  subject("PricingRule", obj);
+
+export const asDeliveryQuote = (obj: Omit<DeliveryQuote, "kind">): DeliveryQuote =>
+  subject("DeliveryQuote", obj);

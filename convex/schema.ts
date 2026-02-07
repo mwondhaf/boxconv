@@ -71,8 +71,37 @@ const parcelPaymentStatus = v.union(
 const riderStatus = v.union(
   v.literal("offline"),
   v.literal("online"),
-  v.literal("busy") // Currently on a delivery
+  v.literal("busy")
 );
+
+// Rider account status (for registration/compliance workflow)
+const riderAccountStatus = v.union(
+  v.literal("pending"), // Awaiting approval
+  v.literal("active"), // Approved and can work
+  v.literal("suspended"), // Temporarily disabled
+  v.literal("inactive") // Deactivated
+);
+
+// Vehicle types for riders
+const vehicleType = v.union(
+  v.literal("walking"),
+  v.literal("bicycle"),
+  v.literal("scooter"),
+  v.literal("motorbike"),
+  v.literal("car"),
+  v.literal("van"),
+  v.literal("truck")
+);
+
+// Payout methods
+const payoutMethod = v.union(
+  v.literal("mobile_money"),
+  v.literal("bank"),
+  v.literal("cash"),
+  v.literal("wallet")
+);
+
+const pricingRuleStatus = v.union(v.literal("active"), v.literal("inactive"));
 
 const promotionType = v.union(v.literal("standard"), v.literal("buyget"));
 
@@ -390,7 +419,7 @@ export default defineSchema({
     snapshotTaxTotal: v.number(),
   }).index("by_order", ["orderId"]),
 
-  // Rider Locations (for internal rider tracking)
+  // Rider Locations (for internal rider tracking - real-time location)
   riderLocations: defineTable({
     clerkId: v.string(), // Rider's Clerk ID
     lat: v.number(),
@@ -404,6 +433,222 @@ export default defineSchema({
     .index("by_clerkId", ["clerkId"])
     .index("by_status", ["status"])
     .index("by_geohash", ["geohash"]),
+
+  // ==========================================================================
+  // RIDERS - Full rider profiles (registration, compliance, performance)
+  // ==========================================================================
+
+  riders: defineTable({
+    // Core Identity
+    clerkId: v.string(), // Clerk user ID (links to Clerk for auth)
+    riderCode: v.string(), // Auto-generated code (e.g., "RDR-001234")
+    name: v.string(), // Full name
+    accountStatus: riderAccountStatus, // Registration/approval status
+
+    // Contact Information
+    phoneNumber: v.string(), // Normalized to +256 format
+    email: v.optional(v.string()),
+    nextOfKinName: v.optional(v.string()),
+    nextOfKinPhone: v.optional(v.string()),
+
+    // Compliance (Uganda-specific)
+    nationalId: v.optional(v.string()), // NIN (National Identification Number)
+    drivingPermitNumber: v.optional(v.string()),
+    drivingPermitExpiry: v.optional(v.number()), // Timestamp
+    tin: v.optional(v.string()), // Tax Identification Number
+    helmetVerified: v.boolean(), // Has verified helmet
+    insuranceNumber: v.optional(v.string()),
+    insuranceExpiry: v.optional(v.number()), // Timestamp
+
+    // Vehicle Information
+    vehicleType: vehicleType,
+    vehiclePlate: v.optional(v.string()),
+    vehicleMake: v.optional(v.string()),
+    vehicleModel: v.optional(v.string()),
+    vehicleColor: v.optional(v.string()),
+    vehicleYear: v.optional(v.number()),
+
+    // Location & Geography (home/base location)
+    district: v.optional(v.string()),
+    subCounty: v.optional(v.string()),
+    parish: v.optional(v.string()),
+    village: v.optional(v.string()),
+    homeAddress: v.optional(v.string()),
+    homeLat: v.optional(v.float64()),
+    homeLng: v.optional(v.float64()),
+
+    // Media
+    photoUrl: v.optional(v.string()), // Profile photo
+    photoR2Key: v.optional(v.string()), // R2 storage key
+    nationalIdPhotoR2Key: v.optional(v.string()), // ID document photo
+    drivingPermitPhotoR2Key: v.optional(v.string()), // Permit photo
+
+    // Payout Preferences
+    preferredPayoutMethod: payoutMethod,
+    mobileMoneyProvider: v.optional(v.string()), // MTN, Airtel, etc.
+    mobileMoneyNumber: v.optional(v.string()),
+    bankName: v.optional(v.string()),
+    bankAccountNumber: v.optional(v.string()),
+    bankAccountName: v.optional(v.string()),
+
+    // Performance Metrics (denormalized for fast queries)
+    ratingSum: v.number(), // Sum of all ratings (to calculate average)
+    ratingCount: v.number(), // Number of ratings received
+    completedDeliveries: v.number(),
+    canceledDeliveries: v.number(),
+    totalEarnings: v.number(), // Lifetime earnings in smallest currency unit
+
+    // Operational
+    currentStageId: v.optional(v.id("stages")), // Current assigned stage/hub
+    onboardedAt: v.optional(v.number()), // When rider completed onboarding
+    approvedAt: v.optional(v.number()), // When admin approved
+    approvedBy: v.optional(v.string()), // Admin clerkId who approved
+    suspendedAt: v.optional(v.number()),
+    suspendedBy: v.optional(v.string()),
+    suspensionReason: v.optional(v.string()),
+
+    // Metadata
+    notes: v.optional(v.string()), // Admin notes
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_clerkId", ["clerkId"])
+    .index("by_riderCode", ["riderCode"])
+    .index("by_accountStatus", ["accountStatus"])
+    .index("by_phoneNumber", ["phoneNumber"])
+    .index("by_vehicleType", ["vehicleType"])
+    .index("by_district", ["district"])
+    .index("by_currentStage", ["currentStageId"])
+    .searchIndex("search_riders", {
+      searchField: "name",
+      filterFields: ["accountStatus", "vehicleType", "district"],
+    }),
+
+  // ==========================================================================
+  // STAGES - Rider gathering points / hubs
+  // ==========================================================================
+
+  stages: defineTable({
+    name: v.string(),
+    code: v.string(), // Unique stage code (e.g., "STG-KAMPALA-01")
+    description: v.optional(v.string()),
+
+    // Location
+    address: v.string(),
+    district: v.optional(v.string()),
+    lat: v.float64(),
+    lng: v.float64(),
+    geohash: v.optional(v.string()),
+
+    // Zone association
+    zoneId: v.optional(v.id("deliveryZones")),
+
+    // Capacity & Status
+    capacity: v.optional(v.number()), // Max riders at this stage
+    isActive: v.boolean(),
+
+    // Contact
+    contactName: v.optional(v.string()), // Stage supervisor
+    contactPhone: v.optional(v.string()),
+
+    // Metadata
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_code", ["code"])
+    .index("by_zone", ["zoneId"])
+    .index("by_active", ["isActive"])
+    .index("by_district", ["district"])
+    .index("by_geohash", ["geohash"]),
+
+  // ==========================================================================
+  // RIDER STAGE MEMBERSHIPS - Many-to-many rider to stage assignments
+  // ==========================================================================
+
+  riderStageMemberships: defineTable({
+    riderId: v.id("riders"),
+    stageId: v.id("stages"),
+    isActive: v.boolean(), // Currently assigned to this stage
+    isPrimary: v.boolean(), // Primary stage for this rider
+    joinedAt: v.number(),
+    leftAt: v.optional(v.number()),
+    assignedBy: v.optional(v.string()), // Admin clerkId who assigned
+  })
+    .index("by_rider", ["riderId"])
+    .index("by_stage", ["stageId"])
+    .index("by_rider_active", ["riderId", "isActive"])
+    .index("by_stage_active", ["stageId", "isActive"]),
+
+  // ==========================================================================
+  // RIDER RATINGS - Individual rating records for analytics
+  // ==========================================================================
+
+  riderRatings: defineTable({
+    riderId: v.id("riders"),
+    orderId: v.optional(v.id("orders")),
+    parcelId: v.optional(v.id("parcels")),
+    customerClerkId: v.string(), // Who gave the rating
+    rating: v.number(), // 1-5 stars
+    comment: v.optional(v.string()),
+    // Rating categories (optional detailed feedback)
+    deliverySpeedRating: v.optional(v.number()), // 1-5
+    communicationRating: v.optional(v.number()), // 1-5
+    professionalismRating: v.optional(v.number()), // 1-5
+    createdAt: v.number(),
+  })
+    .index("by_rider", ["riderId"])
+    .index("by_order", ["orderId"])
+    .index("by_parcel", ["parcelId"])
+    .index("by_customer", ["customerClerkId"])
+    .index("by_rider_and_created", ["riderId", "createdAt"]),
+
+  // ==========================================================================
+  // RIDER PAYOUTS - Payout batches and transactions
+  // ==========================================================================
+
+  riderPayouts: defineTable({
+    riderId: v.id("riders"),
+    amount: v.number(), // Amount in smallest currency unit
+    currency: v.string(), // e.g., "UGX"
+    payoutMethod: payoutMethod,
+
+    // Payment details (based on method)
+    mobileMoneyNumber: v.optional(v.string()),
+    mobileMoneyProvider: v.optional(v.string()),
+    bankAccountNumber: v.optional(v.string()),
+    bankName: v.optional(v.string()),
+
+    // Status
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+
+    // Period covered
+    periodStart: v.number(), // Start of earnings period
+    periodEnd: v.number(), // End of earnings period
+    deliveryCount: v.number(), // Number of deliveries in this payout
+
+    // Transaction details
+    transactionId: v.optional(v.string()), // External transaction ID
+    processedAt: v.optional(v.number()),
+    failureReason: v.optional(v.string()),
+
+    // Admin
+    createdBy: v.string(), // Admin clerkId who initiated
+    approvedBy: v.optional(v.string()),
+    approvedAt: v.optional(v.number()),
+    notes: v.optional(v.string()),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_rider", ["riderId"])
+    .index("by_status", ["status"])
+    .index("by_rider_and_status", ["riderId", "status"])
+    .index("by_period", ["periodStart", "periodEnd"]),
 
   // ==========================================================================
   // PARCEL / P2P DELIVERY
@@ -600,4 +845,88 @@ export default defineSchema({
     name: v.string(), // 'orders', 'parcels', etc.
     value: v.number(),
   }).index("by_name", ["name"]),
+
+  // ==========================================================================
+  // DELIVERY ZONES & PRICING
+  // Geographic zones for delivery coverage with distance-based pricing
+  // ==========================================================================
+
+  deliveryZones: defineTable({
+    name: v.string(),
+    city: v.string(),
+    country: v.string(), // ISO country code, default "UG"
+    // Zone center point for map display and distance calculations
+    centerLat: v.float64(),
+    centerLng: v.float64(),
+    // Maximum driving distance for deliveries in this zone (meters)
+    maxDistanceMeters: v.number(),
+    // Display color for UI map (hex color)
+    color: v.optional(v.string()),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_city", ["city"])
+    .index("by_active", ["active"])
+    .index("by_country", ["country"]),
+
+  pricingRules: defineTable({
+    zoneId: v.optional(v.id("deliveryZones")), // null = applies to all zones
+    name: v.string(),
+    // Monetary values in smallest currency unit (UGX has no decimals)
+    baseFee: v.number(), // Fixed base fee
+    ratePerKm: v.number(), // Rate per kilometer
+    minFee: v.number(), // Minimum fee floor
+    surgeMultiplier: v.float64(), // 1.0 = no surge, 1.5 = 50% surge
+    // Time window constraints (optional)
+    daysOfWeek: v.optional(v.array(v.number())), // 0-6 (Sun-Sat), null = any day
+    startHour: v.optional(v.number()), // 0-23, null = no lower bound
+    endHour: v.optional(v.number()), // 0-23, null = no upper bound
+    status: pricingRuleStatus,
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_zone", ["zoneId"])
+    .index("by_status", ["status"])
+    .index("by_zone_and_status", ["zoneId", "status"]),
+
+  // ==========================================================================
+  // DELIVERY QUOTES
+  // Cached delivery fee calculations
+  // ==========================================================================
+
+  deliveryQuotes: defineTable({
+    // Origin (pickup location)
+    pickupLat: v.float64(),
+    pickupLng: v.float64(),
+    // Destination (delivery location)
+    dropoffLat: v.float64(),
+    dropoffLng: v.float64(),
+    // Distance calculation
+    distanceMeters: v.number(),
+    distanceSource: v.union(v.literal("mapbox"), v.literal("haversine")),
+    estimatedDurationSeconds: v.optional(v.number()),
+    // Pricing breakdown
+    baseFee: v.number(),
+    ratePerKm: v.number(),
+    distanceFee: v.number(),
+    surgeMultiplier: v.float64(),
+    minFee: v.number(),
+    deliveryFee: v.number(), // Final calculated fee
+    // Zone/rule info (for auditing)
+    zoneId: v.optional(v.id("deliveryZones")),
+    zoneName: v.optional(v.string()),
+    ruleId: v.optional(v.id("pricingRules")),
+    ruleName: v.optional(v.string()),
+    // Quote validity
+    expiresAt: v.number(), // Timestamp when quote expires
+    usedAt: v.optional(v.number()), // Timestamp when quote was used (linked to order/parcel)
+    // Linking
+    orderId: v.optional(v.id("orders")),
+    parcelId: v.optional(v.id("parcels")),
+    createdAt: v.number(),
+  })
+    .index("by_order", ["orderId"])
+    .index("by_parcel", ["parcelId"])
+    .index("by_expires", ["expiresAt"]),
 });

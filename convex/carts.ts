@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
+import { getImageUrl } from "./lib/r2";
 
 // =============================================================================
 // CONSTANTS
@@ -185,7 +186,8 @@ export const getBySession = query({
 // =============================================================================
 
 /**
- * Create a new cart
+ * Create a new cart or return existing one for this customer/organization
+ * Enforces one cart per customer per organization
  */
 export const create = mutation({
   args: {
@@ -199,6 +201,40 @@ export const create = mutation({
       throw new Error("Either clerkId or sessionId is required");
     }
 
+    // Check for existing cart for this customer/organization
+    let existingCart = null;
+
+    if (args.clerkId) {
+      // Find existing cart by clerkId and organization
+      const carts = await ctx.db
+        .query("carts")
+        .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+        .collect();
+
+      existingCart = carts.find(
+        (c) => c.organizationId === args.organizationId && c.expiresAt > Date.now()
+      );
+    } else if (args.sessionId) {
+      // Find existing cart by sessionId and organization
+      const carts = await ctx.db
+        .query("carts")
+        .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+        .collect();
+
+      existingCart = carts.find(
+        (c) => c.organizationId === args.organizationId && c.expiresAt > Date.now()
+      );
+    }
+
+    // If cart exists, refresh its expiry and return it
+    if (existingCart) {
+      await ctx.db.patch(existingCart._id, {
+        expiresAt: Date.now() + CART_EXPIRY_MS,
+      });
+      return existingCart._id;
+    }
+
+    // Create new cart
     const cartId = await ctx.db.insert("carts", {
       clerkId: args.clerkId,
       sessionId: args.sessionId,
@@ -537,6 +573,386 @@ export const cleanupExpiredCarts = internalMutation({
 // CHECKOUT HELPERS
 // =============================================================================
 
+// =============================================================================
+// ADMIN & VENDOR REAL-TIME MONITORING QUERIES
+// =============================================================================
+
+/**
+ * List all active carts for admin dashboard (real-time monitoring)
+ * Returns carts with items, customer info, and organization details
+ */
+export const listActiveCarts = query({
+  args: {
+    organizationId: v.optional(v.id("organizations")),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 50;
+    const now = Date.now();
+
+    // Get non-expired carts
+    let cartsQuery = ctx.db
+      .query("carts")
+      .filter((q) => q.gt(q.field("expiresAt"), now));
+
+    const allCarts = await cartsQuery.collect();
+
+    // Filter by organization if specified
+    const filteredCarts = args.organizationId
+      ? allCarts.filter((c) => c.organizationId === args.organizationId)
+      : allCarts;
+
+    // Sort by most recently updated (using expiresAt as proxy)
+    const sortedCarts = filteredCarts
+      .sort((a, b) => b.expiresAt - a.expiresAt)
+      .slice(0, limit);
+
+    // Enrich with items and organization info
+    const enrichedCarts = await Promise.all(
+      sortedCarts.map(async (cart) => {
+        // Get cart items
+        const items = await ctx.db
+          .query("cartItems")
+          .withIndex("by_cart", (q) => q.eq("cartId", cart._id))
+          .collect();
+
+        if (items.length === 0) return null; // Skip empty carts
+
+        // Get organization details
+        const organization = await ctx.db.get(cart.organizationId);
+
+        // Enrich items with product details
+        const enrichedItems = await Promise.all(
+          items.map(async (item) => {
+            const variant = await ctx.db.get(item.variantId);
+            if (!variant) return null;
+
+            const product = await ctx.db.get(variant.productId);
+
+            // Get primary image
+            let imageUrl: string | null = null;
+            if (product) {
+              const primaryImage = await ctx.db
+                .query("productImages")
+                .withIndex("by_primary", (q) =>
+                  q.eq("productId", product._id).eq("isPrimary", true)
+                )
+                .first();
+              imageUrl = getImageUrl(primaryImage?.r2Key) ?? null;
+            }
+
+            // Get price info
+            const priceSet = await ctx.db
+              .query("priceSets")
+              .withIndex("by_variant", (q) => q.eq("variantId", variant._id))
+              .first();
+
+            let price = 0;
+            let currency = "UGX";
+
+            if (priceSet) {
+              const moneyAmount = await ctx.db
+                .query("moneyAmounts")
+                .withIndex("by_priceSet", (q) => q.eq("priceSetId", priceSet._id))
+                .first();
+
+              if (moneyAmount) {
+                price =
+                  moneyAmount.saleAmount && moneyAmount.saleAmount < moneyAmount.amount
+                    ? moneyAmount.saleAmount
+                    : moneyAmount.amount;
+                currency = moneyAmount.currency;
+              }
+            }
+
+            return {
+              _id: item._id,
+              variantId: item.variantId,
+              quantity: item.quantity,
+              productName: product?.name ?? "Unknown Product",
+              sku: variant.sku,
+              unit: variant.unit,
+              price,
+              currency,
+              subtotal: price * item.quantity,
+              imageUrl,
+            };
+          })
+        );
+
+        const validItems = enrichedItems.filter((item) => item !== null);
+        const subtotal = validItems.reduce((sum, item) => sum + item.subtotal, 0);
+        const itemCount = validItems.reduce((sum, item) => sum + item.quantity, 0);
+
+        // Calculate cart age
+        const cartCreatedAt = cart.expiresAt - CART_EXPIRY_MS;
+        const lastActivityAt = cart.expiresAt - CART_EXPIRY_MS + (CART_EXPIRY_MS - (cart.expiresAt - now));
+
+        return {
+          _id: cart._id,
+          clerkId: cart.clerkId,
+          sessionId: cart.sessionId,
+          isGuest: !cart.clerkId,
+          organizationId: cart.organizationId,
+          organizationName: organization?.name ?? "Unknown Store",
+          organizationSlug: organization?.slug,
+          currencyCode: cart.currencyCode,
+          items: validItems,
+          itemCount,
+          subtotal,
+          createdAt: cartCreatedAt,
+          lastActivityAt,
+          expiresAt: cart.expiresAt,
+        };
+      })
+    );
+
+    return enrichedCarts.filter((cart) => cart !== null);
+  },
+});
+
+/**
+ * Get live cart activity feed for admin (recent cart events)
+ */
+export const getCartActivityFeed = query({
+  args: {
+    organizationId: v.optional(v.id("organizations")),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 20;
+    const now = Date.now();
+
+    // Get all cart items - we'll filter by cart's organization
+    const recentCartItems = await ctx.db
+      .query("cartItems")
+      .order("desc")
+      .take(200); // Get more to filter
+
+    const activityItems = await Promise.all(
+      recentCartItems.map(async (item) => {
+        const cart = await ctx.db.get(item.cartId);
+        if (!cart) return null;
+
+        // Filter by organization if specified
+        if (args.organizationId && cart.organizationId !== args.organizationId) {
+          return null;
+        }
+
+        // Check if cart is not expired
+        if (cart.expiresAt < now) return null;
+
+        const variant = await ctx.db.get(item.variantId);
+        if (!variant) return null;
+
+        const product = await ctx.db.get(variant.productId);
+        const organization = await ctx.db.get(cart.organizationId);
+
+        // Get primary image
+        let imageUrl: string | null = null;
+        if (product) {
+          const primaryImage = await ctx.db
+            .query("productImages")
+            .withIndex("by_primary", (q) =>
+              q.eq("productId", product._id).eq("isPrimary", true)
+            )
+            .first();
+          imageUrl = getImageUrl(primaryImage?.r2Key) ?? null;
+        }
+
+        // Get price
+        const priceSet = await ctx.db
+          .query("priceSets")
+          .withIndex("by_variant", (q) => q.eq("variantId", variant._id))
+          .first();
+
+        let price = 0;
+        let currency = "UGX";
+
+        if (priceSet) {
+          const moneyAmount = await ctx.db
+            .query("moneyAmounts")
+            .withIndex("by_priceSet", (q) => q.eq("priceSetId", priceSet._id))
+            .first();
+
+          if (moneyAmount) {
+            price =
+              moneyAmount.saleAmount && moneyAmount.saleAmount < moneyAmount.amount
+                ? moneyAmount.saleAmount
+                : moneyAmount.amount;
+            currency = moneyAmount.currency;
+          }
+        }
+
+        return {
+          _id: item._id,
+          cartId: cart._id,
+          clerkId: cart.clerkId,
+          isGuest: !cart.clerkId,
+          organizationId: cart.organizationId,
+          organizationName: organization?.name ?? "Unknown Store",
+          productName: product?.name ?? "Unknown Product",
+          sku: variant.sku,
+          unit: variant.unit,
+          quantity: item.quantity,
+          price,
+          currency,
+          subtotal: price * item.quantity,
+          imageUrl,
+          // Use item creation time from Convex
+          addedAt: item._creationTime,
+        };
+      })
+    );
+
+    return activityItems
+      .filter((item) => item !== null)
+      .slice(0, limit);
+  },
+});
+
+/**
+ * Get cart statistics for dashboard widgets
+ */
+export const getCartStats = query({
+  args: {
+    organizationId: v.optional(v.id("organizations")),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // Get all active carts
+    const allCarts = await ctx.db
+      .query("carts")
+      .filter((q) => q.gt(q.field("expiresAt"), now))
+      .collect();
+
+    // Filter by organization if specified
+    const carts = args.organizationId
+      ? allCarts.filter((c) => c.organizationId === args.organizationId)
+      : allCarts;
+
+    // Count carts with items
+    let totalActiveCarts = 0;
+    let totalItems = 0;
+    let totalValue = 0;
+    let guestCarts = 0;
+    let userCarts = 0;
+
+    for (const cart of carts) {
+      const items = await ctx.db
+        .query("cartItems")
+        .withIndex("by_cart", (q) => q.eq("cartId", cart._id))
+        .collect();
+
+      if (items.length === 0) continue;
+
+      totalActiveCarts++;
+
+      if (cart.clerkId) {
+        userCarts++;
+      } else {
+        guestCarts++;
+      }
+
+      for (const item of items) {
+        totalItems += item.quantity;
+
+        // Get price
+        const variant = await ctx.db.get(item.variantId);
+        if (variant) {
+          const priceSet = await ctx.db
+            .query("priceSets")
+            .withIndex("by_variant", (q) => q.eq("variantId", variant._id))
+            .first();
+
+          if (priceSet) {
+            const moneyAmount = await ctx.db
+              .query("moneyAmounts")
+              .withIndex("by_priceSet", (q) => q.eq("priceSetId", priceSet._id))
+              .first();
+
+            if (moneyAmount) {
+              const price =
+                moneyAmount.saleAmount && moneyAmount.saleAmount < moneyAmount.amount
+                  ? moneyAmount.saleAmount
+                  : moneyAmount.amount;
+              totalValue += price * item.quantity;
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      totalActiveCarts,
+      totalItems,
+      totalValue,
+      guestCarts,
+      userCarts,
+      currency: "UGX",
+    };
+  },
+});
+
+/**
+ * Subscribe to cart changes for a specific organization (vendor view)
+ * Returns the latest cart activity timestamp for change detection
+ */
+export const getLatestCartActivity = query({
+  args: {
+    organizationId: v.optional(v.id("organizations")),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+
+    // Get the most recent cart item
+    const recentItem = await ctx.db
+      .query("cartItems")
+      .order("desc")
+      .first();
+
+    if (!recentItem) {
+      return { latestActivityAt: null, hasNewActivity: false };
+    }
+
+    // If organization filter, check if the cart belongs to it
+    if (args.organizationId) {
+      const cart = await ctx.db.get(recentItem.cartId);
+      if (!cart || cart.organizationId !== args.organizationId || cart.expiresAt < now) {
+        // Find the most recent item for this organization
+        const orgItems = await ctx.db
+          .query("cartItems")
+          .order("desc")
+          .take(100);
+
+        for (const item of orgItems) {
+          const itemCart = await ctx.db.get(item.cartId);
+          if (itemCart && itemCart.organizationId === args.organizationId && itemCart.expiresAt > now) {
+            return {
+              latestActivityAt: item._creationTime,
+              hasNewActivity: true,
+              itemId: item._id,
+            };
+          }
+        }
+
+        return { latestActivityAt: null, hasNewActivity: false };
+      }
+    }
+
+    return {
+      latestActivityAt: recentItem._creationTime,
+      hasNewActivity: true,
+      itemId: recentItem._id,
+    };
+  },
+});
+
+// =============================================================================
+// CHECKOUT HELPERS
+// =============================================================================
+
 /**
  * Validate cart prices against current prices (for checkout)
  */
@@ -554,11 +970,14 @@ export const validatePrices = query({
       .collect();
 
     const errors: Array<string> = [];
+    const warnings: Array<string> = [];
     const validatedItems: Array<{
       variantId: string;
       quantity: number;
       price: number;
       available: boolean;
+      stockQuantity: number;
+      hasStockIssue: boolean;
     }> = [];
 
     for (const item of items) {
@@ -572,6 +991,18 @@ export const validatePrices = query({
       if (!variant.isAvailable) {
         errors.push(`${variant.sku} is no longer available`);
         continue;
+      }
+
+      // Check stock quantity
+      const hasStockIssue = variant.stockQuantity < item.quantity;
+      if (hasStockIssue) {
+        if (variant.stockQuantity === 0) {
+          errors.push(`${variant.sku} is out of stock`);
+        } else {
+          warnings.push(
+            `${variant.sku}: Only ${variant.stockQuantity} available (you have ${item.quantity} in cart)`
+          );
+        }
       }
 
       // Get current price
@@ -602,12 +1033,15 @@ export const validatePrices = query({
         quantity: item.quantity,
         price: currentPrice,
         available: variant.isAvailable,
+        stockQuantity: variant.stockQuantity,
+        hasStockIssue,
       });
     }
 
     return {
       valid: errors.length === 0,
       errors,
+      warnings,
       items: validatedItems,
       total: validatedItems.reduce(
         (sum, item) => sum + item.price * item.quantity,

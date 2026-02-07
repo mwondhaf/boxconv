@@ -38,6 +38,7 @@ description: 'Task list for Grocery & Logistics Platform (BoxKuBox)'
 - [X] T006 [PH0] Configure Tailwind CSS 4.x in `tailwind.config.ts`
 - [X] T007 [PH0] Create `src/lib/utils.ts` with `cn()` helper
 - [X] T008 [PH0] Create `src/lib/constants.ts` with app constants (currency: 'UGX', timezone: 'Africa/Kampala')
+- [ ] T008a [PH0] 🔴 **CRITICAL** Create organization category "Riders" in `convex/organizationCategories.ts` for rider organizations
 
 **Checkpoint**: Project builds, shadcn components available.
 
@@ -68,6 +69,9 @@ description: 'Task list for Grocery & Logistics Platform (BoxKuBox)'
 > **NOTE**: Members, teams, and invitations are managed via Clerk Organizations API.
 > Convex `organizations` table stores business-specific data (location, hours, category).
 > See `src/features/admin/api/organizations.ts` for Clerk API functions.
+> 
+> **Organization Categories**: Some organizations are "rider organizations" (for rider management only).
+> These should NOT appear in customer-facing store listings in the mobile app.
 
 ### Organization CRUD
 
@@ -84,6 +88,8 @@ description: 'Task list for Grocery & Logistics Platform (BoxKuBox)'
   - Created: `src/features/admin/pages/vendors.tsx` with stats cards, table, and edit functionality
 - [X] T021 [PH2] [P] Create vendor create/edit sheet `src/features/admin/components/vendor-form-sheet.tsx`
   - Created: Sheet component for editing vendor business data (location, hours, category, status)
+- [ ] T021a [PH2] 🔴 **CRITICAL** Update mobile app store queries to filter out organizations with categoryId = "Riders" category
+- [ ] T021b [PH2] 🔴 **CRITICAL** Add category filter to `convex/storeLocations.ts` - exclude rider organizations from customer store listings
 
 ### Member & Team Management (Clerk-Managed)
 
@@ -185,14 +191,17 @@ description: 'Task list for Grocery & Logistics Platform (BoxKuBox)'
 
 ### Checkout
 
-- [ ] T063 [PH5] Implement delivery quote action in `convex/carts.ts` - uses external distance API (TODO: integrate external API)
+- [x] T063 [PH5] Implement delivery quote action in `convex/carts.ts` - uses external distance API (DONE: getDeliveryQuote in orders.ts)
 - [x] T064 [PH5] Create `convex/lib/geohash.ts` for geohash encoding
 - [x] T065 [PH5] Create `convex/lib/fare.ts` for delivery fare calculation
 - [ ] T066 [PH5] [P] Create checkout page `src/app/routes/_authed/_customer/checkout/index.tsx` (SKIPPED - mobile app only)
 - [ ] T067 [PH5] [P] Create address selector component `src/components/customer/address-selector.tsx` (SKIPPED - mobile app only)
 - [x] T068 [PH5] Implement price validation at checkout - compare cart prices to current prices
+- [ ] T068a [PH5] 🔴 **CRITICAL** Update mobile app checkout screen to fetch and display delivery quote using `api.orders.getDeliveryQuote`
+- [ ] T068b [PH5] 🔴 **CRITICAL** Add delivery fee to order summary in mobile checkout UI (show subtotal + delivery = total)
+- [ ] T068c [PH5] 🔴 **CRITICAL** Update checkout flow to include delivery quote in order totals before submission
 
-**Checkpoint**: Customers can browse, add to cart, and proceed to checkout.
+**Checkpoint**: Customers can browse, add to cart, see delivery prices, and proceed to checkout.
 
 ---
 
@@ -455,22 +464,219 @@ Complete: PH8 (T098-T110)
 Complete: PH9 → PH10 (T111-T134)
 
 **Manual Test**: Full platform flow with dashboards and polished UI.
+**Checkpoint**: Advanced features complete, platform fully polished
+
+---
+
+## 🔴 CRITICAL TASKS - IMPLEMENT FIRST
+
+**Priority**: Must complete before mobile app can function properly for order placement
+
+### For Delivery Pricing in Mobile App:
+1. **T068a** [PH5] Update mobile app checkout screen to fetch delivery quote
+   - File: `boxkuboxapp/app/(all)/(grocery)/(main)/checkout.tsx`
+   - Action: Add `useQuery` to call `api.orders.getDeliveryQuote` for each store
+   - Pass: organizationId, deliveryAddressId, orderSubtotal
+   - Display: Delivery fee in order summary
+
+2. **T068b** [PH5] Add delivery fee UI in checkout
+   - File: `boxkuboxapp/app/(all)/(grocery)/(main)/checkout.tsx`
+   - Show: Subtotal, Delivery Fee, Total (per store)
+   - Update: Grand total calculation to include delivery fees
+
+3. **T068c** [PH5] Include delivery totals in order submission
+   - Ensure checkout.complete receives accurate delivery totals
+   - Backend already calculates in completeCheckout mutation
+
+### For Organization Filtering (Rider Organizations):
+4. **T008a** [PH0] Create "Riders" organization category
+   - File: `convex/organizationCategories.ts`
+   - Action: Create category with name="Riders", slug="riders"
+   - Or: Add via Convex dashboard / seed data
+
+5. **T021a** [PH2] Filter rider organizations in mobile app
+   - File: `boxkuboxapp/lib/convex-queries.ts` or store location hooks
+   - Action: Exclude organizations where categoryId = riders category
+   - Apply to: Store listings, browse, search
+
+6. **T021b** [PH2] Backend filtering for rider organizations
+   - File: `convex/storeLocations.ts` or organization queries
+   - Action: Add categoryId filter parameter
+   - Ensure: Rider organizations only visible to admin/rider views
+
+**Estimated Time**: 1-2 days for all 6 critical tasks
+**Impact**: Enables complete order placement with accurate delivery pricing and clean store listings
+
+---
+
+## Phase 11: BoxRiders - Advanced Rider Management
+
+**Purpose**: Comprehensive rider management system with Uganda-specific compliance
+**Reference**: `BOXRIDERS_FEATURES_IMPLEMENTATION.md`, `BOXRIDERS_FEATURES_SUMMARY.md`, `riders.md`
+**Duration**: 8-10 weeks
+**Priority**: 🔴 Critical for platform completion
+
+> **NOTE**: Phase 6 already has basic rider functionality (T082-T084). Phase 11 extends this with:
+> - Complete rider profiles and registration
+> - Uganda compliance tracking (NIN, permits, TIN)
+> - Stage/hub management
+> - Performance ratings and analytics
+> - Payout system (mobile money, bank, cash)
+> - Auto-assignment algorithms
+> - Mobile rider app experience
+
+### Subphase 11.1: Schema & Foundation (3-5 days)
+
+- [ ] T135 [PH11] [P] Extend `convex/schema.ts` - Add `riders` table with full profile fields
+  - Identity: clerkId, riderCode, status, available, lastOnlineAt
+  - Contact: phoneNumber, nextOfKinName, nextOfKinPhone
+  - Compliance: nationalId, drivingPermitNumber, tin, helmetVerified, licenseExpiry, insuranceExpiry
+  - Vehicle: vehicleType, vehiclePlate, vehicleMake, vehicleColor
+  - Geography: district, subCounty, parish, village
+  - Payout: preferredPayoutMethod, mobileMoneyNumber, bankAccountNumber
+  - Performance: ratingSum, ratingCount, completedDeliveries, canceledDeliveries
+- [ ] T136 [PH11] [P] Extend `convex/schema.ts` - Add `stages`, `riderStageMemberships`, `riderRatings`, `riderPayouts`, `riderDocuments` tables
+- [ ] T137 [PH11] [P] Create `convex/lib/riderUtils.ts` - Rider code generation (RDR-XXXXXX), phone normalization (+256)
+- [ ] T138 [PH11] [P] Create `convex/lib/performanceUtils.ts` - Rating calculations, acceptance rate, on-time rate
+
+### Subphase 11.2: Registration & Profiles (5-7 days)
+
+- [ ] T139 [PH11] Create `convex/riders/registration.ts` - Registration mutation with auto rider code generation
+- [ ] T140 [PH11] Create `convex/riders/queries.ts` - Profile queries (getProfile, getByCode, search)
+- [ ] T141 [PH11] Create `convex/riders/mutations.ts` - Profile updates (basic, compliance, vehicle, payout)
+- [ ] T142 [PH11] Create `convex/riders/approval.ts` - Approval workflow (approve, suspend, reactivate)
+- [ ] T143 [PH11] [P] Create `src/components/rider/RiderRegistrationForm.tsx` - Multi-step registration form
+- [ ] T144 [PH11] [P] Create `src/components/rider/RiderProfileView.tsx` - Display full rider profile
+- [ ] T145 [PH11] [P] Create `src/components/rider/RidersList.tsx` - Searchable rider list with filters
+- [ ] T146 [PH11] [P] Create `src/components/rider/RiderApprovalQueue.tsx` - Pending approvals view
+- [ ] T147 [PH11] [P] Create `src/routes/_authed/_admin/a/riders/index.tsx` - Admin riders list page
+- [ ] T148 [PH11] [P] Create `src/routes/_authed/_admin/a/riders/new.tsx` - New rider registration page
+- [ ] T149 [PH11] [P] Create `src/routes/_authed/_admin/a/riders/$riderId.tsx` - Rider detail page with tabs
+
+### Subphase 11.3: Compliance & Documents (5-7 days)
+
+- [ ] T150 [PH11] Create `convex/riders/compliance.ts` - Compliance management (verify, check expiry)
+- [ ] T151 [PH11] Create `convex/riders/documents.ts` - Document upload and verification
+- [ ] T152 [PH11] Create `convex/scheduledJobs/riderCompliance.ts` - Auto-check expiring documents
+- [ ] T153 [PH11] [P] Create `src/components/rider/ComplianceDocumentsUpload.tsx` - Document upload with R2
+- [ ] T154 [PH11] [P] Create `src/components/rider/ComplianceDashboard.tsx` - Compliance overview
+- [ ] T155 [PH11] [P] Create `src/routes/_authed/_admin/a/riders/compliance.tsx` - Compliance page
+
+### Subphase 11.4: Stage/Hub Management (5-7 days)
+
+- [ ] T156 [PH11] Create `convex/stages/mutations.ts` - Stage CRUD (create, update, assign riders)
+- [ ] T157 [PH11] Create `convex/stages/queries.ts` - Stage queries (list, riders by stage, history)
+- [ ] T158 [PH11] [P] Create `src/components/stages/StageForm.tsx` - Create/edit stage with map picker
+- [ ] T159 [PH11] [P] Create `src/components/stages/StagesList.tsx` - List all stages
+- [ ] T160 [PH11] [P] Create `src/routes/_authed/_admin/a/stages/index.tsx` - Stages management page
+
+### Subphase 11.5: Performance & Ratings (4-6 days)
+
+- [ ] T161 [PH11] Create `convex/riders/ratings.ts` - Rating system (rate rider, update counters)
+- [ ] T162 [PH11] Create `convex/riders/performance.ts` - Performance metrics (acceptance rate, on-time, leaderboard)
+- [ ] T163 [PH11] Update `convex/riders.ts` - Add rating trigger after delivery completion
+- [ ] T164 [PH11] [P] Create `src/components/rider/RiderRatingDisplay.tsx` - Star rating component
+- [ ] T165 [PH11] [P] Create `src/components/rider/RiderPerformanceDashboard.tsx` - Performance stats and charts
+- [ ] T166 [PH11] [P] Create `src/components/rider/RiderLeaderboard.tsx` - Top riders display
+
+### Subphase 11.6: Payouts & Earnings (10-14 days)
+
+- [ ] T167 [PH11] Create `convex/riders/earnings.ts` - Earnings tracking (daily, weekly, monthly summaries)
+- [ ] T168 [PH11] Create `convex/payouts/batch.ts` - Batch payout generation
+- [ ] T169 [PH11] Create `convex/payouts/process.ts` - Payout processing (mark paid, cancel)
+- [ ] T170 [PH11] Create `convex/integrations/mobileMoney.ts` - Mobile money integration (MTN, Airtel)
+- [ ] T171 [PH11] [P] Create `src/components/payouts/PayoutMethodSelector.tsx` - Payment method form
+- [ ] T172 [PH11] [P] Create `src/components/payouts/EarningsDashboard.tsx` - Earnings overview with charts
+- [ ] T173 [PH11] [P] Create `src/components/payouts/PayoutBatchManager.tsx` - Batch processing UI
+- [ ] T174 [PH11] [P] Create `src/routes/_authed/_admin/a/payouts/index.tsx` - Payouts management page
+
+### Subphase 11.7: Auto-Assignment Algorithm (7-10 days)
+
+- [ ] T175 [PH11] Create `convex/assignment/scoring.ts` - Rider scoring (distance 40%, availability 30%, performance 20%, compliance 10%)
+- [ ] T176 [PH11] Create `convex/assignment/autoAssign.ts` - Auto-assignment logic with scoring
+- [ ] T177 [PH11] Update `convex/riders.ts` - Enhanced geospatial queries with geohash
+- [ ] T178 [PH11] [P] Create `src/components/assignment/AutoAssignToggle.tsx` - Enable auto-assign UI
+- [ ] T179 [PH11] [P] Create `src/components/assignment/AssignmentAnalytics.tsx` - Assignment metrics
+
+### Subphase 11.8: Mobile Rider App (10-14 days)
+
+> **Platform**: BoxKuBoxApp (React Native)
+
+- [ ] T180 [PH11] [P] Create `app/(all)/(rider)/index.tsx` - Rider dashboard with stats and status toggle
+- [ ] T181 [PH11] [P] Create `app/(all)/(rider)/profile/index.tsx` - Rider profile screen
+- [ ] T182 [PH11] [P] Create `app/(all)/(rider)/profile/edit.tsx` - Edit profile screen
+- [ ] T183 [PH11] [P] Create `app/(all)/(rider)/documents/index.tsx` - Documents screen with camera upload
+- [ ] T184 [PH11] [P] Create `app/(all)/(rider)/assignments/index.tsx` - Available assignments screen
+- [ ] T185 [PH11] [P] Create `app/(all)/(rider)/assignments/[orderId].tsx` - Assignment detail with accept/reject
+- [ ] T186 [PH11] [P] Create `app/(all)/(rider)/active/index.tsx` - Current delivery screen with navigation
+- [ ] T187 [PH11] [P] Create `app/(all)/(rider)/delivery/proof.tsx` - Proof of delivery with camera
+- [ ] T188 [PH11] [P] Create `app/(all)/(rider)/earnings/index.tsx` - Earnings screen with tabs
+- [ ] T189 [PH11] [P] Create `app/(all)/(rider)/history/index.tsx` - Delivery history screen
+- [ ] T190 [PH11] [P] Create `components/rider/RiderStatusToggle.tsx` - Online/offline toggle component
+- [ ] T191 [PH11] [P] Create `components/rider/DeliveryCard.tsx` - Order card component
+- [ ] T192 [PH11] [P] Create `components/rider/EarningsSummaryCard.tsx` - Earnings display component
+
+### Subphase 11.9: Real-Time & Notifications (4-6 days)
+
+- [ ] T193 [PH11] Update `convex/notifications.ts` - Add rider notification types (assignment, earnings, expiry)
+- [ ] T194 [PH11] [P] Create `services/locationService.ts` (mobile) - Background GPS tracking (30s intervals)
+- [ ] T195 [PH11] [P] Create `services/notificationService.ts` (mobile) - Push notification handler
+- [ ] T196 [PH11] [P] Create `services/heartbeatService.ts` (mobile) - Heartbeat system (5min intervals)
+- [ ] T197 [PH11] Update mobile rider screens - Add Convex real-time subscriptions
+
+### Subphase 11.10: Admin Operations & Analytics (10-14 days)
+
+- [ ] T198 [PH11] Create `convex/analytics/riders.ts` - Rider analytics queries (growth, trends, coverage)
+- [ ] T199 [PH11] [P] Create `src/components/admin/RiderOverviewStats.tsx` - Rider stats cards
+- [ ] T200 [PH11] [P] Create `src/components/rider/RiderBulkActions.tsx` - Bulk operations (approve, suspend)
+- [ ] T201 [PH11] [P] Create `src/components/analytics/RiderAnalytics.tsx` - Analytics dashboard
+- [ ] T202 [PH11] [P] Create `src/components/analytics/ComplianceReports.tsx` - Compliance reports
+- [ ] T203 [PH11] [P] Create `src/routes/_authed/_admin/a/analytics/riders.tsx` - Rider analytics page
+- [ ] T204 [PH11] Update `src/routes/_authed/_admin/a/index.tsx` - Add rider stats to admin dashboard
+
+### Subphase 11.11: Advanced Features (Optional - Low Priority)
+
+- [ ] T205 [PH11] [P] Create `app/(all)/(rider)/chat/[orderId].tsx` (mobile) - In-app chat with customer/store
+- [ ] T206 [PH11] [P] Create `components/rider/MultiStopDelivery.tsx` (mobile) - Multi-stop delivery support
+- [ ] T207 [PH11] [P] Create `src/components/maps/RiderHeatMap.tsx` (web) - Geographic heat map
+- [ ] T208 [PH11] [P] Create `convex/optimization/routes.ts` - Route optimization for multi-stop
+- [ ] T209 [PH11] [P] Create `convex/fraud/detection.ts` - Duplicate rider detection
+
+**Checkpoint**: Complete rider management system operational across web and mobile platforms
 
 ---
 
 ## Task Count Summary
 
-| Phase     | Count   | Status      | Description    |
-| --------- | ------- | ----------- | -------------- |
-| PH0       | 8       | ✅ Complete | Project Setup  |
-| PH1       | 9       | ✅ Complete | Authentication |
-| PH2       | 15      | ✅ Complete | Organization   |
-| PH3       | 11      | ✅ Complete | Products       |
-| PH4       | 12      | ✅ Complete | Variants       |
-| PH5       | 19      | ⏳ Pending  | Customer       |
-| PH6       | 23      | ⏳ Pending  | Orders         |
-| PH7       | 11      | ⏳ Pending  | Parcels        |
-| PH8       | 13      | ⏳ Pending  | Promotions     |
-| PH9       | 9       | ⏳ Pending  | Dashboards     |
-| PH10      | 15      | ⏳ Pending  | Polish         |
-| **Total** | **145** | **55/145**  | **38% Done**   |
+| Phase     | Count   | Status      | Description             | Critical Tasks           |
+| --------- | ------- | ----------- | ----------------------- | ------------------------ |
+| PH0       | 9       | ⏳ Pending  | Project Setup           | T008a (org category)     |
+| PH1       | 9       | ✅ Complete | Authentication          | -                        |
+| PH2       | 17      | ⏳ Pending  | Organization            | T021a, T021b (filtering) |
+| PH3       | 11      | ✅ Complete | Products                | -                        |
+| PH4       | 12      | ✅ Complete | Variants                | -                        |
+| PH5       | 22      | ⏳ Pending  | Customer                | T068a, T068b, T068c (delivery pricing) |
+| PH6       | 23      | ⏳ Pending  | Orders                  | -                        |
+| PH7       | 11      | ⏳ Pending  | Parcels                 | -                        |
+| PH8       | 13      | ⏳ Pending  | Promotions              | -                        |
+| PH9       | 9       | ⏳ Pending  | Dashboards              | -                        |
+| PH10      | 15      | ⏳ Pending  | Polish                  | -                        |
+| PH11      | 75      | ⏳ Pending  | BoxRiders (Advanced)    | -                        |
+| **Total** | **226** | **55/226**  | **24% Done**            | **6 critical tasks**     |
+
+### Phase 11 Breakdown
+
+| Subphase   | Tasks  | Duration  | Priority  | Description                    |
+| ---------- | ------ | --------- | --------- | ------------------------------ |
+| 11.1       | 4      | 3-5 days  | 🔴 Critical | Schema & Foundation           |
+| 11.2       | 11     | 5-7 days  | 🔴 Critical | Registration & Profiles       |
+| 11.3       | 6      | 5-7 days  | 🔴 Critical | Compliance & Documents        |
+| 11.4       | 5      | 5-7 days  | 🟡 Medium   | Stage/Hub Management          |
+| 11.5       | 6      | 4-6 days  | 🔴 Critical | Performance & Ratings         |
+| 11.6       | 8      | 10-14 days| 🔴 Critical | Payouts & Earnings            |
+| 11.7       | 5      | 7-10 days | 🟡 Medium   | Auto-Assignment               |
+| 11.8       | 13     | 10-14 days| 🔴 Critical | Mobile Rider App              |
+| 11.9       | 5      | 4-6 days  | 🔴 Critical | Real-Time & Notifications     |
+| 11.10      | 7      | 10-14 days| 🟡 Medium   | Admin Operations              |
+| 11.11      | 5      | Ongoing   | 🟢 Low      | Advanced Features             |
+| **Total**  | **75** | **8-10 weeks** |          |                               |

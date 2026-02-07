@@ -65,6 +65,27 @@ export interface Category {
   organizationId: string;
 }
 
+export interface DeliveryZone {
+  kind: "DeliveryZone";
+  _id: string;
+  name: string;
+  city: string;
+  active: boolean;
+}
+
+export interface PricingRule {
+  kind: "PricingRule";
+  _id: string;
+  zoneId?: string;
+  name: string;
+  status: string;
+}
+
+export interface DeliveryQuote {
+  kind: "DeliveryQuote";
+  _id: string;
+}
+
 // Union of all subject types
 export type AppSubjects =
   | Product
@@ -74,6 +95,9 @@ export type AppSubjects =
   | Member
   | Organization
   | Category
+  | DeliveryZone
+  | PricingRule
+  | DeliveryQuote
   | "Product"
   | "Order"
   | "Customer"
@@ -81,6 +105,9 @@ export type AppSubjects =
   | "Member"
   | "Organization"
   | "Category"
+  | "DeliveryZone"
+  | "PricingRule"
+  | "DeliveryQuote"
   | "all";
 
 // =============================================================================
@@ -394,12 +421,18 @@ export async function getAbilityContextFromAuth(
     };
   }
 
+  // DEBUG: Log the entire identity object to see what's available
+  console.log("DEBUG identity keys:", Object.keys(identity));
+  console.log("DEBUG identity:", JSON.stringify(identity, null, 2));
+
   // Clerk stores custom claims in the token
   // platformRole is in publicMetadata
   // orgRole and orgId come from the organization context
   const platformRole = (identity as any).platformRole as PlatformRole;
   const orgRole = (identity as any).org_role as OrgRole;
   const orgId = (identity as any).org_id as string | undefined;
+
+  console.log("DEBUG extracted values:", { platformRole, orgRole, orgId, userId: identity.subject });
 
   return {
     platformRole,

@@ -1383,6 +1383,24 @@ export const cancel = mutation({
       fulfillmentStatus: "not_fulfilled",
     });
 
+    // Restore stock for all order items
+    const orderItems = await ctx.db
+      .query("orderItems")
+      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
+      .collect();
+
+    for (const item of orderItems) {
+      const variant = await ctx.db.get(item.variantId);
+      if (variant) {
+        const newStockQuantity = variant.stockQuantity + item.quantity;
+        await ctx.db.patch(item.variantId, {
+          stockQuantity: newStockQuantity,
+          // Re-enable if it was auto-disabled due to zero stock
+          ...(variant.stockQuantity === 0 && { isAvailable: true }),
+        });
+      }
+    }
+
     await ctx.db.insert("orderEvents", {
       orderId: args.orderId,
       clerkId: args.actorClerkId,

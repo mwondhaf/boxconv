@@ -1,19 +1,13 @@
 import { Outlet } from "@tanstack/react-router";
 import {
-  Bike,
-  Boxes,
-  Building2,
-  FolderTree,
   LayoutDashboard,
-  Network,
   Package,
-  PackageSearch,
   Percent,
   Settings,
   Shield,
   ShoppingCart,
-  Tag,
-  Users,
+  Store,
+  Truck,
 } from "lucide-react";
 
 import type { NavMainItem } from "~/components/sidebar";
@@ -46,61 +40,62 @@ const adminNavItems: Array<NavMainItem> = [
     url: "/a",
     icon: LayoutDashboard,
   },
+  // Orders & Fulfillment Group
   {
-    title: "Orders",
+    title: "Orders & Fulfillment",
     url: "/a/orders",
     icon: ShoppingCart,
+    items: [
+      { title: "Orders", url: "/a/orders" },
+      { title: "Live Carts", url: "/a/live-carts" },
+      { title: "Parcels", url: "/a/parcels" },
+    ],
   },
+  // Delivery & Logistics Group
   {
-    title: "Parcels",
-    url: "/a/parcels",
-    icon: PackageSearch,
-  },
-  {
-    title: "Riders",
+    title: "Delivery",
     url: "/a/riders",
-    icon: Bike,
+    icon: Truck,
+    items: [
+      { title: "Riders", url: "/a/riders" },
+      { title: "Stages", url: "/a/stages" },
+      { title: "Coverage", url: "/a/coverage" },
+      { title: "Pricing", url: "/a/pricing" },
+    ],
   },
-  {
-    title: "Organizations",
-    url: "/a/organizations",
-    icon: Network,
-  },
+  // Vendors & Organizations Group
   {
     title: "Vendors",
-    url: "/a/vendors",
-    icon: Building2,
+    url: "/a/organizations",
+    icon: Store,
+    items: [
+      { title: "Organizations", url: "/a/organizations" },
+      { title: "Vendors", url: "/a/vendors" },
+      { title: "Customers", url: "/a/customers" },
+    ],
   },
+  // Catalog Group
   {
-    title: "Customers",
-    url: "/a/customers",
-    icon: Users,
-  },
-  {
-    title: "Products",
+    title: "Catalog",
     url: "/a/products",
     icon: Package,
+    items: [
+      { title: "Products", url: "/a/products" },
+      { title: "Variants", url: "/a/variants" },
+      { title: "Categories", url: "/a/categories" },
+      { title: "Brands", url: "/a/brands" },
+    ],
   },
+  // Marketing Group
   {
-    title: "Variants",
-    url: "/a/variants",
-    icon: Boxes,
-  },
-  {
-    title: "Categories",
-    url: "/a/categories",
-    icon: FolderTree,
-  },
-  {
-    title: "Brands",
-    url: "/a/brands",
-    icon: Tag,
-  },
-  {
-    title: "Promotions",
+    title: "Marketing",
     url: "/a/promotions",
     icon: Percent,
+    items: [
+      { title: "Promotions", url: "/a/promotions" },
+    ],
   },
+  // Settings
   {
     title: "Settings",
     url: "/a/settings",

@@ -23,18 +23,23 @@ import { Route as AuthedVendorVTeamRouteImport } from './routes/_authed/_vendor/
 import { Route as AuthedVendorVSettingsRouteImport } from './routes/_authed/_vendor/v/settings'
 import { Route as AuthedVendorVProductsRouteImport } from './routes/_authed/_vendor/v/products'
 import { Route as AuthedVendorVOrdersRouteImport } from './routes/_authed/_vendor/v/orders'
+import { Route as AuthedVendorVLiveCartsRouteImport } from './routes/_authed/_vendor/v/live-carts'
 import { Route as AuthedVendorVCustomersRouteImport } from './routes/_authed/_vendor/v/customers'
 import { Route as AuthedRiderRHistoryRouteImport } from './routes/_authed/_rider/r/history'
 import { Route as AuthedRiderREarningsRouteImport } from './routes/_authed/_rider/r/earnings'
 import { Route as AuthedRiderRAssignmentsRouteImport } from './routes/_authed/_rider/r/assignments'
 import { Route as AuthedAdminAVendorsRouteImport } from './routes/_authed/_admin/a/vendors'
 import { Route as AuthedAdminAVariantsRouteImport } from './routes/_authed/_admin/a/variants'
+import { Route as AuthedAdminAStagesRouteImport } from './routes/_authed/_admin/a/stages'
 import { Route as AuthedAdminASettingsRouteImport } from './routes/_authed/_admin/a/settings'
 import { Route as AuthedAdminARidersRouteImport } from './routes/_authed/_admin/a/riders'
 import { Route as AuthedAdminAProductsRouteImport } from './routes/_authed/_admin/a/products'
+import { Route as AuthedAdminAPricingRouteImport } from './routes/_authed/_admin/a/pricing'
 import { Route as AuthedAdminAParcelsRouteImport } from './routes/_authed/_admin/a/parcels'
 import { Route as AuthedAdminAOrganizationsRouteImport } from './routes/_authed/_admin/a/organizations'
 import { Route as AuthedAdminAOrdersRouteImport } from './routes/_authed/_admin/a/orders'
+import { Route as AuthedAdminALiveCartsRouteImport } from './routes/_authed/_admin/a/live-carts'
+import { Route as AuthedAdminACoverageRouteImport } from './routes/_authed/_admin/a/coverage'
 import { Route as AuthedAdminACategoriesRouteImport } from './routes/_authed/_admin/a/categories'
 import { Route as AuthedAdminABrandsRouteImport } from './routes/_authed/_admin/a/brands'
 
@@ -104,6 +109,11 @@ const AuthedVendorVOrdersRoute = AuthedVendorVOrdersRouteImport.update({
   path: '/v/orders',
   getParentRoute: () => AuthedVendorRoute,
 } as any)
+const AuthedVendorVLiveCartsRoute = AuthedVendorVLiveCartsRouteImport.update({
+  id: '/v/live-carts',
+  path: '/v/live-carts',
+  getParentRoute: () => AuthedVendorRoute,
+} as any)
 const AuthedVendorVCustomersRoute = AuthedVendorVCustomersRouteImport.update({
   id: '/v/customers',
   path: '/v/customers',
@@ -134,6 +144,11 @@ const AuthedAdminAVariantsRoute = AuthedAdminAVariantsRouteImport.update({
   path: '/a/variants',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
+const AuthedAdminAStagesRoute = AuthedAdminAStagesRouteImport.update({
+  id: '/a/stages',
+  path: '/a/stages',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
 const AuthedAdminASettingsRoute = AuthedAdminASettingsRouteImport.update({
   id: '/a/settings',
   path: '/a/settings',
@@ -147,6 +162,11 @@ const AuthedAdminARidersRoute = AuthedAdminARidersRouteImport.update({
 const AuthedAdminAProductsRoute = AuthedAdminAProductsRouteImport.update({
   id: '/a/products',
   path: '/a/products',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminAPricingRoute = AuthedAdminAPricingRouteImport.update({
+  id: '/a/pricing',
+  path: '/a/pricing',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
 const AuthedAdminAParcelsRoute = AuthedAdminAParcelsRouteImport.update({
@@ -165,6 +185,16 @@ const AuthedAdminAOrdersRoute = AuthedAdminAOrdersRouteImport.update({
   path: '/a/orders',
   getParentRoute: () => AuthedAdminRoute,
 } as any)
+const AuthedAdminALiveCartsRoute = AuthedAdminALiveCartsRouteImport.update({
+  id: '/a/live-carts',
+  path: '/a/live-carts',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminACoverageRoute = AuthedAdminACoverageRouteImport.update({
+  id: '/a/coverage',
+  path: '/a/coverage',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
 const AuthedAdminACategoriesRoute = AuthedAdminACategoriesRouteImport.update({
   id: '/a/categories',
   path: '/a/categories',
@@ -181,18 +211,23 @@ export interface FileRoutesByFullPath {
   '/user': typeof AuthedUserRoute
   '/a/brands': typeof AuthedAdminABrandsRoute
   '/a/categories': typeof AuthedAdminACategoriesRoute
+  '/a/coverage': typeof AuthedAdminACoverageRoute
+  '/a/live-carts': typeof AuthedAdminALiveCartsRoute
   '/a/orders': typeof AuthedAdminAOrdersRoute
   '/a/organizations': typeof AuthedAdminAOrganizationsRoute
   '/a/parcels': typeof AuthedAdminAParcelsRoute
+  '/a/pricing': typeof AuthedAdminAPricingRoute
   '/a/products': typeof AuthedAdminAProductsRoute
   '/a/riders': typeof AuthedAdminARidersRoute
   '/a/settings': typeof AuthedAdminASettingsRoute
+  '/a/stages': typeof AuthedAdminAStagesRoute
   '/a/variants': typeof AuthedAdminAVariantsRoute
   '/a/vendors': typeof AuthedAdminAVendorsRoute
   '/r/assignments': typeof AuthedRiderRAssignmentsRoute
   '/r/earnings': typeof AuthedRiderREarningsRoute
   '/r/history': typeof AuthedRiderRHistoryRoute
   '/v/customers': typeof AuthedVendorVCustomersRoute
+  '/v/live-carts': typeof AuthedVendorVLiveCartsRoute
   '/v/orders': typeof AuthedVendorVOrdersRoute
   '/v/products': typeof AuthedVendorVProductsRoute
   '/v/settings': typeof AuthedVendorVSettingsRoute
@@ -207,18 +242,23 @@ export interface FileRoutesByTo {
   '/user': typeof AuthedUserRoute
   '/a/brands': typeof AuthedAdminABrandsRoute
   '/a/categories': typeof AuthedAdminACategoriesRoute
+  '/a/coverage': typeof AuthedAdminACoverageRoute
+  '/a/live-carts': typeof AuthedAdminALiveCartsRoute
   '/a/orders': typeof AuthedAdminAOrdersRoute
   '/a/organizations': typeof AuthedAdminAOrganizationsRoute
   '/a/parcels': typeof AuthedAdminAParcelsRoute
+  '/a/pricing': typeof AuthedAdminAPricingRoute
   '/a/products': typeof AuthedAdminAProductsRoute
   '/a/riders': typeof AuthedAdminARidersRoute
   '/a/settings': typeof AuthedAdminASettingsRoute
+  '/a/stages': typeof AuthedAdminAStagesRoute
   '/a/variants': typeof AuthedAdminAVariantsRoute
   '/a/vendors': typeof AuthedAdminAVendorsRoute
   '/r/assignments': typeof AuthedRiderRAssignmentsRoute
   '/r/earnings': typeof AuthedRiderREarningsRoute
   '/r/history': typeof AuthedRiderRHistoryRoute
   '/v/customers': typeof AuthedVendorVCustomersRoute
+  '/v/live-carts': typeof AuthedVendorVLiveCartsRoute
   '/v/orders': typeof AuthedVendorVOrdersRoute
   '/v/products': typeof AuthedVendorVProductsRoute
   '/v/settings': typeof AuthedVendorVSettingsRoute
@@ -238,18 +278,23 @@ export interface FileRoutesById {
   '/_authed/user': typeof AuthedUserRoute
   '/_authed/_admin/a/brands': typeof AuthedAdminABrandsRoute
   '/_authed/_admin/a/categories': typeof AuthedAdminACategoriesRoute
+  '/_authed/_admin/a/coverage': typeof AuthedAdminACoverageRoute
+  '/_authed/_admin/a/live-carts': typeof AuthedAdminALiveCartsRoute
   '/_authed/_admin/a/orders': typeof AuthedAdminAOrdersRoute
   '/_authed/_admin/a/organizations': typeof AuthedAdminAOrganizationsRoute
   '/_authed/_admin/a/parcels': typeof AuthedAdminAParcelsRoute
+  '/_authed/_admin/a/pricing': typeof AuthedAdminAPricingRoute
   '/_authed/_admin/a/products': typeof AuthedAdminAProductsRoute
   '/_authed/_admin/a/riders': typeof AuthedAdminARidersRoute
   '/_authed/_admin/a/settings': typeof AuthedAdminASettingsRoute
+  '/_authed/_admin/a/stages': typeof AuthedAdminAStagesRoute
   '/_authed/_admin/a/variants': typeof AuthedAdminAVariantsRoute
   '/_authed/_admin/a/vendors': typeof AuthedAdminAVendorsRoute
   '/_authed/_rider/r/assignments': typeof AuthedRiderRAssignmentsRoute
   '/_authed/_rider/r/earnings': typeof AuthedRiderREarningsRoute
   '/_authed/_rider/r/history': typeof AuthedRiderRHistoryRoute
   '/_authed/_vendor/v/customers': typeof AuthedVendorVCustomersRoute
+  '/_authed/_vendor/v/live-carts': typeof AuthedVendorVLiveCartsRoute
   '/_authed/_vendor/v/orders': typeof AuthedVendorVOrdersRoute
   '/_authed/_vendor/v/products': typeof AuthedVendorVProductsRoute
   '/_authed/_vendor/v/settings': typeof AuthedVendorVSettingsRoute
@@ -266,18 +311,23 @@ export interface FileRouteTypes {
     | '/user'
     | '/a/brands'
     | '/a/categories'
+    | '/a/coverage'
+    | '/a/live-carts'
     | '/a/orders'
     | '/a/organizations'
     | '/a/parcels'
+    | '/a/pricing'
     | '/a/products'
     | '/a/riders'
     | '/a/settings'
+    | '/a/stages'
     | '/a/variants'
     | '/a/vendors'
     | '/r/assignments'
     | '/r/earnings'
     | '/r/history'
     | '/v/customers'
+    | '/v/live-carts'
     | '/v/orders'
     | '/v/products'
     | '/v/settings'
@@ -292,18 +342,23 @@ export interface FileRouteTypes {
     | '/user'
     | '/a/brands'
     | '/a/categories'
+    | '/a/coverage'
+    | '/a/live-carts'
     | '/a/orders'
     | '/a/organizations'
     | '/a/parcels'
+    | '/a/pricing'
     | '/a/products'
     | '/a/riders'
     | '/a/settings'
+    | '/a/stages'
     | '/a/variants'
     | '/a/vendors'
     | '/r/assignments'
     | '/r/earnings'
     | '/r/history'
     | '/v/customers'
+    | '/v/live-carts'
     | '/v/orders'
     | '/v/products'
     | '/v/settings'
@@ -322,18 +377,23 @@ export interface FileRouteTypes {
     | '/_authed/user'
     | '/_authed/_admin/a/brands'
     | '/_authed/_admin/a/categories'
+    | '/_authed/_admin/a/coverage'
+    | '/_authed/_admin/a/live-carts'
     | '/_authed/_admin/a/orders'
     | '/_authed/_admin/a/organizations'
     | '/_authed/_admin/a/parcels'
+    | '/_authed/_admin/a/pricing'
     | '/_authed/_admin/a/products'
     | '/_authed/_admin/a/riders'
     | '/_authed/_admin/a/settings'
+    | '/_authed/_admin/a/stages'
     | '/_authed/_admin/a/variants'
     | '/_authed/_admin/a/vendors'
     | '/_authed/_rider/r/assignments'
     | '/_authed/_rider/r/earnings'
     | '/_authed/_rider/r/history'
     | '/_authed/_vendor/v/customers'
+    | '/_authed/_vendor/v/live-carts'
     | '/_authed/_vendor/v/orders'
     | '/_authed/_vendor/v/products'
     | '/_authed/_vendor/v/settings'
@@ -449,6 +509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedVendorVOrdersRouteImport
       parentRoute: typeof AuthedVendorRoute
     }
+    '/_authed/_vendor/v/live-carts': {
+      id: '/_authed/_vendor/v/live-carts'
+      path: '/v/live-carts'
+      fullPath: '/v/live-carts'
+      preLoaderRoute: typeof AuthedVendorVLiveCartsRouteImport
+      parentRoute: typeof AuthedVendorRoute
+    }
     '/_authed/_vendor/v/customers': {
       id: '/_authed/_vendor/v/customers'
       path: '/v/customers'
@@ -491,6 +558,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminAVariantsRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
+    '/_authed/_admin/a/stages': {
+      id: '/_authed/_admin/a/stages'
+      path: '/a/stages'
+      fullPath: '/a/stages'
+      preLoaderRoute: typeof AuthedAdminAStagesRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
     '/_authed/_admin/a/settings': {
       id: '/_authed/_admin/a/settings'
       path: '/a/settings'
@@ -510,6 +584,13 @@ declare module '@tanstack/react-router' {
       path: '/a/products'
       fullPath: '/a/products'
       preLoaderRoute: typeof AuthedAdminAProductsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/pricing': {
+      id: '/_authed/_admin/a/pricing'
+      path: '/a/pricing'
+      fullPath: '/a/pricing'
+      preLoaderRoute: typeof AuthedAdminAPricingRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
     '/_authed/_admin/a/parcels': {
@@ -533,6 +614,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminAOrdersRouteImport
       parentRoute: typeof AuthedAdminRoute
     }
+    '/_authed/_admin/a/live-carts': {
+      id: '/_authed/_admin/a/live-carts'
+      path: '/a/live-carts'
+      fullPath: '/a/live-carts'
+      preLoaderRoute: typeof AuthedAdminALiveCartsRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/_admin/a/coverage': {
+      id: '/_authed/_admin/a/coverage'
+      path: '/a/coverage'
+      fullPath: '/a/coverage'
+      preLoaderRoute: typeof AuthedAdminACoverageRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
     '/_authed/_admin/a/categories': {
       id: '/_authed/_admin/a/categories'
       path: '/a/categories'
@@ -553,12 +648,16 @@ declare module '@tanstack/react-router' {
 interface AuthedAdminRouteChildren {
   AuthedAdminABrandsRoute: typeof AuthedAdminABrandsRoute
   AuthedAdminACategoriesRoute: typeof AuthedAdminACategoriesRoute
+  AuthedAdminACoverageRoute: typeof AuthedAdminACoverageRoute
+  AuthedAdminALiveCartsRoute: typeof AuthedAdminALiveCartsRoute
   AuthedAdminAOrdersRoute: typeof AuthedAdminAOrdersRoute
   AuthedAdminAOrganizationsRoute: typeof AuthedAdminAOrganizationsRoute
   AuthedAdminAParcelsRoute: typeof AuthedAdminAParcelsRoute
+  AuthedAdminAPricingRoute: typeof AuthedAdminAPricingRoute
   AuthedAdminAProductsRoute: typeof AuthedAdminAProductsRoute
   AuthedAdminARidersRoute: typeof AuthedAdminARidersRoute
   AuthedAdminASettingsRoute: typeof AuthedAdminASettingsRoute
+  AuthedAdminAStagesRoute: typeof AuthedAdminAStagesRoute
   AuthedAdminAVariantsRoute: typeof AuthedAdminAVariantsRoute
   AuthedAdminAVendorsRoute: typeof AuthedAdminAVendorsRoute
   AuthedAdminAIndexRoute: typeof AuthedAdminAIndexRoute
@@ -567,12 +666,16 @@ interface AuthedAdminRouteChildren {
 const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
   AuthedAdminABrandsRoute: AuthedAdminABrandsRoute,
   AuthedAdminACategoriesRoute: AuthedAdminACategoriesRoute,
+  AuthedAdminACoverageRoute: AuthedAdminACoverageRoute,
+  AuthedAdminALiveCartsRoute: AuthedAdminALiveCartsRoute,
   AuthedAdminAOrdersRoute: AuthedAdminAOrdersRoute,
   AuthedAdminAOrganizationsRoute: AuthedAdminAOrganizationsRoute,
   AuthedAdminAParcelsRoute: AuthedAdminAParcelsRoute,
+  AuthedAdminAPricingRoute: AuthedAdminAPricingRoute,
   AuthedAdminAProductsRoute: AuthedAdminAProductsRoute,
   AuthedAdminARidersRoute: AuthedAdminARidersRoute,
   AuthedAdminASettingsRoute: AuthedAdminASettingsRoute,
+  AuthedAdminAStagesRoute: AuthedAdminAStagesRoute,
   AuthedAdminAVariantsRoute: AuthedAdminAVariantsRoute,
   AuthedAdminAVendorsRoute: AuthedAdminAVendorsRoute,
   AuthedAdminAIndexRoute: AuthedAdminAIndexRoute,
@@ -602,6 +705,7 @@ const AuthedRiderRouteWithChildren = AuthedRiderRoute._addFileChildren(
 
 interface AuthedVendorRouteChildren {
   AuthedVendorVCustomersRoute: typeof AuthedVendorVCustomersRoute
+  AuthedVendorVLiveCartsRoute: typeof AuthedVendorVLiveCartsRoute
   AuthedVendorVOrdersRoute: typeof AuthedVendorVOrdersRoute
   AuthedVendorVProductsRoute: typeof AuthedVendorVProductsRoute
   AuthedVendorVSettingsRoute: typeof AuthedVendorVSettingsRoute
@@ -612,6 +716,7 @@ interface AuthedVendorRouteChildren {
 
 const AuthedVendorRouteChildren: AuthedVendorRouteChildren = {
   AuthedVendorVCustomersRoute: AuthedVendorVCustomersRoute,
+  AuthedVendorVLiveCartsRoute: AuthedVendorVLiveCartsRoute,
   AuthedVendorVOrdersRoute: AuthedVendorVOrdersRoute,
   AuthedVendorVProductsRoute: AuthedVendorVProductsRoute,
   AuthedVendorVSettingsRoute: AuthedVendorVSettingsRoute,

@@ -179,6 +179,18 @@ export const validate = query({
         continue;
       }
 
+      // Check stock quantity
+      if (variant.stockQuantity < cartItem.quantity) {
+        if (variant.stockQuantity === 0) {
+          errors.push("Product is out of stock");
+        } else {
+          errors.push(
+            `Insufficient stock: Only ${variant.stockQuantity} available (you have ${cartItem.quantity} in cart)`
+          );
+        }
+        continue;
+      }
+
       if (variant.organizationId !== cart.organizationId) {
         errors.push("Invalid product in cart");
         continue;
@@ -496,6 +508,19 @@ export const complete = mutation({
         throw new Error("A product in your cart is no longer available");
       }
 
+      // Check stock quantity
+      if (variant.stockQuantity < cartItem.quantity) {
+        const product = await ctx.db.get(variant.productId);
+        const productName = product?.name ?? variant.sku;
+        if (variant.stockQuantity === 0) {
+          throw new Error(`${productName} is out of stock`);
+        } else {
+          throw new Error(
+            `Insufficient stock for ${productName}: Only ${variant.stockQuantity} available (you requested ${cartItem.quantity})`
+          );
+        }
+      }
+
       if (variant.organizationId !== cart.organizationId) {
         throw new Error("Invalid product in cart");
       }
@@ -639,12 +664,24 @@ export const complete = mutation({
       deliveryTotal,
     });
 
-    // Insert order items
+    // Insert order items and decrement stock
     for (const item of orderItemsToInsert) {
       await ctx.db.insert("orderItems", {
         orderId,
         ...item,
       });
+
+      // Decrement stock quantity for the variant
+      const variantDoc = await ctx.db.get(item.variantId);
+      if (variantDoc && typeof (variantDoc as any).stockQuantity === "number") {
+        const currentStock = (variantDoc as any).stockQuantity as number;
+        const newStockQuantity = Math.max(0, currentStock - item.quantity);
+        await ctx.db.patch(item.variantId, {
+          stockQuantity: newStockQuantity,
+          // Auto-mark as unavailable if out of stock
+          ...(newStockQuantity === 0 && { isAvailable: false }),
+        });
+      }
     }
 
     // Log order creation
